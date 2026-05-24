@@ -276,7 +276,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Outfit',
     <div class="brand">
       <div class="brand-gem">D</div>
       <span class="brand-name">DeepSeek AI</span>
-      <span class="brand-tag">API</span>
+      <span class="brand-tag">GRATUIT</span>
     </div>
     <div class="status-bar">
       <div class="status-pill" id="statusPill">
@@ -289,9 +289,9 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Outfit',
 
   <!-- MODEL BAR -->
   <div class="model-bar" id="modelBar">
-    <button class="mb-btn sel" data-model="deepseek-chat" data-temp="0.7" onclick="selModel(this)">🧠 DeepSeek-V3</button>
-    <button class="mb-btn" data-model="deepseek-reasoner" data-temp="0.5" onclick="selModel(this)">🔍 DeepSeek-R1</button>
-    <button class="mb-btn" data-model="deepseek-chat" data-temp="1.0" onclick="selModel(this)">🎨 DeepSeek Créatif</button>
+    <button class="mb-btn sel" data-model="deepseek/deepseek-v4-flash:free" data-temp="0.7" onclick="selModel(this)">🧠 DeepSeek V4 Flash</button>
+    <button class="mb-btn" data-model="deepseek/deepseek-r1:free" data-temp="0.5" onclick="selModel(this)">🔍 DeepSeek R1</button>
+    <button class="mb-btn" data-model="deepseek/deepseek-v4-flash:free" data-temp="1.0" onclick="selModel(this)">🎨 DeepSeek Créatif</button>
   </div>
 
   <!-- MESSAGES -->
@@ -299,7 +299,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Outfit',
     <div class="welcome" id="welcome">
       <div class="welcome-icon">🧠</div>
       <h1>DeepSeek AI</h1>
-      <p>Assistant IA propulsé par DeepSeek. Rapide, puissant et gratuit avec votre clé API.</p>
+      <p>Assistant IA propulsé par DeepSeek via OpenRouter. <strong>100% gratuit</strong> — inscrivez-vous sur openrouter.ai pour obtenir votre clé.</p>
       <div class="quick-wrap">
         <div class="qcard" onclick="quick('Explique-moi l\'intelligence artificielle simplement')">
           <div class="qcard-ico">🧠</div>
@@ -344,9 +344,9 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Outfit',
 <div class="modal-overlay" id="settingsModal">
   <div class="modal-box">
     <div class="modal-title">⚙ Paramètres API</div>
-    <div class="modal-desc">Configurez votre clé API DeepSeek. La clé est stockée uniquement dans votre navigateur (localStorage).</div>
-    <div class="modal-warn">⚠️ Ne partagez jamais votre clé API. Elle est privée et reste dans votre navigateur.</div>
-    <label class="modal-label">Clé API DeepSeek</label>
+    <div class="modal-desc">Obtenez une <strong>clé API gratuite</strong> sur <a href="https://openrouter.ai/keys" target="_blank" style="color:var(--a1)">openrouter.ai/keys</a> (sans carte bancaire). Collez-la ci-dessous. La clé reste dans votre navigateur.</div>
+    <div class="modal-warn">🔓 Modèles DeepSeek gratuits via OpenRouter : V4 Flash (rapide) et R1 (raisonnement). Limite ~50 requêtes/jour.</div>
+    <label class="modal-label">Clé API OpenRouter</label>
     <input class="modal-input" id="apiKeyInput" type="password" placeholder="sk-..." spellcheck="false">
     <div class="modal-actions">
       <button class="modal-btn sec" onclick="closeSettings()">Annuler</button>
@@ -359,26 +359,25 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Outfit',
 // ══════════════════════════════════════════
 // CONFIGURATION
 // ══════════════════════════════════════════
-// API DeepSeek : https://api.deepseek.com
-// La clé est stockée dans localStorage.
-// Valeur par défaut (celle que tu as fournie) :
-const DEFAULT_API_KEY = "sk-d2d3e36ce6a24189ac828738071f064f";
-const API_URL = "https://api.deepseek.com/v1/chat/completions";
+// API OpenRouter (modèles DeepSeek gratuits) : https://openrouter.ai
+// Inscrivez-vous sur https://openrouter.ai/keys pour obtenir une clé API gratuite
+// Modèles disponibles :
+//   deepseek/deepseek-v4-flash:free  — DeepSeek V4 Flash (rapide, général)
+//   deepseek/deepseek-r1:free        — DeepSeek R1 (raisonnement)
+const DEFAULT_API_KEY = "";
+const API_URL = "https://openrouter.ai/api/v1/chat/completions";
 
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
 let apiKey = localStorage.getItem('ds_api_key') || DEFAULT_API_KEY;
-let selectedModel = "deepseek-chat";
+let selectedModel = "deepseek/deepseek-v4-flash:free";
 let temperature = 0.7;
 let generating = false;
 let abortController = null;
 let conversationHistory = [];
 
-// Save API key to localStorage if it's the default
-if (!localStorage.getItem('ds_api_key')) {
-  localStorage.setItem('ds_api_key', apiKey);
-}
+// Ne pas sauvegarder de clé vide par défaut — l'utilisateur doit configurer sa clé OpenRouter
 
 const SYSTEM_PROMPT = `Tu es DeepSeek AI, un assistant IA brillant, précis et polyvalent. Tu réponds en français par défaut (ou dans la langue de l'utilisateur).
 Tu es capable de :
@@ -415,7 +414,7 @@ window.closeSettings = function() {
 window.saveSettings = function() {
   const key = document.getElementById('apiKeyInput').value.trim();
   if (!key || !key.startsWith('sk-')) {
-    toast('⚠️ Clé API invalide (doit commencer par sk-)');
+    toast('⚠️ Clé invalide (doit commencer par sk-or- ou sk-)');
     return;
   }
   apiKey = key;
@@ -435,7 +434,7 @@ window.sendMsg = async function() {
   // Check API key
   if (!apiKey || !apiKey.startsWith('sk-')) {
     openSettings();
-    toast('⚠️ Configurez d\'abord votre clé API');
+    toast('⚠️ Configurez votre clé OpenRouter (openrouter.ai/keys)');
     return;
   }
 
@@ -464,7 +463,9 @@ window.sendMsg = async function() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + apiKey
+        'Authorization': 'Bearer ' + apiKey,
+        'HTTP-Referer': 'https://tomtechclair.github.io/Mistral-AI/',
+        'X-Title': 'DeepSeek AI Assistant'
       },
       body: JSON.stringify({
         model: selectedModel,
@@ -537,7 +538,7 @@ window.sendMsg = async function() {
         conversationHistory.push({ role: 'assistant', content: fullReply });
       }
     } else {
-      addMsg('ai', '⚠️ Erreur : ' + e.message + '\n\nVérifiez votre clé API dans les paramètres ⚙');
+      addMsg('ai', '⚠️ Erreur : ' + e.message + '\n\nVérifiez votre clé OpenRouter dans les paramètres ⚙ (openrouter.ai/keys)');
     }
   }
 
