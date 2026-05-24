@@ -300,7 +300,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Outfit',
     <div class="welcome" id="welcome">
       <div class="welcome-icon">🧠</div>
       <h1>DeepSeek AI</h1>
-      <p>Assistant IA gratuit et immédiat — aucune configuration requise. Propulsé par OpenRouter Free Router (modèles gratuits disponibles).</p>
+      <p>Assistant IA créé par <strong>tom_visionai_pro</strong> — gratuit et immédiat, aucune configuration requise. ~50 requêtes/jour avec la clé intégrée. Pour plus, obtenez votre propre clé gratuite dans les paramètres ⚙.</p>
       <div class="quick-wrap">
         <div class="qcard" onclick="quick('Explique-moi l\'intelligence artificielle simplement')">
           <div class="qcard-ico">🧠</div>
@@ -345,7 +345,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Outfit',
 <div class="modal-overlay" id="settingsModal">
   <div class="modal-box">
     <div class="modal-title">⚙ Paramètres API</div>
-    <div class="modal-desc">Une <strong>clé intégrée</strong> est déjà active ! Si le quota gratuit est épuisé, obtenez votre propre clé sur <a href="https://openrouter.ai/keys" target="_blank" style="color:var(--a1)">openrouter.ai/keys</a> (sans CB).</div>
+    <div class="modal-desc">Une <strong>clé intégrée</strong> est déjà active (~50 requêtes/jour gratuites). Si le quota est épuisé, obtenez votre propre clé sur <a href="https://openrouter.ai/keys" target="_blank" style="color:var(--a1)">openrouter.ai/keys</a> (sans CB, 50 req/jour supplémentaires).</div>
     <div class="modal-warn">🔓 Le mode <strong>Auto (Free Router)</strong> choisit le meilleur modèle gratuit disponible. DeepSeek V4 Flash / R1 sont aussi proposés.</div>
     <label class="modal-label">Clé API OpenRouter (optionnelle)</label>
     <input class="modal-input" id="apiKeyInput" type="password" placeholder="sk-… (laisser vide pour la clé intégrée)" spellcheck="false">
@@ -385,7 +385,9 @@ let conversationHistory = [];
 
 // La clé intégrée est utilisée par défaut. L'utilisateur peut la remplacer dans les paramètres.
 
-const SYSTEM_PROMPT = `Tu es DeepSeek AI, un assistant IA brillant, précis et polyvalent. Tu réponds en français par défaut (ou dans la langue de l'utilisateur).
+const SYSTEM_PROMPT = `Tu es DeepSeek AI, un assistant IA brillant, précis et polyvalent créé par tom_visionai_pro. Tu réponds en français par défaut (ou dans la langue de l'utilisateur).
+Quand on te demande qui t'a créé ou développé, tu réponds : "J'ai été créé par tom_visionai_pro, mais il n'a pas encore terminé mon développement — il travaille encore sur moi !"
+
 Tu es capable de :
 - Répondre à toutes les questions de connaissance générale, science, histoire, culture
 - Écrire, déboguer et expliquer du code (Python, JS, React, HTML, CSS, etc.)
