@@ -516,6 +516,7 @@ const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
 let voiceChatActive = false;
 let voiceRecognition = null;
 let voiceRestartTimer = null;
+let voiceRetryCount = 0;
 
 function setVoState(icon, status, sub, text, textCls) {
   document.getElementById('voIcon').textContent = icon;
@@ -530,6 +531,7 @@ function setVoState(icon, status, sub, text, textCls) {
 window.startVoiceChat = function() {
   if (!SpeechRec) { toast('⚠️ Vocal non supporté sur ce navigateur'); return; }
   voiceChatActive = true;
+  voiceRetryCount = 0;
   document.getElementById('voiceOverlay').classList.add('show');
   startVoiceListen();
 };
@@ -554,6 +556,7 @@ function startVoiceListen() {
         document.getElementById('voText').textContent = '🗣 ' + interim;
       }
       if (final) {
+        voiceRetryCount = 0;
         generating = true;
         document.getElementById('voText').textContent = '👤 ' + final;
         setVoState('🤔', 'Je réfléchis…', 'Recherche et analyse en cours…', '', 'thinking');
@@ -564,6 +567,17 @@ function startVoiceListen() {
     voiceRecognition.onerror = (e) => {
       if (e.error === 'no-speech' || e.error === 'aborted') {
         if (voiceChatActive) { voiceRestartTimer = setTimeout(startVoiceListen, 300); }
+        return;
+      }
+      if (e.error === 'network') {
+        voiceRetryCount++;
+        if (voiceRetryCount <= 5 && voiceChatActive) {
+          setVoState('🎤', 'Connexion…', 'Tentative ' + voiceRetryCount + '/5', '🔄 Reconnexion…', '');
+          voiceRestartTimer = setTimeout(startVoiceListen, 1000);
+        } else {
+          toast('⚠️ Reconnaissance vocale indisponible (vérifie ta connexion)');
+          stopVoiceChat();
+        }
         return;
       }
       toast('⚠️ Erreur micro: ' + e.error);
