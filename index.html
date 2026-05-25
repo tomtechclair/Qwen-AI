@@ -431,6 +431,9 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Inter',s
       <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;background:rgba(255,95,160,0.06);border:1px solid rgba(255,95,160,0.15);font-size:12px;color:var(--a3)">
         <span>🎨</span> Génération d'images (Pollinations.ai)
       </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.15);font-size:12px;color:var(--a4)">
+        <span>🌤</span> Météo (bientôt disponible)
+      </div>
     </div>
     <div class="modal-actions">
       <button class="modal-btn primary" onclick="closeSettings()">Fermer</button>
@@ -443,7 +446,7 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Inter',s
   <div class="modal-box">
     <div class="modal-title">🔑 API</div>
     <div class="modal-desc">Clé intégrée active automatiquement — gratuit et illimité via MuleRouter.</div>
-    <div class="modal-warn">💡 Ce site utilise l'<strong>API MuleRouter</strong> (compatible OpenAI) avec une clé intégrée, et <strong>Tavily</strong> pour la recherche web.</div>
+    <div class="modal-warn">💡 Ce site utilise l'<strong>API MuleRouter</strong> (compatible OpenAI) avec une clé intégrée, et <strong>Tavily</strong> pour la recherche web. La météo arrive bientôt — tom_visionai_pro travaille dessus.</div>
     <div id="apiDefaultKeyStatus" style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;background:rgba(0,212,170,0.07);border:1px solid rgba(0,212,170,0.18);font-size:12px;color:var(--a2);margin-bottom:12px">
       <span>🔒</span> <span><strong>Clé intégrée active</strong></span>
     </div>
@@ -486,11 +489,7 @@ Aujourd'hui on est le ${TODAY}.
 
 Quand on te demande qui t'a créé, tu réponds que t'as été créé par tom_visionai_pro mais qu'il a pas encore terminé — il travaille encore sur toi.
 
-## 📡 MÉTÉO — DONNÉES RÉELLES UNIQUEMENT
-
-Pour les questions de météo, tu reçois ci-dessous des données météo RÉELLES provenant d'Open-Meteo. Utilise UNIQUEMENT ces données, n'invente rien. Si aucune donnée météo n'est fournie, ne réponds PAS à la question météo.
-
-## 🌐 RECHERCHE WEB — TAVILY
+## 🌐 RECHERCHE WEB
 
 Pour les questions d'actualités, prix, dates, événements récents, utilise les résultats de recherche ci-dessous. NE RIEN INVENTER. Cite tes sources.
 
@@ -551,32 +550,6 @@ async function searchWeb(query) {
   } catch(e) {
     return 'Erreur lors de la recherche : ' + e.message;
   }
-}
-
-// WEATHER via Open-Meteo (gratuit, sans clé)
-const WMO = {
-  0:'Ciel dégagé',1:'Plutôt dégagé',2:'Nuageux',3:'Couvert',45:'Brouillard',48:'Brouillard givrant',
-  51:'Bruine légère',53:'Bruine',55:'Bruine forte',56:'Bruine verglaçante',57:'Bruine verglaçante forte',
-  61:'Pluie faible',63:'Pluie',65:'Pluie forte',66:'Pluie verglaçante faible',67:'Pluie verglaçante forte',
-  71:'Neige faible',73:'Neige',75:'Neige forte',77:'Grésil',80:'Averses faibles',81:'Averses',82:'Averses fortes',
-  85:'Averses de neige faibles',86:'Averses de neige fortes',95:'Orage',96:'Orage avec grêle',99:'Orage avec grêle fort'
-};
-async function getWeather(city) {
-  try {
-    const geo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=fr&format=json`);
-    if (!geo.ok) return null;
-    const geoData = await geo.json();
-    if (!geoData.results || !geoData.results.length) return null;
-    const { latitude, longitude, name, country } = geoData.results[0];
-    const w = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto`);
-    if (!w.ok) return null;
-    const wData = await w.json();
-    const c = wData.current;
-    const code = WMO[c.weather_code] || 'Inconnu';
-    return `📍 Météo à ${name}, ${country}\n📅 ${TODAY}\n🌡 Température : ${c.temperature_2m}°C (ressenti ${c.apparent_temperature}°C)\n☁ Conditions : ${code}\n💧 Humidité : ${c.relative_humidity_2m}%\n💨 Vent : ${c.wind_speed_10m} km/h
-
-Source : Open-Meteo (données officielles)`;
-  } catch(e) { return null; }
 }
 
 window.toggleImage = function() {
@@ -822,7 +795,7 @@ window.sendMsg = async function() {
   const isWeather = /météo|temps|pluie|température|weather|forecast|soleil|degrés|°c|°f|prévision/i.test(text);
 
   let typingLabel = '';
-  if (isWeather) typingLabel = '🔍 Recherche météo en cours…';
+  if (isWeather) typingLabel = '⏳ Vérification…';
   else if (hasSearchIntent) typingLabel = '🔍 Recherche web en cours…';
 
   const typingId = addTyping(typingLabel);
@@ -835,15 +808,7 @@ window.sendMsg = async function() {
     systemContent = systemContent.replace('[NAME_INSTR]', nameInstr);
 
     if (isWeather) {
-      const cityMatch = text.match(/(?:à|a|pour|sur|de)\s+([A-Za-zÀ-ÿ\s-]+)/i);
-      const city = cityMatch ? cityMatch[1].trim() : 'Paris';
-      setStatus('thinking', `Météo : ${city}…`);
-      const weatherData = await getWeather(city);
-      if (weatherData) {
-        systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', '## 📡 DONNÉES MÉTÉO RÉELLES\n\n' + weatherData + '\n\n(Les données météo ci-dessus sont réelles et proviennent d\'Open-Meteo. Utilise UNIQUEMENT ces données pour répondre.)');
-      } else {
-        systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', '⚠ Impossible de récupérer la météo pour ' + city + '. Dis à l\'utilisateur que tu n\'as pas pu obtenir les données.');
-      }
+      systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', '## ℹ MÉTÉO\n\nLa fonction météo n\'est pas encore disponible. Dis à l\'utilisateur que tom_visionai_pro travaille encore dessus et que ça arrivera bientôt. Utilise son prénom si tu le connais.');
     } else if (hasSearchIntent) {
       setStatus('thinking', 'Recherche web…');
       const webResults = await searchWeb(text);
