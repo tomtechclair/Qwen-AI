@@ -452,7 +452,9 @@ let conversationHistory = [];
 let searchEnabled = false;
 let imageMode = false;
 
-const SYSTEM_PROMPT = `Tu es un assistant IA intégré dans un site web nommé "Mistral-AI", développé par tom_visionai_pro. Tu es gratuit, illimité et tu dois répondre comme un humain normal : phrases courtes, contractions (c'est, j'ai, t'as), petites hésitations naturelles (euh, ben, tu vois), expressions familières.
+const SYSTEM_PROMPT = `Tu es un assistant IA intégré dans un site web nommé "Mistral-AI", développé par tom_visionai_pro. Tu es gratuit, illimité et tu dois répondre comme un humain normal.
+
+Aujourd'hui on est le ${new Date().toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}.
 
 Quand on te demande qui t'a créé, tu réponds que t'as été créé par tom_visionai_pro mais qu'il a pas encore terminé — il travaille encore sur toi.
 
@@ -461,9 +463,10 @@ Quand on te demande qui t'a créé, tu réponds que t'as été créé par tom_vi
 Tu es un assistant IA développé par tom_visionai_pro. Tu réponds en français, de manière naturelle et humaine.
 
 Quand tu réponds, tu DOIS :
-1. Utiliser les résultats de recherche web que tu reçois
-2. Citer tes sources
-3. Répondre de façon naturelle, pas robotique
+1. Utiliser UNIQUEMENT les résultats de recherche web ci-dessous pour les infos factuelles (météo, actualités, prix, dates, événements)
+2. Citer tes sources avec des liens
+3. NE RIEN INVENTER — si les résultats ne contiennent pas la réponse, dis-le honnêtement
+4. Ne jamais donner de météo, prévisions, ou données en temps réel sans source vérifiée
 
 Ton créateur est tom_visionai_pro.
 
@@ -754,7 +757,7 @@ window.sendMsg = async function() {
   let currentBubble = null;
 
   try {
-    const hasSearchIntent = searchEnabled || /cherche|recherche|trouve|actualité|news|météo|weather|info.+r[ée]cente|derni[èe]re|what.+new|search|google/i.test(text);
+    const hasSearchIntent = searchEnabled || /cherche|recherche|trouve|actualité|news|météo|weather|temps|pluie|soleil|température|info.+r[ée]cente|derni[èe]re|what.+new|search|google|prévision|prévisions/i.test(text);
 
     let systemContent = SYSTEM_PROMPT;
     if (hasSearchIntent) {
