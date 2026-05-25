@@ -79,6 +79,23 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Inter',s
 .sb-bottom{margin-top:auto;display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--b1);padding-top:10px;}
 .sb-bottom .sb-item{font-size:12px;}
 
+/* MOBILE SIDEBAR OVERLAY */
+.sidebar-backdrop{display:none;}
+@media(max-width:768px){
+  .sidebar{
+    position:fixed;top:0;left:0;bottom:0;width:280px;z-index:200;
+    transform:translateX(-100%);transition:transform .25s ease;border-right:1px solid var(--b2);
+  }
+  .sidebar.open{transform:translateX(0);}
+  .sidebar-backdrop{
+    display:none;position:fixed;inset:0;z-index:199;
+    background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);
+  }
+  .sidebar-backdrop.show{display:block;}
+  .tb-menu-btn{display:flex;}
+  .main{width:100%;}
+}
+
 /* MAIN */
 .main{flex:1;display:flex;flex-direction:column;min-width:0;width:100%;}
 
@@ -88,7 +105,13 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Inter',s
   padding:12px 20px;border-bottom:1px solid var(--b1);
   flex-shrink:0;background:rgba(10,10,15,0.8);backdrop-filter:blur(20px);
 }
-.tb-left{display:flex;align-items:center;gap:10px;flex:1;min-width:0;}
+.tb-left{display:flex;align-items:center;gap:8px;flex:1;min-width:0;}
+.tb-menu-btn{
+  display:none;width:30px;height:30px;border-radius:7px;border:1px solid var(--b1);background:var(--s1);
+  cursor:pointer;align-items:center;justify-content:center;font-size:15px;color:var(--tx2);
+  transition:all .15s;flex-shrink:0;
+}
+.tb-menu-btn:hover{background:var(--s2);border-color:var(--b2);color:var(--tx);}
 .tb-model{
   display:flex;align-items:center;gap:6px;
   padding:5px 10px;border-radius:8px;border:1px solid var(--b1);
@@ -266,7 +289,6 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Inter',s
 
 /* RESPONSIVE */
 @media(max-width:768px){
-  .sidebar{display:none;}
   .topbar{padding:10px 14px;}
   .msgs{padding:16px 14px 6px;gap:14px;}
   .input-zone{padding:10px 14px;}
@@ -326,12 +348,14 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Inter',s
       <div class="sb-item" onclick="openAPISettings()">🔑 API</div>
     </div>
   </aside>
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
 
   <!-- MAIN -->
   <div class="main">
     <!-- TOPBAR -->
     <header class="topbar">
       <div class="tb-left">
+        <button class="tb-menu-btn" id="menuBtn" onclick="toggleSidebar()">☰</button>
         <button class="tb-model" onclick="document.querySelector('.tb-model-sel').focus();document.querySelector('.tb-model-sel').click()">
           <span id="modelLabel">⚡ Flash</span>
           <select class="tb-model-sel" id="modelSelect" onchange="selModelDropdown(this.value)">
@@ -492,6 +516,10 @@ window.selModelDropdown = function(val) {
 };
 
 // TOGGLES
+window.toggleSidebar = function() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarBackdrop').classList.toggle('show');
+};
 window.toggleSearch = function() {
   searchEnabled = !searchEnabled;
   if (imageMode) toggleImage();
@@ -613,6 +641,12 @@ function switchConv(id) {
     showWelcome();
   }
   renderSidebar();
+  closeSidebar();
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarBackdrop').classList.remove('show');
 }
 
 window.deleteConv = function(id) {
@@ -650,6 +684,7 @@ window.newChat = function() {
   showWelcome();
   saveConvs();
   renderSidebar();
+  closeSidebar();
   toast('💬 Nouvelle conversation');
 };
 
@@ -671,6 +706,7 @@ function initConvs() {
 // SETTINGS
 window.openSettings = function() {
   document.getElementById('settingsModal').classList.add('show');
+  closeSidebar();
 };
 window.closeSettings = function() {
   document.getElementById('settingsModal').classList.remove('show');
@@ -699,6 +735,7 @@ window.openAPISettings = function() {
     document.getElementById('apiSaveKeyBtn').style.display = 'none';
   }
   document.getElementById('apiModal').classList.add('show');
+  closeSidebar();
 };
 window.closeAPISettings = function() {
   document.getElementById('apiModal').classList.remove('show');
