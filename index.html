@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>DeepSeek AI – Assistant</title>
+<title>Qwen AI – Assistant Gratuit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
@@ -274,8 +274,8 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Outfit',
   <!-- TOPBAR -->
   <header class="topbar">
     <div class="brand">
-      <div class="brand-gem">D</div>
-      <span class="brand-name">DeepSeek AI</span>
+      <div class="brand-gem">Q</div>
+      <span class="brand-name">Qwen AI</span>
       <span class="brand-tag">GRATUIT</span>
     </div>
     <div class="status-bar">
@@ -289,23 +289,23 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Outfit',
 
   <!-- MODEL BAR -->
   <div class="model-bar" id="modelBar">
-    <button class="mb-btn sel" data-model="openrouter/free" data-temp="0.7" onclick="selModel(this)">🌀 Auto (Free Router)</button>
-    <button class="mb-btn" data-model="deepseek/deepseek-v4-flash:free" data-temp="0.7" onclick="selModel(this)">🧠 DeepSeek V4 Flash</button>
-    <button class="mb-btn" data-model="deepseek/deepseek-r1:free" data-temp="0.5" onclick="selModel(this)">🔍 DeepSeek R1</button>
-    <button class="mb-btn" data-model="deepseek/deepseek-v4-flash:free" data-temp="1.0" onclick="selModel(this)">🎨 DeepSeek Créatif</button>
+    <button class="mb-btn sel" data-model="qwen3.5-plus" data-temp="0.7" onclick="selModel(this)">🧠 Qwen 3.5 Plus</button>
+    <button class="mb-btn" data-model="qwen3-max" data-temp="0.5" onclick="selModel(this)">🔍 Qwen3 Max</button>
+    <button class="mb-btn" data-model="qwen3.5-plus" data-temp="1.0" onclick="selModel(this)">🎨 Créatif (3.5 Plus)</button>
+    <button class="mb-btn" data-model="qwen-plus" data-temp="0.7" onclick="selModel(this)">⚡ Qwen Plus (rapide)</button>
   </div>
 
   <!-- MESSAGES -->
   <section class="msgs" id="msgs">
     <div class="welcome" id="welcome">
       <div class="welcome-icon">🧠</div>
-      <h1>DeepSeek AI</h1>
-      <p>Assistant IA créé par <strong>tom_visionai_pro</strong> — gratuit et immédiat, aucune configuration requise. ~50 requêtes/jour avec la clé intégrée. Pour plus, obtenez votre propre clé gratuite dans les paramètres ⚙.</p>
+      <h1>Qwen AI</h1>
+      <p>Assistant IA créé par <strong>tom_visionai_pro</strong> — gratuit et illimité, aucune configuration requise. Propulsé par Qwen 3.5 Plus via MuleRouter.</p>
       <div class="quick-wrap">
         <div class="qcard" onclick="quick('Explique-moi l\'intelligence artificielle simplement')">
           <div class="qcard-ico">🧠</div>
           <div class="qcard-t">Expliquer l'IA</div>
-          <div class="qcard-d">Concepts simples et clairs</div>
+          <div class="qcard-d">Concepts simples avec Qwen</div>
         </div>
         <div class="qcard" onclick="quick('Écris-moi un composant React avec hooks')">
           <div class="qcard-ico">⚛️</div>
@@ -345,8 +345,8 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Outfit',
 <div class="modal-overlay" id="settingsModal" oncontextmenu="return false">
   <div class="modal-box">
     <div class="modal-title">🔒 Paramètres API</div>
-    <div class="modal-desc">Une <strong>clé intégrée</strong> est active automatiquement (~50 requêtes/jour). Merci de ne pas la partager ou la copier. Pour plus de quota, obtenez votre propre clé sur <a href="https://openrouter.ai/keys" target="_blank" style="color:var(--a1)">openrouter.ai/keys</a> (sans CB).</div>
-    <div class="modal-warn">🔓 Le mode <strong>Auto (Free Router)</strong> choisit le meilleur modèle gratuit disponible. DeepSeek V4 Flash / R1 sont aussi proposés.</div>
+    <div class="modal-desc">Une <strong>clé intégrée</strong> est active automatiquement — gratuit et illimité via MuleRouter. Merci de ne pas la partager ou la copier.</div>
+    <div class="modal-warn">🔓 Propulsé par <strong>Qwen 3.5 Plus</strong> via l'API MuleRouter. Modèles disponibles : Qwen3 Max (raisonnement), Qwen Plus (rapide).</div>
     
     <div id="defaultKeyStatus" style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;background:rgba(0,212,170,0.08);border:1px solid rgba(0,212,170,0.2);font-size:13px;color:var(--a2);margin-bottom:14px">
       <span style="font-size:16px">🔒</span>
@@ -354,8 +354,8 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Outfit',
     </div>
     
     <div id="customKeySection" style="display:none">
-      <label class="modal-label">Votre propre clé OpenRouter</label>
-      <input class="modal-input" id="apiKeyInput" type="password" placeholder="sk-..." spellcheck="false" oncopy="return false" oncut="return false">
+      <label class="modal-label">Votre propre clé (optionnel)</label>
+      <input class="modal-input" id="apiKeyInput" type="password" placeholder="sk-mr-..." spellcheck="false" oncopy="return false" oncut="return false">
     </div>
     
     <button id="toggleCustomKey" onclick="toggleCustomKey()" style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:8px;border:1px solid var(--b2);background:var(--s1);color:var(--tx2);font-size:12px;cursor:pointer;transition:all .2s;font-family:'Outfit',sans-serif;width:100%;margin-bottom:14px;justify-content:center">➕ Ajouter ma propre clé</button>
@@ -371,17 +371,17 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Outfit',
 // ══════════════════════════════════════════
 // CONFIGURATION
 // ══════════════════════════════════════════
-// openrouter/free , deepseek/deepseek-v4-flash:free , deepseek/deepseek-r1:free
-// Obtenez votre clé sur https://openrouter.ai/keys
-const _DK = "c2stb3ItdjEtMmViZDVjZTI2ODU2OWZhNWNlODI3YTFiNTI0MmNiN2U4ZTk4NmVlYjA5OTBhNTU0NDMyNDUxN2JiOTEwN2IxMw==";
+// Propulsé par MuleRouter — modèles Qwen, gratuit et illimité
+// Obtenez votre propre clé sur https://mulerouter.ai/app/api-keys
+const _DK = "c2stbXItZGIyODQ2ZGRhNTk3ZDYzNzkyZWRmMmI0MGI0NWRlNDE0NWVjZDM1MTgwZmZkNjYzODU2YWQxNzBjMTUyYTczMA==";
 const DEFAULT_API_KEY = atob(_DK);
-const API_URL = "https://openrouter.ai/api/v1/chat/completions";
+const API_URL = "https://api.mulerouter.ai/vendors/openai/v1/chat/completions";
 
 // ══════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════
 let apiKey = localStorage.getItem('ds_api_key') || DEFAULT_API_KEY;
-let selectedModel = "openrouter/free";
+let selectedModel = "qwen3.5-plus";
 let temperature = 0.7;
 let generating = false;
 let abortController = null;
@@ -389,7 +389,7 @@ let conversationHistory = [];
 
 // Accès intégré. L'utilisateur peut ajouter sa propre clé dans les paramètres.
 
-const SYSTEM_PROMPT = `Tu es DeepSeek AI, un assistant IA brillant, précis et polyvalent créé par tom_visionai_pro. Tu réponds en français par défaut (ou dans la langue de l'utilisateur).
+const SYSTEM_PROMPT = `Tu es Qwen AI, un assistant IA brillant, précis et polyvalent créé par tom_visionai_pro. Tu réponds en français par défaut (ou dans la langue de l'utilisateur).
 Quand on te demande qui t'a créé ou développé, tu réponds : "J'ai été créé par tom_visionai_pro, mais il n'a pas encore terminé mon développement — il travaille encore sur moi !"
 
 Tu es capable de :
@@ -451,8 +451,8 @@ window.saveSettings = function() {
     toast('✓ Clé intégrée active');
     return;
   }
-  if (!key.startsWith('sk-')) {
-    toast('⚠️ Clé invalide (doit commencer par sk-or- ou sk-)');
+  if (!key.startsWith('sk-') && !key.startsWith('sk-mr-')) {
+    toast('⚠️ Clé invalide (doit commencer par sk-mr-)');
     return;
   }
   apiKey = key;
@@ -499,9 +499,7 @@ window.sendMsg = async function() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + apiKey,
-        'HTTP-Referer': 'https://tomtechclair.github.io/Mistral-AI/',
-        'X-Title': 'DeepSeek AI Assistant'
+        'Authorization': 'Bearer ' + apiKey
       },
       body: JSON.stringify({
         model: selectedModel,
@@ -546,6 +544,7 @@ window.sendMsg = async function() {
         try {
           const json = JSON.parse(trimmed.slice(6));
           const delta = json.choices?.[0]?.delta?.content || '';
+          const reasoning = json.choices?.[0]?.delta?.reasoning_content || '';
           if (json.choices?.[0]?.finish_reason === 'stop') break;
           if (delta) {
             fullReply += delta;
@@ -574,7 +573,7 @@ window.sendMsg = async function() {
         conversationHistory.push({ role: 'assistant', content: fullReply });
       }
     } else {
-      addMsg('ai', '⚠️ Erreur : ' + e.message + '\n\nEssayez de changer de modèle (Auto Free Router, DeepSeek V4 Flash…) ou obtenez votre propre clé gratuite dans les paramètres ⚙ (openrouter.ai/keys).');
+      addMsg('ai', '⚠️ Erreur : ' + e.message + '\n\nEssayez de changer de modèle (Qwen 3.5 Plus, Qwen3 Max…) ou vérifiez votre connexion.');
     }
   }
 
@@ -613,7 +612,7 @@ function addMsg(role, text) {
   row.innerHTML = `
     <div class="av ${avCls}">${emo}</div>
     <div class="msg-body">
-      <div class="msg-name">${role === 'ai' ? 'DeepSeek' : 'Vous'}</div>
+      <div class="msg-name">${role === 'ai' ? 'Qwen AI' : 'Vous'}</div>
       <div class="bbl ${bblCls}">${fmt(text)}</div>
     </div>`;
   msgs.appendChild(row);
@@ -627,7 +626,7 @@ function addStreamBubble(id) {
   row.innerHTML = `
     <div class="av ai-av">🧠</div>
     <div class="msg-body">
-      <div class="msg-name">DeepSeek</div>
+      <div class="msg-name">Qwen AI</div>
       <div class="bbl ai-bbl" id="bbl-${id}"></div>
     </div>`;
   msgs.appendChild(row);
@@ -641,7 +640,7 @@ function addTyping() {
   const row = document.createElement('div');
   row.className = 'msg-row'; row.id = id;
   row.innerHTML = `<div class="av ai-av">🧠</div>
-    <div class="msg-body"><div class="msg-name">DeepSeek</div>
+    <div class="msg-body"><div class="msg-name">Qwen AI</div>
     <div class="bbl ai-bbl"><div class="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div></div></div>`;
   msgs.appendChild(row);
   msgs.scrollTop = 99999;
