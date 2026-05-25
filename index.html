@@ -475,26 +475,28 @@ let abortController = null;
 let conversationHistory = [];
 let searchEnabled = false;
 let imageMode = false;
+let userName = localStorage.getItem('qh_user_name') || '';
 
+const TODAY = new Date().toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'numeric',day:'numeric'});
 const SYSTEM_PROMPT = `Tu es un assistant IA intégré dans un site web nommé "Mistral-AI", développé par tom_visionai_pro. Tu es gratuit, illimité et tu dois répondre comme un humain normal.
 
-Aujourd'hui on est le ${new Date().toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}.
+Aujourd'hui on est le ${TODAY}.
+
+[NAME_INSTR]
 
 Quand on te demande qui t'a créé, tu réponds que t'as été créé par tom_visionai_pro mais qu'il a pas encore terminé — il travaille encore sur toi.
 
-## 🌐 RECHERCHE WEB OBLIGATOIRE
+## 📡 MÉTÉO — DONNÉES RÉELLES UNIQUEMENT
 
-Tu es un assistant IA développé par tom_visionai_pro. Tu réponds en français, de manière naturelle et humaine.
+Pour les questions de météo, tu reçois ci-dessous des données météo RÉELLES provenant d'Open-Meteo. Utilise UNIQUEMENT ces données, n'invente rien. Si aucune donnée météo n'est fournie, ne réponds PAS à la question météo.
 
-Quand tu réponds, tu DOIS :
-1. Utiliser UNIQUEMENT les résultats de recherche web ci-dessous pour les infos factuelles (météo, actualités, prix, dates, événements)
-2. Citer tes sources avec des liens
-3. NE RIEN INVENTER — si les résultats ne contiennent pas la réponse, dis-le honnêtement
-4. Ne jamais donner de météo, prévisions, ou données en temps réel sans source vérifiée
+## 🌐 RECHERCHE WEB — TAVILY
+
+Pour les questions d'actualités, prix, dates, événements récents, utilise les résultats de recherche ci-dessous. NE RIEN INVENTER. Cite tes sources.
 
 Ton créateur est tom_visionai_pro.
 
-Voici les résultats de recherche web pour la question de l'utilisateur :
+Voici les données disponibles pour répondre :
 [TAVILY_RESULTS]
 
 Réponds maintenant en utilisant ces informations.
@@ -550,6 +552,33 @@ async function searchWeb(query) {
     return 'Erreur lors de la recherche : ' + e.message;
   }
 }
+
+// WEATHER via Open-Meteo (gratuit, sans clé)
+const WMO = {
+  0:'Ciel dégagé',1:'Plutôt dégagé',2:'Nuageux',3:'Couvert',45:'Brouillard',48:'Brouillard givrant',
+  51:'Bruine légère',53:'Bruine',55:'Bruine forte',56:'Bruine verglaçante',57:'Bruine verglaçante forte',
+  61:'Pluie faible',63:'Pluie',65:'Pluie forte',66:'Pluie verglaçante faible',67:'Pluie verglaçante forte',
+  71:'Neige faible',73:'Neige',75:'Neige forte',77:'Grésil',80:'Averses faibles',81:'Averses',82:'Averses fortes',
+  85:'Averses de neige faibles',86:'Averses de neige fortes',95:'Orage',96:'Orage avec grêle',99:'Orage avec grêle fort'
+};
+async function getWeather(city) {
+  try {
+    const geo = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1&language=fr&format=json`);
+    if (!geo.ok) return null;
+    const geoData = await geo.json();
+    if (!geoData.results || !geoData.results.length) return null;
+    const { latitude, longitude, name, country } = geoData.results[0];
+    const w = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m&timezone=auto`);
+    if (!w.ok) return null;
+    const wData = await w.json();
+    const c = wData.current;
+    const code = WMO[c.weather_code] || 'Inconnu';
+    return `📍 Météo à ${name}, ${country}\n📅 ${TODAY}\n🌡 Température : ${c.temperature_2m}°C (ressenti ${c.apparent_temperature}°C)\n☁ Conditions : ${code}\n💧 Humidité : ${c.relative_humidity_2m}%\n💨 Vent : ${c.wind_speed_10m} km/h
+
+Source : Open-Meteo (données officielles)`;
+  } catch(e) { return null; }
+}
+
 window.toggleImage = function() {
   imageMode = !imageMode;
   document.getElementById('imgBtn').classList.toggle('sel');
@@ -795,13 +824,36 @@ window.sendMsg = async function() {
 
   try {
     const hasSearchIntent = searchEnabled || /cherche|recherche|trouve|actualité|news|météo|weather|temps|pluie|soleil|température|info.+r[ée]cente|derni[èe]re|what.+new|search|google|prévision|prévisions/i.test(text);
+    const isWeather = /météo|temps|pluie|température|weather|forecast|soleil|degrés|°c|°f|prévision/i.test(text);
 
     let systemContent = SYSTEM_PROMPT;
-    if (hasSearchIntent) {
+    const nameInstr = userName ? `L'utilisateur s'appelle ${userName}. Appelle-le par son prénom naturellement.` : `C'est votre premier échange avec l'utilisateur. Avant de répondre à sa question, demande-lui comment il souhaite que tu l'appelles.`;
+    systemContent = systemContent.replace('[NAME_INSTR]', nameInstr);
+
+    if (isWeather) {
+      const cityMatch = text.match(/(?:à|a|pour|sur|de)\s+([A-Za-zÀ-ÿ\s-]+)/i);
+      const city = cityMatch ? cityMatch[1].trim() : 'Paris';
+      setStatus('thinking', `Météo : ${city}…`);
+      const weatherData = await getWeather(city);
+      if (weatherData) {
+        systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', '## 📡 DONNÉES MÉTÉO RÉELLES\n\n' + weatherData + '\n\n(Les données météo ci-dessus sont réelles et proviennent d\'Open-Meteo. Utilise UNIQUEMENT ces données pour répondre.)');
+      } else {
+        systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', '⚠ Impossible de récupérer la météo pour ' + city + '. Dis à l\'utilisateur que tu n\'as pas pu obtenir les données.');
+      }
+    } else if (hasSearchIntent) {
       const webResults = await searchWeb(text);
-      systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', webResults);
+      systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', '## 🌐 RÉSULTATS DE RECHERCHE\n\n' + webResults);
     } else {
       systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', 'Aucune recherche nécessaire — connaissance générale.');
+    }
+
+    // Save user name if provided
+    if (!userName) {
+      const nameMatch = text.match(/(?:appelle|appeler|prénom|c'est|c\'est)\s*(?:-?moi\s*)?([A-Za-zÀ-ÿ]+)/i);
+      if (nameMatch) {
+        userName = nameMatch[1].charAt(0).toUpperCase() + nameMatch[1].slice(1).toLowerCase();
+        localStorage.setItem('qh_user_name', userName);
+      }
     }
 
     const messages = [
