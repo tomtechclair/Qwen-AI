@@ -571,6 +571,13 @@ window.startVoiceChat = function() {
   voiceChatActive = true;
   voiceRetryCount = 0;
   document.getElementById('voiceOverlay').classList.add('show');
+  // Prime la synthèse vocale (obligatoire sur certains navigateurs mobiles)
+  if (window.speechSynthesis) {
+    const p = new SpeechSynthesisUtterance(' ');
+    p.volume = 0; p.rate = 1;
+    window.speechSynthesis.speak(p);
+    window.speechSynthesis.cancel();
+  }
   startVoiceListen();
 };
 
@@ -706,15 +713,21 @@ function speakText(text) {
                       .trim();
     if (!clean) { resolve(); return; }
     if (synth.speaking) synth.cancel();
+    synth.resume();
     setTimeout(() => {
       const utterance = new SpeechSynthesisUtterance(clean);
       utterance.lang = 'fr-FR';
-      utterance.rate = 1.05;
+      utterance.rate = 0.92;
       utterance.volume = 1.0;
-      utterance.onend = resolve;
-      utterance.onerror = (e) => { console.warn('TTS error:', e.error); resolve(); };
+      utterance.pitch = 1.0;
+      const voices = synth.getVoices();
+      const fr = voices.find(v => v.lang.startsWith('fr'));
+      if (fr) utterance.voice = fr;
+      utterance.onstart = () => { document.title = '🔊 Qwen AI parle…'; };
+      utterance.onend = () => { document.title = 'Qwen AI – Assistant Gratuit'; resolve(); };
+      utterance.onerror = (e) => { document.title = 'Qwen AI – Assistant Gratuit'; resolve(); };
       synth.speak(utterance);
-    }, 120);
+    }, 150);
   });
 }
 
@@ -890,7 +903,6 @@ window.sendMsg = async function() {
       const row = document.createElement('div');
       row.className = 'msg-row';
       row.innerHTML = `<div class="av ai-av">🧠</div><div class="msg-body"><div class="msg-name">Qwen AI</div><div class="bbl ai-bbl"><strong>🎨 Image générée :</strong><br>${text}</div></div>`;
-      row.querySelector('.bbl').after(imgEl);
       row.querySelector('.msg-body').appendChild(imgEl);
       msgs.appendChild(row);
       msgs.scrollTop = 99999;
