@@ -733,19 +733,7 @@ document.addEventListener('copy', function(e) {
     toast('🔒 Copie désactivée pour préserver la ressource');
   }
 });
-// Détection DevTools basique (avertissement)
-(function() {
-  const devtools = /./;
-  devtools.toString = function() {
-    toast('🔒 Veuillez respecter le travail fourni');
-    return '';
-  };
-  setInterval(function() {
-    if (window.outerHeight - window.innerHeight > 200 || window.outerWidth - window.innerWidth > 200) {
-      toast('🔒 Merci de ne pas inspecter');
-    }
-  }, 4000);
-})();
+
 </script>
 </body>
 </html>
