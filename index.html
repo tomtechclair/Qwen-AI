@@ -342,16 +342,27 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Outfit',
 <div class="toast" id="toast"></div>
 
 <!-- SETTINGS MODAL -->
-<div class="modal-overlay" id="settingsModal">
+<div class="modal-overlay" id="settingsModal" oncontextmenu="return false">
   <div class="modal-box">
-    <div class="modal-title">⚙ Paramètres API</div>
-    <div class="modal-desc">Une <strong>clé intégrée</strong> est déjà active (~50 requêtes/jour gratuites). Si le quota est épuisé, obtenez votre propre clé sur <a href="https://openrouter.ai/keys" target="_blank" style="color:var(--a1)">openrouter.ai/keys</a> (sans CB, 50 req/jour supplémentaires).</div>
+    <div class="modal-title">🔒 Paramètres API</div>
+    <div class="modal-desc">Une <strong>clé intégrée</strong> est active automatiquement (~50 requêtes/jour). Merci de ne pas la partager ou la copier. Pour plus de quota, obtenez votre propre clé sur <a href="https://openrouter.ai/keys" target="_blank" style="color:var(--a1)">openrouter.ai/keys</a> (sans CB).</div>
     <div class="modal-warn">🔓 Le mode <strong>Auto (Free Router)</strong> choisit le meilleur modèle gratuit disponible. DeepSeek V4 Flash / R1 sont aussi proposés.</div>
-    <label class="modal-label">Clé API OpenRouter (optionnelle)</label>
-    <input class="modal-input" id="apiKeyInput" type="password" placeholder="sk-… (laisser vide pour la clé intégrée)" spellcheck="false">
+    
+    <div id="defaultKeyStatus" style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;background:rgba(0,212,170,0.08);border:1px solid rgba(0,212,170,0.2);font-size:13px;color:var(--a2);margin-bottom:14px">
+      <span style="font-size:16px">🔒</span>
+      <span><strong>Clé intégrée active</strong> — ne pas partager</span>
+    </div>
+    
+    <div id="customKeySection" style="display:none">
+      <label class="modal-label">Votre propre clé OpenRouter</label>
+      <input class="modal-input" id="apiKeyInput" type="password" placeholder="sk-..." spellcheck="false" oncopy="return false" oncut="return false">
+    </div>
+    
+    <button id="toggleCustomKey" onclick="toggleCustomKey()" style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:8px;border:1px solid var(--b2);background:var(--s1);color:var(--tx2);font-size:12px;cursor:pointer;transition:all .2s;font-family:'Outfit',sans-serif;width:100%;margin-bottom:14px;justify-content:center">➕ Ajouter ma propre clé</button>
+    
     <div class="modal-actions">
-      <button class="modal-btn sec" onclick="closeSettings()">Annuler</button>
-      <button class="modal-btn primary" onclick="saveSettings()">💾 Enregistrer</button>
+      <button class="modal-btn sec" onclick="closeSettings()">Fermer</button>
+      <button class="modal-btn primary" id="saveKeyBtn" onclick="saveSettings()" style="display:none">💾 Enregistrer</button>
     </div>
   </div>
 </div>
@@ -360,15 +371,8 @@ html,body{height:100%;background:var(--bg);color:var(--tx);font-family:'Outfit',
 // ══════════════════════════════════════════
 // CONFIGURATION
 // ══════════════════════════════════════════
-// API OpenRouter : https://openrouter.ai
-//   openrouter/free                    — Routeur auto (meilleur modèle gratuit disponible)
-//   deepseek/deepseek-v4-flash:free    — DeepSeek V4 Flash (rapide, général)
-//   deepseek/deepseek-r1:free          — DeepSeek R1 (raisonnement)
-// Une clé est intégrée par défaut (merci au contributeur !).
-// Obtenez la vôtre sur https://openrouter.ai/keys
-// Clé OpenRouter intégrée (gratuite, ~50 requêtes/jour via le Free Router).
-// Si le quota est épuisé, obtenez votre propre clé sur https://openrouter.ai/keys
-// Clé intégrée encodée (base64) pour respecter les règles GitHub
+// openrouter/free , deepseek/deepseek-v4-flash:free , deepseek/deepseek-r1:free
+// Obtenez votre clé sur https://openrouter.ai/keys
 const _DK = "c2stb3ItdjEtMmViZDVjZTI2ODU2OWZhNWNlODI3YTFiNTI0MmNiN2U4ZTk4NmVlYjA5OTBhNTU0NDMyNDUxN2JiOTEwN2IxMw==";
 const DEFAULT_API_KEY = atob(_DK);
 const API_URL = "https://openrouter.ai/api/v1/chat/completions";
@@ -383,7 +387,7 @@ let generating = false;
 let abortController = null;
 let conversationHistory = [];
 
-// La clé intégrée est utilisée par défaut. L'utilisateur peut la remplacer dans les paramètres.
+// Accès intégré. L'utilisateur peut ajouter sa propre clé dans les paramètres.
 
 const SYSTEM_PROMPT = `Tu es DeepSeek AI, un assistant IA brillant, précis et polyvalent créé par tom_visionai_pro. Tu réponds en français par défaut (ou dans la langue de l'utilisateur).
 Quand on te demande qui t'a créé ou développé, tu réponds : "J'ai été créé par tom_visionai_pro, mais il n'a pas encore terminé mon développement — il travaille encore sur moi !"
@@ -412,11 +416,27 @@ window.selModel = function(btn) {
 // ══════════════════════════════════════════
 // SETTINGS
 // ══════════════════════════════════════════
+window.toggleCustomKey = function() {
+  document.getElementById('defaultKeyStatus').style.display = 'none';
+  document.getElementById('toggleCustomKey').style.display = 'none';
+  document.getElementById('customKeySection').style.display = 'block';
+  document.getElementById('saveKeyBtn').style.display = 'block';
+  document.getElementById('apiKeyInput').value = '';
+  document.getElementById('apiKeyInput').focus();
+};
 window.openSettings = function() {
-  // Afficher la clé actuelle (ou indiquer que la clé intégrée est utilisée)
-  const input = document.getElementById('apiKeyInput');
-  input.value = (apiKey === DEFAULT_API_KEY) ? '' : apiKey;
-  input.placeholder = apiKey === DEFAULT_API_KEY ? 'Clé intégrée active ✓' : 'sk-… (laisser vide pour intégrée)';
+  if (apiKey !== DEFAULT_API_KEY) {
+    document.getElementById('defaultKeyStatus').style.display = 'none';
+    document.getElementById('toggleCustomKey').style.display = 'none';
+    document.getElementById('customKeySection').style.display = 'block';
+    document.getElementById('saveKeyBtn').style.display = 'block';
+    document.getElementById('apiKeyInput').value = apiKey;
+  } else {
+    document.getElementById('defaultKeyStatus').style.display = 'flex';
+    document.getElementById('toggleCustomKey').style.display = 'flex';
+    document.getElementById('customKeySection').style.display = 'none';
+    document.getElementById('saveKeyBtn').style.display = 'none';
+  }
   document.getElementById('settingsModal').classList.add('show');
 };
 window.closeSettings = function() {
@@ -425,11 +445,10 @@ window.closeSettings = function() {
 window.saveSettings = function() {
   const key = document.getElementById('apiKeyInput').value.trim();
   if (!key) {
-    // Utiliser la clé intégrée par défaut
     apiKey = DEFAULT_API_KEY;
     localStorage.removeItem('ds_api_key');
     closeSettings();
-    toast('✓ Clé intégrée réactivée');
+    toast('✓ Clé intégrée active');
     return;
   }
   if (!key.startsWith('sk-')) {
@@ -439,7 +458,7 @@ window.saveSettings = function() {
   apiKey = key;
   localStorage.setItem('ds_api_key', apiKey);
   closeSettings();
-  toast('✓ Clé API enregistrée !');
+  toast('✓ Clé personnelle enregistrée');
 };
 
 // ══════════════════════════════════════════
@@ -702,6 +721,32 @@ function onKey(e){
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') closeSettings();
 });
+
+// Protection anti-copie de la clé
+document.addEventListener('contextmenu', function(e) {
+  if (e.target.closest('#settingsModal') || e.target.closest('.modal-overlay')) {
+    e.preventDefault();
+  }
+});
+document.addEventListener('copy', function(e) {
+  if (e.target.id === 'apiKeyInput') {
+    e.preventDefault();
+    toast('🔒 Copie désactivée pour préserver la ressource');
+  }
+});
+// Détection DevTools basique (avertissement)
+(function() {
+  const devtools = /./;
+  devtools.toString = function() {
+    toast('🔒 Veuillez respecter le travail fourni');
+    return '';
+  };
+  setInterval(function() {
+    if (window.outerHeight - window.innerHeight > 200 || window.outerWidth - window.innerWidth > 200) {
+      toast('🔒 Merci de ne pas inspecter');
+    }
+  }, 4000);
+})();
 </script>
 </body>
 </html>
