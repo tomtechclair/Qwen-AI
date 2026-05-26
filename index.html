@@ -906,7 +906,23 @@ window.sendMsg = async function() {
     removeTyping(typingId);
     if (e.name === 'AbortError') {
       if (fullReply) {
-        if (currentBubble) currentBubble.innerHTML = fmt(fullReply);
+    if (currentBubble) {
+      currentBubble.innerHTML = fmt(fullReply);
+      const fb = document.createElement('div');
+      fb.style.cssText = 'display:flex;gap:6px;margin-top:6px;';
+      fb.innerHTML = '<button class="fb-btn" data-v="1" style="border:none;background:none;cursor:pointer;font-size:13px;padding:2px 6px;border-radius:5px;color:var(--tx3);transition:all .15s">👍</button><button class="fb-btn" data-v="-1" style="border:none;background:none;cursor:pointer;font-size:13px;padding:2px 6px;border-radius:5px;color:var(--tx3);transition:all .15s">👎</button>';
+      currentBubble.parentElement.appendChild(fb);
+      fb.querySelectorAll('.fb-btn').forEach(b => {
+        b.onmouseenter = () => { if (!b.dataset.act) b.style.color = 'var(--tx)'; };
+        b.onmouseleave = () => { if (!b.dataset.act) b.style.color = 'var(--tx3)'; };
+        b.onclick = () => {
+          fb.querySelectorAll('.fb-btn').forEach(x => { x.dataset.act = ''; x.style.color = 'var(--tx3)'; });
+          b.dataset.act = '1';
+          b.style.color = b.dataset.v === '1' ? 'var(--a2)' : 'var(--a3)';
+          toast(b.dataset.v === '1' ? '👍 Merci !' : '👎 Pris en compte');
+        };
+      });
+    }
         conversationHistory.push({ role: 'user', content: text });
         conversationHistory.push({ role: 'assistant', content: fullReply });
       }
