@@ -749,28 +749,52 @@ window.sendMsg = async function() {
 
   if (imageMode) {
     setStatus('thinking', 'Génération image…');
-    const imgWrap = document.createElement('div');
-    imgWrap.style.cssText = 'margin:8px 0;border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.3);padding:20px;text-align:center;font-size:13px;color:var(--tx2);';
-    imgWrap.textContent = '🎨 Génération en cours…';
     const msgs = document.getElementById('msgs');
     const row = document.createElement('div');
     row.className = 'msg-row';
     row.innerHTML = `<div class="av ai-av">🧠</div><div class="msg-body"><div class="bbl ai-bbl"><strong>🎨 Image générée :</strong><br>${text}</div></div>`;
+    const imgWrap = document.createElement('div');
+    imgWrap.style.cssText = 'margin:8px 0;border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.3);';
     row.querySelector('.msg-body').appendChild(imgWrap);
     msgs.appendChild(row);
     msgs.scrollTop = 99999;
     conversationHistory.push({ role: 'user', content: text });
+    const progDiv = document.createElement('div');
+    progDiv.style.cssText = 'padding:24px 20px;text-align:center;';
+    progDiv.innerHTML = '<div style="font-size:12px;color:var(--tx2);margin-bottom:8px">🎨 Génération…</div><div style="height:4px;border-radius:2px;background:var(--b1);overflow:hidden;max-width:240px;margin:0 auto"><div id="imgProgBar" style="height:100%;width:0%;border-radius:2px;background:linear-gradient(90deg,var(--a1),var(--a2));transition:width .3s ease"></div></div><div id="imgProgPct" style="font-size:13px;font-weight:600;color:var(--tx);margin-top:6px;font-variant-numeric:tabular-nums">0%</div>';
+    imgWrap.appendChild(progDiv);
     try {
       const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?width=512&height=512`;
+      const bar = document.getElementById('imgProgBar');
+      const pct = document.getElementById('imgProgPct');
+      let done = false;
+      const anim = () => {
+        if (done) return;
+        const w = parseFloat(bar.style.width) || 0;
+        if (w < 92) {
+          const inc = Math.max(0.5, (92 - w) / 40);
+          bar.style.width = Math.min(92, w + inc) + '%';
+          pct.textContent = Math.round(Math.min(92, w + inc)) + '%';
+          requestAnimationFrame(anim);
+        }
+      };
+      requestAnimationFrame(anim);
       const img = document.createElement('img');
       img.style.cssText = 'width:100%;display:block;border-radius:10px;';
       img.alt = text;
-      img.onload = () => { imgWrap.innerHTML = ''; imgWrap.style.padding = '0'; imgWrap.appendChild(img); msgs.scrollTop = 99999; };
-      img.onerror = () => { imgWrap.textContent = '⚠️ Erreur de chargement — réessaie'; imgWrap.style.padding = '20px'; };
+      img.onload = () => {
+        done = true;
+        bar.style.width = '100%';
+        pct.textContent = '100%';
+        setTimeout(() => { imgWrap.innerHTML = ''; imgWrap.style.padding = '0'; imgWrap.appendChild(img); msgs.scrollTop = 99999; }, 300);
+      };
+      img.onerror = () => {
+        done = true;
+        imgWrap.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--a3)">⚠️ Erreur de chargement — réessaie</div>';
+      };
       img.src = url;
     } catch(e) {
-      imgWrap.textContent = '⚠️ Erreur: ' + e.message;
-      imgWrap.style.padding = '20px';
+      imgWrap.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--a3)">⚠️ Erreur: ' + e.message + '</div>';
     }
     conversationHistory.push({ role: 'assistant', content: '[Image: ' + text + ']' });
     generating = false;
