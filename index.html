@@ -625,7 +625,7 @@ function switchConv(id) {
   const conv = currentConv();
   conversationHistory = conv ? [...conv.history] : [];
   if (conversationHistory.length > 0) {
-    conversationHistory.forEach(m => addMsg(m.role, m.content));
+    conversationHistory.forEach(m => addMsg(m.role, m.content, m.isImage));
   } else {
     showWelcome();
   }
@@ -651,7 +651,7 @@ window.deleteConv = function(id) {
     const w = document.getElementById('welcome');
     if (w) w.remove();
     if (conversationHistory.length > 0) {
-      conversationHistory.forEach(m => addMsg(m.role, m.content));
+      conversationHistory.forEach(m => addMsg(m.role, m.content, m.isImage));
     } else {
       showWelcome();
     }
@@ -796,7 +796,7 @@ window.sendMsg = async function() {
     } catch(e) {
       imgWrap.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--a3)">⚠️ Erreur: ' + e.message + '</div>';
     }
-    conversationHistory.push({ role: 'assistant', content: '[Image: ' + text + ']' });
+    conversationHistory.push({ role: 'assistant', content: text, isImage: true });
     generating = false;
     document.getElementById('btnSend').disabled = false;
     setStatus('ready', 'Prêt');
@@ -936,12 +936,24 @@ window.quick = function(text) {
 
 // DOM HELPERS
 function hideWelcome() { const w = document.getElementById('welcome'); if (w) w.remove(); }
-function addMsg(role, text) {
+function addMsg(role, text, isImage) {
   const msgs = document.getElementById('msgs');
   const row = document.createElement('div');
   row.className = 'msg-row ' + (role === 'user' ? 'usr' : '');
   const emo = role === 'ai' ? '🧠' : '👤';
-  row.innerHTML = `<div class="av ${role === 'ai' ? 'ai-av' : 'usr-av'}">${emo}</div><div class="msg-body"><div class="bbl ${role === 'ai' ? 'ai-bbl' : 'usr-bbl'}">${fmt(text)}</div></div>`;
+  row.innerHTML = `<div class="av ${role === 'ai' ? 'ai-av' : 'usr-av'}">${emo}</div><div class="msg-body"><div class="bbl ${role === 'ai' ? 'ai-bbl' : 'usr-bbl'}">${isImage ? `<strong>🎨 Image générée :</strong><br>${escHtml(text)}` : fmt(text)}</div></div>`;
+  if (isImage) {
+    const imgWrap = document.createElement('div');
+    imgWrap.style.cssText = 'margin:8px 0;border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.3);padding:20px;text-align:center;font-size:13px;color:var(--tx2);';
+    imgWrap.textContent = '🎨 Rechargement…';
+    const img = document.createElement('img');
+    img.style.cssText = 'width:100%;display:block;border-radius:10px;';
+    img.alt = text;
+    img.onload = () => { imgWrap.innerHTML = ''; imgWrap.style.padding = '0'; imgWrap.appendChild(img); msgs.scrollTop = 99999; };
+    img.onerror = () => { imgWrap.textContent = '⚠️ Erreur de chargement'; imgWrap.style.padding = '20px'; };
+    img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?width=512&height=512`;
+    row.querySelector('.msg-body').appendChild(imgWrap);
+  }
   msgs.appendChild(row);
   msgs.scrollTop = 99999;
 }
