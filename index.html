@@ -636,7 +636,7 @@ function showWelcome() {
   if (document.getElementById('welcome')) return;
   const w = document.createElement('div');
   w.className = 'welcome'; w.id = 'welcome';
-  w.innerHTML = '<h1>Qwen AI</h1><p>Assistant gratuit et illimité — propulsé par Qwen Flash via MuleRouter</p><div class="q-suggest"><div class="q-card" onclick="quick(\'Écris-moi un composant React avec des hooks\')"><div class="q-card-ico">💻</div><div class="q-card-t">Code</div><div class="q-card-d">React, JS, Python…</div></div><div class="q-card" onclick="quick(\'Donne-moi 5 idées de startup innovantes\')"><div class="q-card-ico">💡</div><div class="q-card-t">Idées</div><div class="q-card-d">Business, projets</div></div><div class="q-card" onclick="quick(\'Résous ce problème pas à pas: Si 3x + 7 = 22, que vaut x ?\')"><div class="q-card-ico">🧮</div><div class="q-card-t">Maths</div><div class="q-card-d">Équations, logique</div></div></div>';
+  w.innerHTML = '<h1>Qwen AI</h1><p>Assistant gratuit et illimité — propulsé par Qwen Flash via MuleRouter • tom_visionai_pro</p><div class="q-suggest"><div class="q-card" onclick="quick(\'Écris-moi un composant React avec des hooks\')"><div class="q-card-ico">💻</div><div class="q-card-t">Code</div><div class="q-card-d">React, JS, Python…</div></div><div class="q-card" onclick="quick(\'Donne-moi 5 idées de startup innovantes\')"><div class="q-card-ico">💡</div><div class="q-card-t">Idées</div><div class="q-card-d">Business, projets</div></div><div class="q-card" onclick="quick(\'Résous ce problème pas à pas: Si 3x + 7 = 22, que vaut x ?\')"><div class="q-card-ico">🧮</div><div class="q-card-t">Maths</div><div class="q-card-d">Équations, logique</div></div></div>';
   sec.appendChild(w);
 }
 
@@ -1016,7 +1016,10 @@ window.quick = function(text) {
 };
 
 // DOM HELPERS
-function hideWelcome() {}
+function hideWelcome() {
+  const el = document.getElementById('welcome');
+  if (el) el.remove();
+}
 function addMsg(role, content, isImage) {
   const msgs = document.getElementById('msgs');
   const row = document.createElement('div');
