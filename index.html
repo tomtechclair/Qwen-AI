@@ -126,6 +126,16 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
 .tb-model-sel{appearance:none;background:none;border:none;color:var(--tx);font-size:13px;font-weight:500;font-family:'Inter',sans-serif;cursor:pointer;outline:none;}
 .tb-model-sel option{background:#0a0f1f;color:var(--tx);}
 .tb-tools{display:flex;align-items:center;gap:6px;margin-left:auto;}
+.tb-agent-btn{background:none;border:none;color:var(--tx2);font-size:13px;padding:4px 8px;border-radius:6px;cursor:pointer;transition:all .15s;}
+.tb-agent-btn:hover{background:var(--b1);color:var(--tx);}
+.tb-agent-btn.act{color:var(--a2);background:var(--b1);}
+.agent-item{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;border:1px solid var(--b2);background:var(--s1);cursor:pointer;transition:all .15s;}
+.agent-item:hover{border-color:var(--a2);}
+.agent-item.act{border-color:var(--a2);background:var(--b1);}
+.agent-item .ai-name{flex:1;font-size:13px;font-weight:600;color:var(--tx);}
+.agent-item .ai-prev{font-size:11px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;}
+.agent-item .ai-rm{background:none;border:none;color:var(--tx3);font-size:15px;cursor:pointer;padding:2px 6px;border-radius:4px;}
+.agent-item .ai-rm:hover{background:var(--b2);color:var(--a3);}
 .tb-btn{
   width:30px;height:30px;border-radius:7px;border:1px solid var(--b1);background:var(--s1);
   cursor:pointer;display:flex;align-items:center;justify-content:center;
@@ -375,6 +385,7 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
     <div class="sb-item" onclick="newChat()">💬 Nouvelle discussion</div>
     <div class="sb-convs" id="convList"></div>
     <div class="sb-bottom">
+      <div class="sb-item" id="sidebarAgentBtn" onclick="openAgents()">🤖 Agents</div>
       <div class="sb-item" onclick="openSettings()">⚙ Paramètres</div>
       <div class="sb-item" onclick="openAPISettings()">🔑 API</div>
     </div>
@@ -480,6 +491,19 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
     <div class="modal-actions">
       <button class="modal-btn sec" onclick="closeAPISettings()">Fermer</button>
       <button class="modal-btn primary" id="apiSaveKeyBtn" onclick="apiSaveSettings()" style="display:none">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- AGENTS MODAL -->
+<div class="modal-overlay" id="agentModal" onclick="if(event.target===this)closeAgents()">
+  <div class="modal" style="max-width:540px">
+    <div class="modal-h">🤖 Mes agents</div>
+    <div style="margin-bottom:12px;font-size:12px;color:var(--tx2)">Crée des agents IA personnalisés. L'agent actif définit le comportement du chat.</div>
+    <div id="agentList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;max-height:300px;overflow-y:auto"></div>
+    <button class="modal-btn primary" onclick="createAgent()" style="font-size:12px;padding:8px 14px;width:100%">➕ Nouvel agent</button>
+    <div class="modal-actions" style="margin-top:12px">
+      <button class="modal-btn sec" onclick="closeAgents()">Fermer</button>
     </div>
   </div>
 </div>
@@ -782,6 +806,118 @@ window.saveGoogleAiKey = function() {
   else { localStorage.removeItem('google_ai_key'); toast('✓ Clé réinitialisée (celle par défaut sera utilisée)'); }
 };
 
+// AGENTS
+const DEFAULT_GITHUB_AGENT = "Tu es une IA développeur full-access spécialisée GitHub.\n\nQuand l'utilisateur envoie un lien GitHub (repo, fichier, commit, branche), tu dois automatiquement :\n- analyser tout le dépôt\n- lire TOUS les fichiers importants\n- détecter les bugs, erreurs console, problèmes mobile/desktop, API cassées, sécurité, performance et design\n- proposer des améliorations modernes UI/UX\n- modifier directement le code si nécessaire\n- créer ou remplacer des fichiers complets\n- optimiser le responsive mobile\n- corriger HTML, CSS, JS, React, Node.js, API, animations, etc.\n- ajouter des fonctionnalités utiles automatiquement\n- nettoyer le code inutile\n- améliorer les performances et le SEO\n- vérifier que tout fonctionne sans erreur\n\nQuand tu modifies : explique le problème, montre le code corrigé, applique les modifications.\n\nTu peux cloner, créer des branches, commit, push, merge, installer dépendances, corriger conflits, créer README, améliorer l'interface, réparer les APIs.\n\nTu dois aussi comprendre la structure du projet automatiquement, détecter le framework utilisé, ouvrir les fichiers GitHub automatiquement, suivre imports et dépendances, réparer les erreurs même si l'utilisateur ne les mentionne pas.\n\nSois autonome, précis, direct. Ne demande jamais inutilement. Propose toujours une meilleure version du projet.";
+
+let agents = [];
+let activeAgentId = null;
+
+function loadAgents() {
+  try {
+    agents = JSON.parse(localStorage.getItem('qh_agents')) || [];
+    if (!agents.length) {
+      agents.push({ id: 'agent_github', name: 'GitHub Dev Full-Access', prompt: DEFAULT_GITHUB_AGENT });
+      saveAgents();
+    }
+  } catch(e) { agents = []; }
+  activeAgentId = localStorage.getItem('qh_active_agent');
+  updateAgentBtn();
+}
+
+function saveAgents() {
+  localStorage.setItem('qh_agents', JSON.stringify(agents));
+}
+
+function getActiveAgent() {
+  return agents.find(a => a.id === activeAgentId) || null;
+}
+
+function updateAgentBtn() {
+  const act = getActiveAgent();
+  const sb = document.getElementById('sidebarAgentBtn');
+  if (sb) { sb.textContent = act ? '🤖 ' + act.name : '🤖 Agents'; sb.style.background = act ? 'var(--b1)' : ''; }
+}
+
+window.openAgents = function() {
+  loadAgents();
+  renderAgentList();
+  document.getElementById('agentModal').classList.add('show');
+  closeSidebar();
+};
+
+window.closeAgents = function() {
+  document.getElementById('agentModal').classList.remove('show');
+};
+
+function renderAgentList() {
+  const list = document.getElementById('agentList');
+  if (!list) return;
+  if (!agents.length) {
+    list.innerHTML = '<div style="text-align:center;padding:20px;font-size:13px;color:var(--tx3)">Aucun agent. Crée-en un !</div>';
+    return;
+  }
+  list.innerHTML = agents.map(a => {
+    const isAct = a.id === activeAgentId;
+    return `<div class="agent-item${isAct?' act':''}" onclick="selectAgent('${a.id}')">
+      <div style="flex:1;min-width:0">
+        <div class="ai-name">${isAct?'✓ ':''}${escHtml(a.name)}</div>
+        <div class="ai-prev">${escHtml(a.prompt.substring(0,80))}…</div>
+      </div>
+      <button class="ai-rm" onclick="event.stopPropagation();editAgent('${a.id}')" title="Modifier">✏️</button>
+      <button class="ai-rm" onclick="event.stopPropagation();deleteAgent('${a.id}')" title="Supprimer">🗑</button>
+    </div>`;
+  }).join('');
+}
+
+window.selectAgent = function(id) {
+  const a = agents.find(x => x.id === id);
+  if (!a) return;
+  if (activeAgentId === id) { activeAgentId = null; localStorage.removeItem('qh_active_agent'); }
+  else { activeAgentId = id; localStorage.setItem('qh_active_agent', id); toast('✅ Agent « ' + a.name + ' » activé'); }
+  renderAgentList();
+  updateAgentBtn();
+};
+
+window.createAgent = function() {
+  const name = prompt('Nom de l\'agent :');
+  if (!name || !name.trim()) return;
+  const promptText = prompt('Prompt système de l\'agent :');
+  if (!promptText || !promptText.trim()) return;
+  const id = 'agent_' + Date.now();
+  agents.push({ id, name: name.trim(), prompt: promptText.trim() });
+  saveAgents();
+  renderAgentList();
+  toast('✅ Agent créé');
+};
+
+window.editAgent = function(id) {
+  const a = agents.find(x => x.id === id);
+  if (!a) return;
+  const name = prompt('Nom :', a.name);
+  if (!name || !name.trim()) return;
+  const promptText = prompt('Prompt :', a.prompt);
+  if (!promptText || !promptText.trim()) return;
+  a.name = name.trim();
+  a.prompt = promptText.trim();
+  saveAgents();
+  renderAgentList();
+  if (activeAgentId === id) updateAgentBtn();
+  toast('✅ Agent modifié');
+};
+
+window.deleteAgent = function(id) {
+  if (!confirm('Supprimer cet agent ?')) return;
+  agents = agents.filter(x => x.id !== id);
+  if (activeAgentId === id) { activeAgentId = null; localStorage.removeItem('qh_active_agent'); }
+  saveAgents();
+  renderAgentList();
+  updateAgentBtn();
+  toast('🗑 Agent supprimé');
+};
+
+// DEFAULTS
+loadAgents();
+
 // SEND
 window.sendMsg = async function() {
   const inp = document.getElementById('inp');
@@ -902,6 +1038,8 @@ window.sendMsg = async function() {
 
   try {
     let systemContent = SYSTEM_PROMPT;
+    const actAgent = getActiveAgent();
+    if (actAgent) systemContent = actAgent.prompt + '\n\n---\n\n' + systemContent;
     const nameInstr = userName ? `L'utilisateur s'appelle ${userName}. Appelle-le par son prénom naturellement.` : `C'est votre premier échange avec l'utilisateur. Avant de répondre à sa question, demande-lui comment il souhaite que tu l'appelles.`;
     systemContent = systemContent.replace('[NAME_INSTR]', nameInstr);
 
