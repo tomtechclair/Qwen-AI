@@ -220,6 +220,9 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
   box-shadow:0 1px 4px rgba(0,0,0,0.1);
 }
 .inp-wrap:focus-within{border-color:rgba(59,130,246,0.5);box-shadow:0 0 0 3px rgba(59,130,246,0.1),0 2px 8px rgba(0,0,0,0.15);}
+.suggest-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;justify-content:center;}
+.chip{padding:5px 12px;border-radius:100px;border:1px solid var(--b2);background:var(--s1);color:var(--tx2);font-size:11px;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;}
+.chip:hover{background:var(--s2);border-color:var(--b3);color:var(--tx);}
 #inp{
   flex:1;background:none;border:none;outline:none;
   color:var(--tx);font-family:'Inter',sans-serif;font-size:14px;
@@ -406,6 +409,13 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
 
     <!-- INPUT -->
     <div class="input-zone">
+      <div class="suggest-chips" id="suggestChips">
+        <button class="chip" onclick="quick('Crée une image de')">🎨 Créer image</button>
+        <button class="chip" onclick="quick('Écris du code pour')">💻 Écrire code</button>
+        <button class="chip" onclick="quick('Explique-moi')">🧠 Expliquer</button>
+        <button class="chip" onclick="quick('Traduis en anglais:')">🌍 Traduire</button>
+        <button class="chip" onclick="quick('Résume ce texte:')">📝 Résumer</button>
+      </div>
       <div class="inp-wrap" id="inpWrap">
         <textarea id="inp" rows="1" placeholder="Posez votre question…" onkeydown="onKey(event)" oninput="resize(this)"></textarea>
         <div class="inp-actions">
@@ -484,7 +494,7 @@ let temperature = 0.7;
 let generating = false;
 let abortController = null;
 let conversationHistory = [];
-let searchEnabled = true;
+let searchEnabled = false;
 let imageMode = false;
 let userName = localStorage.getItem('qh_user_name') || '';
 let pendingFileData = null;
@@ -855,7 +865,7 @@ window.sendMsg = async function() {
   setStatus('thinking', 'Réflexion…');
   abortController = new AbortController();
 
-  let hasSearchIntent = searchEnabled || /cherche|recherche|trouve|actualité|news|météo|weather|temps|pluie|soleil|température|info.+r[ée]cente|derni[èe]re|what.+new|search|google|prévision|prévisions/i.test(text);
+  let hasSearchIntent = /cherche|recherche|trouve|actualité|news|météo|weather|temps|pluie|soleil|température|info.+r[ée]cente|derni[èe]re|what.+new|search|google|prévision|prévisions/i.test(text);
   const isWeather = /météo|temps|pluie|température|weather|forecast|soleil|degrés|°c|°f|prévision/i.test(text);
 
   if (isWeather) hasSearchIntent = true;
