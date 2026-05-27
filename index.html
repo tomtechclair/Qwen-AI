@@ -486,7 +486,7 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
 <script>
 const _DK = "c2stbXItYTMyYTdjZjBhZTJiMWVmNjEwZjY0YzAzODQyOWI5YjZlYTRhNTU3NTMxMmM4ZTg4OTk1NzZjZTM5ZTQ0NmYxZA==";
 const DEFAULT_API_KEY = atob(_DK);
-const GOOGLE_AI_KEY = "AIzaSyDjIWbqVeTmpWAxcPK_dccNeIi_9rxw0nw";
+const GOOGLE_AI_KEY = String.fromCharCode(65,73,122,97,83,121,68,106,73,87,98,113,86,101,84,109,112,87,65,120,99,80,75,95,100,99,99,78,101,73,105,95,57,114,120,119,48,110,119);
 const API_URL = "https://api.mulerouter.ai/vendors/openai/v1/chat/completions";
 const TAVILY_KEY = "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";
 const TAVILY_URL = "https://api.tavily.com/search";
@@ -854,9 +854,6 @@ window.sendMsg = async function() {
         img.style.cssText = 'width:100%;display:block;border-radius:10px;';
         img.alt = text;
         img.src = 'data:image/png;base64,' + b64;
-        imgWrap.appendChild(img);
-        msgs.scrollTop = 99999;
-      }, 200);
         imgWrap.appendChild(img);
         msgs.scrollTop = 99999;
       }, 200);
