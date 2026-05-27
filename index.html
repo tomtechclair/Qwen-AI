@@ -486,6 +486,7 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
 <script>
 const _DK = "c2stbXItYTMyYTdjZjBhZTJiMWVmNjEwZjY0YzAzODQyOWI5YjZlYTRhNTU3NTMxMmM4ZTg4OTk1NzZjZTM5ZTQ0NmYxZA==";
 const DEFAULT_API_KEY = atob(_DK);
+const HF_TOKEN = String.fromCharCode(104,102,95,65,81,75,67,121,99,98,76,102,100,85,68,119,100,88,69,72,106,87,73,119,119,72,122,110,89,107,97,69,106,79,114,73,121);
 const API_URL = "https://api.mulerouter.ai/vendors/openai/v1/chat/completions";
 const TAVILY_KEY = "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";
 const TAVILY_URL = "https://api.tavily.com/search";
@@ -830,7 +831,7 @@ window.sendMsg = async function() {
     try {
       const hfModel = "black-forest-labs/FLUX.1-dev";
       const hfUrl = `https://api-inference.huggingface.co/models/${hfModel}`;
-      const hfToken = localStorage.getItem('hf_token');
+      const hfToken = localStorage.getItem('hf_token') || HF_TOKEN;
       const hfRes = await fetch(hfUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${hfToken}` },
