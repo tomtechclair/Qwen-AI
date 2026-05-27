@@ -160,7 +160,14 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
   gap:12px;padding:80px 20px 20px;margin:auto;overflow-y:auto;width:100%;
   animation:fadeUp .6s ease both;max-width:600px;
 }
-.input-zone .welcome{padding:20px 20px 8px;}
+.input-zone .welcome{padding:8px 20px 4px;gap:6px;}
+.input-zone .welcome h1{font-size:22px;}
+.input-zone .welcome p{font-size:11px;}
+.input-zone .q-suggest{margin-top:10px;gap:6px;}
+.input-zone .q-card{width:130px;padding:12px 10px 10px;gap:4px;}
+.input-zone .q-card-ico{font-size:18px;}
+.input-zone .q-card-t{font-size:12px;}
+.input-zone .q-card-d{font-size:10px;}
 .welcome h1{font-size:32px;font-weight:700;letter-spacing:-.5px;color:var(--tx);background:linear-gradient(135deg,var(--tx),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .welcome p{font-size:13px;color:var(--tx2);line-height:1.6;max-width:360px;}
 .q-suggest{
@@ -231,7 +238,7 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
   box-shadow:0 1px 4px rgba(0,0,0,0.1);
 }
 .inp-wrap:focus-within{border-color:rgba(59,130,246,0.5);box-shadow:0 0 0 3px rgba(59,130,246,0.1),0 2px 8px rgba(0,0,0,0.15);}
-.suggest-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;justify-content:center;}
+.suggest-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px;justify-content:center;}
 .chip{padding:5px 12px;border-radius:100px;border:1px solid var(--b2);background:var(--s1);color:var(--tx2);font-size:11px;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;}
 .chip:hover{background:var(--s2);border-color:var(--b3);color:var(--tx);}
 #inp{
@@ -667,7 +674,7 @@ function showWelcome() {
   if (document.getElementById('welcome')) return;
   const w = document.createElement('div');
   w.className = 'welcome'; w.id = 'welcome';
-  w.innerHTML = '<h1>Qwen AI</h1><p style="max-width:440px;margin-bottom:4px">Bonjour ! 👋 Je suis <strong>Qwen AI</strong>, ton assistant gratuit et illimité. Pose-moi toutes tes questions, je suis là pour t\'aider !</p><p>Assistant gratuit et illimité — propulsé par Qwen Flash via MuleRouter • tom_visionai_pro</p><div class="q-suggest"><div class="q-card" onclick="quick(\'Écris-moi un composant React avec des hooks\')"><div class="q-card-ico">💻</div><div class="q-card-t">Code</div><div class="q-card-d">React, JS, Python…</div></div><div class="q-card" onclick="quick(\'Donne-moi 5 idées de startup innovantes\')"><div class="q-card-ico">💡</div><div class="q-card-t">Idées</div><div class="q-card-d">Business, projets</div></div><div class="q-card" onclick="quick(\'Résous ce problème pas à pas: Si 3x + 7 = 22, que vaut x ?\')"><div class="q-card-ico">🧮</div><div class="q-card-t">Maths</div><div class="q-card-d">Équations, logique</div></div></div>';
+  w.innerHTML = '<h1>Qwen AI</h1><p>Assistant gratuit et illimité — propulsé par Qwen Flash via MuleRouter • tom_visionai_pro</p><div class="q-suggest"><div class="q-card" onclick="quick(\'Écris-moi un composant React avec des hooks\')"><div class="q-card-ico">💻</div><div class="q-card-t">Code</div><div class="q-card-d">React, JS, Python…</div></div><div class="q-card" onclick="quick(\'Donne-moi 5 idées de startup innovantes\')"><div class="q-card-ico">💡</div><div class="q-card-t">Idées</div><div class="q-card-d">Business, projets</div></div><div class="q-card" onclick="quick(\'Résous ce problème pas à pas: Si 3x + 7 = 22, que vaut x ?\')"><div class="q-card-ico">🧮</div><div class="q-card-t">Maths</div><div class="q-card-d">Équations, logique</div></div></div>';
   document.querySelector('.input-zone').insertBefore(w, document.querySelector('.inp-wrap'));
 }
 
