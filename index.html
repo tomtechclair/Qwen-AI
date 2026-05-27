@@ -518,38 +518,187 @@ Quand tu écris du code, utilise des blocs Markdown avec le langage spécifié.
 
 Sois concis, naturel, et direct. Commence tes réponses directement sans phrases introductives inutiles.`;
 
-async function getAIResponse(userMessage, imageBase64 = null) {
-  const apiUrl = "https://api.mulerouter.com/v1/chat/completions";
-  let messages = [];
-  if (imageBase64) {
-    messages.push({
-      role: "user",
-      content: [
-        { type: "text", text: userMessage || "Décris cette image en détail et répond à ma question." },
-        { type: "image_url", image_url: { url: imageBase64 } }
-      ]
-    });
-  } else {
-    messages.push({ role: "user", content: userMessage });
-  }
+// MODEL DROPDOWN
+window.selModelDropdown = function(val) {
+  const parts = val.split('|');
+  selectedModel = parts[0];
+  temperature = parseFloat(parts[1]) || 0.7;
+  const label = document.querySelector(`.tb-model-sel option[value="${val}"]`)?.textContent?.split(' ')[1] || selectedModel;
+  document.getElementById('modelLabel').textContent = label;
+  toast('✓ ' + label);
+};
+
+// TOGGLES
+window.toggleSidebar = function() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarBackdrop').classList.toggle('show');
+};
+window.toggleSearch = function() {
+  searchEnabled = !searchEnabled;
+  if (imageMode) toggleImage();
+  document.getElementById('searchBtn').classList.toggle('sel');
+  toast(searchEnabled ? '🌐 Recherche web activée' : '🌐 Web désactivé');
+};
+
+// TAVILY SEARCH
+async function searchWeb(query) {
+  setStatus('thinking', 'Recherche web…');
   try {
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "qwen/qwen2.5-vl-72b-instruct" || "qwen-flash",
-        messages,
-        temperature: 0.7,
-        max_tokens: 1024
-      })
+    const res = await fetch(TAVILY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ api_key: TAVILY_KEY, query, search_depth: 'advanced', include_answer: true, max_results: 5 })
     });
-    const data = await response.json();
-    return data.choices?.[0]?.message?.content || "Désolé, je n'ai pas pu répondre.";
-  } catch (error) {
-    console.error("Erreur API:", error);
-    return "Erreur de connexion avec l'IA.";
+    if (!res.ok) throw new Error('Erreur recherche ' + res.status);
+    const data = await res.json();
+    let results = '';
+    if (data.answer) results += 'Résumé : ' + data.answer + '\n\n';
+    if (data.results && data.results.length) {
+      data.results.forEach((r, i) => {
+        results += `Source ${i+1} : ${r.title}\n${r.url}\n${r.content.substring(0, 500)}\n\n`;
+      });
+    }
+    return results || 'Aucun résultat trouvé.';
+  } catch(e) {
+    return 'Erreur lors de la recherche : ' + e.message;
   }
 }
+
+function formatSources(raw) {
+  const lines = raw.split('\n');
+  const sources = [];
+  let current = null;
+  for (const l of lines) {
+    if (/^Source \d+ :/.test(l)) {
+      if (current && current.title) sources.push(current);
+      current = { title: l.replace(/^Source \d+ : /, ''), url: '', snippet: '' };
+    } else if (current && !current.url && l.startsWith('http')) {
+      current.url = l;
+    } else if (current) {
+      current.snippet += l + ' ';
+    }
+  }
+  if (current && current.title) sources.push(current);
+  if (!sources.length) return `<div style="padding:6px 0">${raw}</div>`;
+  return sources.map(s =>
+    `<div style="margin-bottom:6px;padding:6px 8px;border:1px solid var(--br);border-radius:8px">` +
+    `<div style="font-weight:600;margin-bottom:2px">${s.title}</div>` +
+    (s.url ? `<a href="${s.url}" target="_blank" style="font-size:10px;color:var(--a2);word-break:break-all">${s.url}</a>` : '') +
+    (s.snippet ? `<div style="margin-top:2px">${s.snippet.substring(0,200)}</div>` : '') +
+    `</div>`
+  ).join('');
+}
+
+window.toggleImage = function() {
+  imageMode = !imageMode;
+  document.getElementById('imgBtn').classList.toggle('sel');
+  document.getElementById('inp').placeholder = imageMode ? 'Décrivez l\'image à générer…' : 'Posez votre question…';
+  if (imageMode && searchEnabled) toggleSearch();
+  toast(imageMode ? '🎨 Mode image activé' : '🎨 Mode image désactivé');
+};
+
+// CONVERSATION MANAGEMENT
+let conversations = [];
+let activeConvId = null;
+
+function genId() { return 'c' + Date.now() + Math.random().toString(36).slice(2,6); }
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function saveConvs() {
+  try { localStorage.setItem('qh_convs', JSON.stringify(conversations)); localStorage.setItem('qh_active', activeConvId || ''); } catch(e) {}
+}
+function loadConvs() {
+  try {
+    const d = localStorage.getItem('qh_convs');
+    if (d) conversations = JSON.parse(d);
+    activeConvId = localStorage.getItem('qh_active') || null;
+  } catch(e) { conversations = []; }
+}
+
+function currentConv() { return conversations.find(c => c.id === activeConvId); }
+
+function renderSidebar() {
+  const list = document.getElementById('convList');
+  list.innerHTML = '';
+  conversations.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'sb-conv' + (c.id === activeConvId ? ' act' : '');
+    const title = c.title || 'Nouvelle conversation';
+    div.innerHTML = `<span class="sb-conv-t">${escHtml(title)}</span><button class="sb-conv-del" data-cid="${c.id}">✕</button>`;
+    div.querySelector('.sb-conv-del').onclick = (e) => { e.stopPropagation(); deleteConv(c.id); };
+    div.onclick = () => switchConv(c.id);
+    list.appendChild(div);
+  });
+}
+
+function showWelcome() {
+  const sec = document.getElementById('msgs');
+  if (document.getElementById('welcome')) return;
+  const w = document.createElement('div');
+  w.className = 'welcome'; w.id = 'welcome';
+  w.innerHTML = '<h1>Qwen AI</h1><p>Assistant gratuit et illimité — propulsé par Qwen Flash via MuleRouter • tom_visionai_pro</p><div class="q-suggest"><div class="q-card" onclick="quick(\'Écris-moi un composant React avec des hooks\')"><div class="q-card-ico">💻</div><div class="q-card-t">Code</div><div class="q-card-d">React, JS, Python…</div></div><div class="q-card" onclick="quick(\'Donne-moi 5 idées de startup innovantes\')"><div class="q-card-ico">💡</div><div class="q-card-t">Idées</div><div class="q-card-d">Business, projets</div></div><div class="q-card" onclick="quick(\'Résous ce problème pas à pas: Si 3x + 7 = 22, que vaut x ?\')"><div class="q-card-ico">🧮</div><div class="q-card-t">Maths</div><div class="q-card-d">Équations, logique</div></div></div>';
+  sec.appendChild(w);
+}
+
+function saveCurrentConv() {
+  const conv = currentConv();
+  if (!conv) return;
+  conv.history = [...conversationHistory];
+  if (conv.history.length > 0 && (!conv.title || conv.title === 'Nouvelle conversation')) {
+    const first = conv.history.find(m => m.role === 'user');
+    if (first) conv.title = first.content.substring(0, 35) + (first.content.length > 35 ? '…' : '');
+  }
+  saveConvs();
+  renderSidebar();
+}
+
+function switchConv(id) {
+  saveCurrentConv();
+  activeConvId = id;
+  saveConvs();
+  document.getElementById('msgs').querySelectorAll('.msg-row').forEach(el => el.remove());
+  const conv = currentConv();
+  conversationHistory = conv ? [...conv.history] : [];
+  if (conversationHistory.length > 0) {
+    conversationHistory.forEach(m => addMsg(m.role, m.content, m.isImage));
+  } else {
+    const greeting = "Bonjour ! 👋 Je suis **Qwen AI**, ton assistant gratuit et illimité. Pose-moi toutes tes questions, je suis là pour t'aider !";
+    addMsg('ai', greeting);
+    conversationHistory.push({ role: 'assistant', content: greeting });
+    showWelcome();
+  }
+  renderSidebar();
+  closeSidebar();
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarBackdrop').classList.remove('show');
+}
+
+window.deleteConv = function(id) {
+  if (conversations.length <= 1) { toast('⚠️ Garde au moins une conversation'); return; }
+  const idx = conversations.findIndex(c => c.id === id);
+  if (idx === -1) return;
+  conversations.splice(idx, 1);
+  if (activeConvId === id) {
+    const next = conversations[Math.min(idx, conversations.length - 1)];
+    activeConvId = next.id;
+    conversationHistory = [...next.history];
+    document.getElementById('msgs').querySelectorAll('.msg-row').forEach(el => el.remove());
+    if (conversationHistory.length > 0) {
+      conversationHistory.forEach(m => addMsg(m.role, m.content, m.isImage));
+    } else {
+      const greeting = "Bonjour ! 👋 Je suis **Qwen AI**, ton assistant gratuit et illimité. Pose-moi toutes tes questions, je suis là pour t'aider !";
+      addMsg('ai', greeting);
+      conversationHistory.push({ role: 'assistant', content: greeting });
+      showWelcome();
+    }
+  }
+  saveConvs();
+  renderSidebar();
+  toast('🗑 Conversation supprimée');
+};
 
 window.newChat = function() {
   saveCurrentConv();
