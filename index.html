@@ -472,10 +472,9 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
     </div>
     <button id="apiToggleCustomKey" onclick="apiToggleCustomKey()" style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:7px;border:1px solid var(--b2);background:var(--s1);color:var(--tx2);font-size:11px;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;width:100%;margin-bottom:12px;justify-content:center">➕ Ma propre clé</button>
     <div style="margin-top:8px;padding-top:12px;border-top:1px solid var(--b2)">
-      <label class="modal-label">🎨 Token Hugging Face (images - optionnel)</label>
-      <input class="modal-input" id="hfTokenInput" type="password" placeholder="hf_..." spellcheck="false" style="margin-bottom:8px" oncopy="return false" oncut="return false" oncontextmenu="return false">
-      <button class="modal-btn primary" onclick="saveHfToken()" style="font-size:11px;padding:6px 12px">💾 Enregistrer token HF</button>
-      <div style="font-size:10px;color:var(--tx3);margin-top:4px">⚠️ Actuellement : génération via Pollinations (flux). Le token HF sert si tu changes le code.</div>
+      <label class="modal-label">🎨 Clé Google AI (images Imagen 4)</label>
+      <input class="modal-input" id="googleAiKeyInput" type="password" placeholder="AIza..." spellcheck="false" style="margin-bottom:8px" oncopy="return false" oncut="return false" oncontextmenu="return false">
+      <button class="modal-btn primary" onclick="saveGoogleAiKey()" style="font-size:11px;padding:6px 12px">💾 Enregistrer</button>
     </div>
     <div class="modal-actions">
       <button class="modal-btn sec" onclick="closeAPISettings()">Fermer</button>
@@ -487,7 +486,7 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
 <script>
 const _DK = "c2stbXItYTMyYTdjZjBhZTJiMWVmNjEwZjY0YzAzODQyOWI5YjZlYTRhNTU3NTMxMmM4ZTg4OTk1NzZjZTM5ZTQ0NmYxZA==";
 const DEFAULT_API_KEY = atob(_DK);
-const HF_TOKEN = String.fromCharCode(104,102,95,65,81,75,67,121,99,98,76,102,100,85,68,119,100,88,69,72,106,87,73,119,119,72,122,110,89,107,97,69,106,79,114,73,121);
+const GOOGLE_AI_KEY = "AIzaSyDjIWbqVeTmpWAxcPK_dccNeIi_9rxw0nw";
 const API_URL = "https://api.mulerouter.ai/vendors/openai/v1/chat/completions";
 const TAVILY_KEY = "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";
 const TAVILY_URL = "https://api.tavily.com/search";
@@ -777,7 +776,7 @@ window.openAPISettings = function() {
     document.getElementById('apiCustomKeySection').style.display = 'none';
     document.getElementById('apiSaveKeyBtn').style.display = 'none';
   }
-  document.getElementById('hfTokenInput').value = localStorage.getItem('hf_token') || '';
+  document.getElementById('googleAiKeyInput').value = localStorage.getItem('google_ai_key') || '';
   document.getElementById('apiModal').classList.add('show');
   closeSidebar();
 };
@@ -790,10 +789,10 @@ window.apiSaveSettings = function() {
   if (!key.startsWith('sk-') && !key.startsWith('sk-mr-')) { toast('⚠️ Clé invalide (doit commencer par sk-mr-)'); return; }
   apiKey = key; localStorage.setItem('ds_api_key', apiKey); closeAPISettings(); toast('✓ Clé personnelle enregistrée');
 };
-window.saveHfToken = function() {
-  const token = document.getElementById('hfTokenInput').value.trim();
-  if (token) { localStorage.setItem('hf_token', token); toast('✓ Token Hugging Face enregistré'); }
-  else { localStorage.removeItem('hf_token'); toast('✓ Token réinitialisé (utilisation du token par défaut)'); }
+window.saveGoogleAiKey = function() {
+  const token = document.getElementById('googleAiKeyInput').value.trim();
+  if (token) { localStorage.setItem('google_ai_key', token); toast('✓ Clé Google AI enregistrée'); }
+  else { localStorage.removeItem('google_ai_key'); toast('✓ Clé réinitialisée (celle par défaut sera utilisée)'); }
 };
 
 // SEND
@@ -830,35 +829,34 @@ window.sendMsg = async function() {
     progDiv.innerHTML = '<div style="font-size:12px;color:var(--tx2);margin-bottom:8px">🎨 Génération…</div><div style="height:4px;border-radius:2px;background:var(--b1);overflow:hidden;max-width:240px;margin:0 auto"><div id="imgProgBar" style="height:100%;width:0%;border-radius:2px;background:linear-gradient(90deg,var(--a1),var(--a2));transition:width .3s ease"></div></div><div id="imgProgPct" style="font-size:13px;font-weight:600;color:var(--tx);margin-top:6px;font-variant-numeric:tabular-nums">0%</div>';
     imgWrap.appendChild(progDiv);
     try {
-      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?width=1024&height=1024&model=flux&nofeed=true`;
       const bar = document.getElementById('imgProgBar');
       const pct = document.getElementById('imgProgPct');
-      let done = false;
       const anim = () => {
-        if (done) return;
         const w = parseFloat(bar.style.width) || 0;
-        if (w < 92) {
-          const inc = Math.max(0.5, (92 - w) / 40);
-          bar.style.width = Math.min(92, w + inc) + '%';
-          pct.textContent = Math.round(Math.min(92, w + inc)) + '%';
-          requestAnimationFrame(anim);
-        }
+        if (w < 95) { bar.style.width = Math.min(95, w + 3) + '%'; pct.textContent = Math.round(Math.min(95, w + 3)) + '%'; requestAnimationFrame(anim); }
       };
       requestAnimationFrame(anim);
-      const img = document.createElement('img');
-      img.style.cssText = 'width:100%;display:block;border-radius:10px;';
-      img.alt = text;
-      img.onload = () => {
-        done = true;
-        bar.style.width = '100%';
-        pct.textContent = '100%';
-        setTimeout(() => { imgWrap.innerHTML = ''; imgWrap.style.padding = '0'; imgWrap.appendChild(img); msgs.scrollTop = 99999; }, 300);
-      };
-      img.onerror = () => {
-        done = true;
-        imgWrap.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--a3)">⚠️ Erreur de chargement — réessaie</div>';
-      };
-      img.src = url;
+      const aiKey = localStorage.getItem('google_ai_key') || GOOGLE_AI_KEY;
+      const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=" + aiKey, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ instances: [{ prompt: text }], parameters: { sampleCount: 1 } })
+      });
+      if (!resp.ok) throw new Error("Erreur " + resp.status);
+      const data = await resp.json();
+      const b64 = data.predictions?.[0]?.bytesBase64Encoded;
+      if (!b64) throw new Error("Aucune image retournée");
+      bar.style.width = '100%'; pct.textContent = '100%';
+      setTimeout(() => {
+        imgWrap.innerHTML = '';
+        imgWrap.style.padding = '0';
+        const img = document.createElement('img');
+        img.style.cssText = 'width:100%;display:block;border-radius:10px;';
+        img.alt = text;
+        img.src = 'data:image/png;base64,' + b64;
+        imgWrap.appendChild(img);
+        msgs.scrollTop = 99999;
+      }, 200);
         imgWrap.appendChild(img);
         msgs.scrollTop = 99999;
       }, 200);
@@ -1050,14 +1048,8 @@ function addMsg(role, content, isImage) {
   row.innerHTML = `<div class="av ${role === 'ai' ? 'ai-av' : 'usr-av'}">${emo}</div><div class="msg-body" style="${role === 'ai' && isImage ? '' : ''}"><div class="bbl ${role === 'ai' ? 'ai-bbl' : 'usr-bbl'}">${imgUrl && role === 'user' ? '' : isImage ? `<strong>🎨 Image générée :</strong><br>${escHtml(text)}` : role === 'user' && isArr ? '' : fmt(text)}</div>${imgUrl && role === 'user' ? `<div class="bbl ${role === 'ai' ? 'ai-bbl' : 'usr-bbl'}" style="padding:4px;margin-top:2px"><img class="uploaded-img" src="${imgUrl}"></div>` : ''}</div>`;
   if (isImage && role === 'ai') {
     const imgWrap = document.createElement('div');
-    imgWrap.style.cssText = 'margin:8px 0;border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.3);padding:20px;text-align:center;font-size:13px;color:var(--tx2);';
-    imgWrap.textContent = '🎨 Rechargement…';
-    const img = document.createElement('img');
-    img.style.cssText = 'width:100%;display:block;border-radius:10px;';
-    img.alt = text;
-    img.onload = () => { imgWrap.innerHTML = ''; imgWrap.style.padding = '0'; imgWrap.appendChild(img); msgs.scrollTop = 99999; };
-    img.onerror = () => { imgWrap.textContent = '🎨 ' + text; imgWrap.style.padding = '20px'; };
-    img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?width=1024&height=1024&model=flux&nofeed=true`;
+    imgWrap.style.cssText = 'margin:8px 0;border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.3);padding:16px 20px;text-align:center;font-size:13px;color:var(--tx2);';
+    imgWrap.textContent = '🎨 ' + text;
     row.querySelector('.msg-body').appendChild(imgWrap);
   }
   msgs.appendChild(row);
@@ -1222,7 +1214,7 @@ document.addEventListener('contextmenu', function(e) {
   if (e.target.closest('.modal-overlay')) { e.preventDefault(); }
 });
 document.addEventListener('copy', function(e) {
-  if (e.target.id === 'apiKeyInput' || e.target.id === 'hfTokenInput') { e.preventDefault(); toast('🔒 Copie désactivée'); }
+  if (e.target.id === 'apiKeyInput' || e.target.id === 'googleAiKeyInput') { e.preventDefault(); toast('🔒 Copie désactivée'); }
 });
 
 async function getAIResponse(userMessage, imageBase64 = null) {
