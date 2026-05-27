@@ -431,6 +431,14 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
   .vm-response{font-size:13px;max-width:90%;}
 }
 </style>
+<style>.vapi-btn{display:none!important;}</style>
+<!-- Vapi SDK -->
+<script>
+var vapiInstance = null;
+var VAPI_PUBLIC_KEY = '9a0d1d38-6481-40b1-8c05-7c09bf424318';
+var VAPI_ASSISTANT_ID = '5eb60484-60f1-4be3-902e-b93bab17974b';
+(function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];g.src='https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js';g.defer=true;g.async=true;s.parentNode.insertBefore(g,s);g.onload=function(){vapiInstance=window.vapiSDK.run({apiKey:VAPI_PUBLIC_KEY,assistant:VAPI_ASSISTANT_ID,config:{}});};})(document,'script');
+</script>
 </head>
 <body>
 <div class="app">
@@ -1348,23 +1356,7 @@ document.addEventListener('copy', function(e) {
 });
 
 // VOICE MODE
-let vmRecognition = null;
-let vmListening = false;
-let vmSpeaking = false;
-let vmSilenceTimer = null;
-let vmFinalTranscript = '';
-
-function vmCreateParticles() {
-  const c = document.getElementById('vmParticles');
-  c.innerHTML = '';
-  for (let i = 0; i < 30; i++) {
-    const p = document.createElement('div');
-    p.className = 'vm-particle';
-    const size = 2 + Math.random() * 4;
-    p.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*4}s;animation-duration:${3+Math.random()*3}s;`;
-    c.appendChild(p);
-  }
-}
+var vmListening = false;
 
 function vmSetStatus(txt) { document.getElementById('vmStatusText').textContent = txt; }
 
@@ -1372,161 +1364,18 @@ function vmOpen() {
   document.getElementById('vmOverlay').classList.add('vm-on');
   document.getElementById('vmTranscript').textContent = '';
   document.getElementById('vmResponse').textContent = '';
-  vmCreateParticles();
-  vmSetStatus('Initialisation…');
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) { vmSetStatus('❌ Reconnaissance vocale non supportée'); return; }
-  vmRecognition = new SpeechRecognition();
-  vmRecognition.lang = 'fr-FR';
-  vmRecognition.continuous = true;
-  vmRecognition.interimResults = true;
-  vmRecognition.maxAlternatives = 1;
-
-  vmRecognition.onresult = (e) => {
-    let interim = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      const t = e.results[i][0].transcript;
-      if (e.results[i].isFinal) vmFinalTranscript += t + ' ';
-      else interim += t;
-    }
-    const display = vmFinalTranscript + interim;
-    document.getElementById('vmTranscript').textContent = display || '…';
-    clearTimeout(vmSilenceTimer);
-    vmSilenceTimer = setTimeout(() => {
-      if (vmFinalTranscript.trim() && !vmSpeaking) vmSendVoice(vmFinalTranscript.trim());
-    }, 1200);
-  };
-
-  vmRecognition.onerror = (e) => {
-    if (e.error !== 'no-speech' && e.error !== 'aborted') {
-      vmSetStatus('❌ Erreur: ' + e.error);
-      setTimeout(() => { if (document.getElementById('vmOverlay').classList.contains('vm-on')) vmStartListening(); }, 1500);
-    }
-  };
-
-  vmRecognition.onend = () => {
-    if (!vmSpeaking && document.getElementById('vmOverlay').classList.contains('vm-on')) {
-      if (vmFinalTranscript.trim()) vmSendVoice(vmFinalTranscript.trim());
-      else vmStartListening();
-    }
-  };
-
-  document.getElementById('vmOrb').className = 'vm-orb listening';
-  vmStartListening();
-}
-
-function vmStartListening() {
-  if (vmRecognition && !vmListening) {
-    vmListening = true;
-    vmSpeaking = false;
-    vmFinalTranscript = '';
-    vmSetStatus('Je vous écoute…');
-    document.getElementById('vmResponse').textContent = '';
-    document.getElementById('vmTranscript').textContent = '';
-    document.getElementById('vmOrb').className = 'vm-orb listening';
-    try { vmRecognition.start(); } catch(e) {}
-  }
-}
-
-function vmStopListening() {
-  if (vmRecognition && vmListening) {
-    vmListening = false;
-    try { vmRecognition.stop(); } catch(e) {}
-  }
-}
-
-async function vmSendVoice(text) {
-  vmStopListening();
-  clearTimeout(vmSilenceTimer);
-  vmSpeaking = true;
-  vmSetStatus('🧠 Réflexion…');
-  document.getElementById('vmTranscript').textContent = text;
+  vmSetStatus('Connexion…');
   document.getElementById('vmOrb').className = 'vm-orb';
-  vmFinalTranscript = '';
-
-  hideWelcome();
-  addMsg('user', text);
-  const typingId = addTyping('');
-  let fullReply = '';
-
-  const msgs = [
-    { role: 'system', content: `Tu es un assistant vocal intégré dans Qwen AI, développé par tom_visionai_pro. Réponds de façon concise, naturelle, et adaptée à une réponse vocale (évite les listes trop longues, les blocs de code, les markdown lourds). Aujourd'hui on est le ${TODAY}.` },
-    ...conversationHistory,
-    { role: 'user', content: text }
-  ];
-
-  try {
-    const res = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
-      body: JSON.stringify({
-        model: selectedModel, messages: msgs, stream: true, temperature,
-        max_tokens: 2048
-      })
-    });
-    if (!res.ok) throw new Error('Erreur ' + res.status);
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-    const respEl = document.getElementById('vmResponse');
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-      for (const line of lines) {
-        const t = line.trim();
-        if (!t || t === 'data: [DONE]' || !t.startsWith('data: ')) continue;
-        try {
-          const j = JSON.parse(t.slice(6));
-          const d = j.choices?.[0]?.delta?.content || '';
-          if (d) { fullReply += d; respEl.textContent = fullReply; }
-        } catch(e) {}
-      }
-    }
-
-    removeTyping(typingId);
-    vmSetStatus('🗣️ Réponse vocale…');
-    document.getElementById('vmOrb').className = 'vm-orb speaking';
-    await vmSpeak(fullReply);
-    conversationHistory.push({ role: 'user', content: text });
-    conversationHistory.push({ role: 'assistant', content: fullReply });
-    saveCurrentConv();
-  } catch(e) {
-    removeTyping(typingId);
-    vmSetStatus('⚠️ Erreur: ' + e.message);
+  if (vapiInstance && vapiInstance.start) {
+    vapiInstance.start();
+    vmListening = true;
+  } else {
+    vmSetStatus('⚠️ Vapi pas encore chargé');
   }
-
-  vmSpeaking = false;
-  setTimeout(() => {
-    if (document.getElementById('vmOverlay').classList.contains('vm-on')) vmStartListening();
-  }, 400);
-}
-
-function vmSpeak(text) {
-  return new Promise((resolve) => {
-    if (!window.speechSynthesis) { resolve(); return; }
-    window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'fr-FR';
-    u.rate = 1.0;
-    u.pitch = 1.0;
-    const voices = window.speechSynthesis.getVoices();
-    const fr = voices.find(v => v.lang.startsWith('fr'));
-    if (fr) u.voice = fr;
-    u.onend = resolve;
-    u.onerror = resolve;
-    window.speechSynthesis.speak(u);
-  });
 }
 
 function vmClose() {
-  vmStopListening();
-  window.speechSynthesis.cancel();
-  clearTimeout(vmSilenceTimer);
-  vmSpeaking = false;
+  if (vapiInstance && vapiInstance.stop) vapiInstance.stop();
   vmListening = false;
   document.getElementById('vmOverlay').classList.remove('vm-on');
   const btn = document.getElementById('vmHeroBtn');
@@ -1537,8 +1386,43 @@ function vmClose() {
   if (status) { status.textContent = 'Appuyez pour parler'; status.classList.remove('active'); }
 }
 
-// Load voices early
-if (window.speechSynthesis) window.speechSynthesis.getVoices();
+// Vapi event listeners (set up after vapiInstance is created)
+function setupVapiListeners() {
+  if (!vapiInstance) return;
+  vapiInstance.on('call-start', function() {
+    vmSetStatus('Je vous écoute…');
+    document.getElementById('vmOrb').className = 'vm-orb listening';
+  });
+  vapiInstance.on('call-end', function() {
+    vmSetStatus('Appel terminé');
+    document.getElementById('vmOrb').className = 'vm-orb';
+    vmClose();
+  });
+  vapiInstance.on('speech-start', function() {
+    document.getElementById('vmOrb').className = 'vm-orb speaking';
+    vmSetStatus('🗣️ L’assistant parle…');
+  });
+  vapiInstance.on('speech-end', function() {
+    document.getElementById('vmOrb').className = 'vm-orb listening';
+    vmSetStatus('Je vous écoute…');
+  });
+  vapiInstance.on('message', function(msg) {
+    if (msg && msg.type === 'transcript') {
+      document.getElementById('vmTranscript').textContent = msg.transcript || '';
+    }
+  });
+  vapiInstance.on('error', function(e) {
+    vmSetStatus('⚠️ Erreur: ' + (e.message || e));
+  });
+}
+
+// Poll for vapiInstance to set up listeners
+var vapiCheckInterval = setInterval(function() {
+  if (window.vapiInstance) {
+    setupVapiListeners();
+    clearInterval(vapiCheckInterval);
+  }
+}, 500);
 </script>
 </body>
 </html>
