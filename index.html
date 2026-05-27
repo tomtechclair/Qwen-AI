@@ -160,7 +160,6 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
   gap:12px;padding:80px 20px 20px;margin:auto;overflow-y:auto;width:100%;
   animation:fadeUp .6s ease both;max-width:600px;
 }
-.input-zone .welcome{padding:20px 20px 8px;}
 .welcome h1{font-size:32px;font-weight:700;letter-spacing:-.5px;color:var(--tx);background:linear-gradient(135deg,var(--tx),var(--a2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 .welcome p{font-size:13px;color:var(--tx2);line-height:1.6;max-width:360px;}
 .q-suggest{
@@ -668,7 +667,7 @@ function showWelcome() {
   const w = document.createElement('div');
   w.className = 'welcome'; w.id = 'welcome';
   w.innerHTML = '<h1>Qwen AI</h1><p>Assistant gratuit et illimité — propulsé par Qwen Flash via MuleRouter • tom_visionai_pro</p><div class="q-suggest"><div class="q-card" onclick="quick(\'Écris-moi un composant React avec des hooks\')"><div class="q-card-ico">💻</div><div class="q-card-t">Code</div><div class="q-card-d">React, JS, Python…</div></div><div class="q-card" onclick="quick(\'Donne-moi 5 idées de startup innovantes\')"><div class="q-card-ico">💡</div><div class="q-card-t">Idées</div><div class="q-card-d">Business, projets</div></div><div class="q-card" onclick="quick(\'Résous ce problème pas à pas: Si 3x + 7 = 22, que vaut x ?\')"><div class="q-card-ico">🧮</div><div class="q-card-t">Maths</div><div class="q-card-d">Équations, logique</div></div></div>';
-  document.querySelector('.input-zone').insertBefore(w, document.querySelector('.inp-wrap'));
+  document.getElementById('msgs').appendChild(w);
 }
 
 function saveCurrentConv() {
@@ -694,6 +693,9 @@ function switchConv(id) {
     conversationHistory.forEach(m => addMsg(m.role, m.content, m.isImage));
   } else {
     showWelcome();
+    const greeting = "Bonjour ! 👋 Je suis **Qwen AI**, ton assistant gratuit et illimité. Pose-moi toutes tes questions, je suis là pour t'aider !";
+    addMsg('ai', greeting);
+    conversationHistory.push({ role: 'assistant', content: greeting });
   }
   renderSidebar();
   closeSidebar();
@@ -718,6 +720,9 @@ window.deleteConv = function(id) {
       conversationHistory.forEach(m => addMsg(m.role, m.content, m.isImage));
     } else {
       showWelcome();
+      const g = "Bonjour ! 👋 Je suis **Qwen AI**, ton assistant gratuit et illimité. Pose-moi toutes tes questions, je suis là pour t'aider !";
+      addMsg('ai', g);
+      conversationHistory.push({ role: 'assistant', content: g });
     }
   }
   saveConvs();
@@ -733,6 +738,9 @@ window.newChat = function() {
   conversationHistory = [];
   document.getElementById('msgs').querySelectorAll('.msg-row').forEach(el => el.remove());
   showWelcome();
+  const g = "Bonjour ! 👋 Je suis **Qwen AI**, ton assistant gratuit et illimité. Pose-moi toutes tes questions, je suis là pour t'aider !";
+  addMsg('ai', g);
+  conversationHistory.push({ role: 'assistant', content: g });
   saveConvs();
   renderSidebar();
   closeSidebar();
@@ -752,6 +760,9 @@ function initConvs() {
     conversationHistory.forEach(m => addMsg(m.role, m.content));
   } else {
     showWelcome();
+    const g = "Bonjour ! 👋 Je suis **Qwen AI**, ton assistant gratuit et illimité. Pose-moi toutes tes questions, je suis là pour t'aider !";
+    addMsg('ai', g);
+    conversationHistory.push({ role: 'assistant', content: g });
   }
   renderSidebar();
 }
