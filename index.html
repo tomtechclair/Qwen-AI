@@ -471,6 +471,11 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
       <input class="modal-input" id="apiKeyInput" type="password" placeholder="sk-mr-..." spellcheck="false" oncopy="return false" oncut="return false">
     </div>
     <button id="apiToggleCustomKey" onclick="apiToggleCustomKey()" style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:7px;border:1px solid var(--b2);background:var(--s1);color:var(--tx2);font-size:11px;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;width:100%;margin-bottom:12px;justify-content:center">➕ Ma propre clé</button>
+    <div style="margin-top:8px;padding-top:12px;border-top:1px solid var(--b2)">
+      <label class="modal-label">🎨 Token Hugging Face (images)</label>
+      <input class="modal-input" id="hfTokenInput" type="password" placeholder="hf_..." spellcheck="false" style="margin-bottom:8px">
+      <button class="modal-btn primary" onclick="saveHfToken()" style="font-size:11px;padding:6px 12px">💾 Enregistrer token HF</button>
+    </div>
     <div class="modal-actions">
       <button class="modal-btn sec" onclick="closeAPISettings()">Fermer</button>
       <button class="modal-btn primary" id="apiSaveKeyBtn" onclick="apiSaveSettings()" style="display:none">💾 Enregistrer</button>
@@ -770,6 +775,7 @@ window.openAPISettings = function() {
     document.getElementById('apiCustomKeySection').style.display = 'none';
     document.getElementById('apiSaveKeyBtn').style.display = 'none';
   }
+  document.getElementById('hfTokenInput').value = localStorage.getItem('hf_token') || '';
   document.getElementById('apiModal').classList.add('show');
   closeSidebar();
 };
@@ -781,6 +787,11 @@ window.apiSaveSettings = function() {
   if (!key) { apiKey = DEFAULT_API_KEY; localStorage.removeItem('ds_api_key'); closeAPISettings(); toast('✓ Clé intégrée active'); return; }
   if (!key.startsWith('sk-') && !key.startsWith('sk-mr-')) { toast('⚠️ Clé invalide (doit commencer par sk-mr-)'); return; }
   apiKey = key; localStorage.setItem('ds_api_key', apiKey); closeAPISettings(); toast('✓ Clé personnelle enregistrée');
+};
+window.saveHfToken = function() {
+  const token = document.getElementById('hfTokenInput').value.trim();
+  if (token) { localStorage.setItem('hf_token', token); toast('✓ Token Hugging Face enregistré'); }
+  else { localStorage.removeItem('hf_token'); toast('✓ Token réinitialisé (utilisation du token par défaut)'); }
 };
 
 // SEND
@@ -819,7 +830,7 @@ window.sendMsg = async function() {
     try {
       const hfModel = "black-forest-labs/FLUX.1-dev";
       const hfUrl = `https://api-inference.huggingface.co/models/${hfModel}`;
-      const hfToken = "hf_your_token_here";
+      const hfToken = localStorage.getItem('hf_token');
       const hfRes = await fetch(hfUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${hfToken}` },
