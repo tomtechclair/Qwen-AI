@@ -418,6 +418,10 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
 @keyframes vm-hero-wave{0%{transform:scaleY(.3);opacity:.5;}100%{transform:scaleY(1);opacity:1;}}
 .vm-hero-status{font-size:13px;color:rgba(255,255,255,0.4);letter-spacing:1px;transition:color .3s;min-height:20px;}
 .vm-hero-status.active{color:rgba(79,142,255,0.7);}
+.voice-btn{width:42px;height:42px;border:none;background:none;color:#00ff9d;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all .3s;}
+.voice-btn:hover{background:rgba(0,255,157,0.1);transform:scale(1.1);}
+.voice-btn.listening{color:#ff2d55;animation:pulse 1.5s infinite;}
+@keyframes pulse{0%{transform:scale(1);}50%{transform:scale(1.15);}100%{transform:scale(1);}}
 @media(max-width:600px){
   .vm-hero-btn{width:100px;height:100px;}
   .vm-hero-mic{width:36px;height:36px;}
@@ -1332,7 +1336,7 @@ document.addEventListener('copy', function(e) {
   if (e.target.id === 'apiKeyInput') { e.preventDefault(); toast('🔒 Copie désactivée'); }
 });
 
-// VOICE MODE
+// ==================== MODE VOCAL AMÉLIORÉ ====================
 let recognition = null;
 let isListening = false;
 let finalTranscript = '';
@@ -1341,14 +1345,9 @@ function checkVoiceSupport() {
   return 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
 }
 
-function vmSetStatus(txt) {
-  const el = document.getElementById('vmStatusText');
-  if (el) el.textContent = txt;
-}
-
 function initVoiceRecognition() {
   if (!checkVoiceSupport()) {
-    toast("❌ Ton navigateur ne supporte pas la reconnaissance vocale.");
+    toast("❌ Reconnaissance vocale non supportée par ton navigateur.");
     return false;
   }
 
@@ -1358,7 +1357,6 @@ function initVoiceRecognition() {
   recognition.lang = 'fr-FR';
   recognition.interimResults = true;
   recognition.continuous = false;
-  recognition.maxAlternatives = 1;
 
   recognition.onresult = function(event) {
     let interim = '';
@@ -1378,50 +1376,40 @@ function initVoiceRecognition() {
 
   recognition.onend = function() {
     isListening = false;
-    const orb = document.getElementById('vmOrb');
-    if (orb) orb.classList.remove('listening');
+    stopAllListeningAnimations();
 
-    if (finalTranscript.trim()) {
-      setTimeout(() => {
-        document.getElementById('inp').value = finalTranscript;
-        sendMsg();
-        closeVoiceMode();
-      }, 600);
-    } else {
+    if (finalTranscript.trim() !== '') {
+      document.getElementById('inp').value = finalTranscript;
+      sendMsg();
       closeVoiceMode();
     }
   };
 
   recognition.onerror = function(event) {
-    console.error('Voice error:', event);
-    toast("Erreur de reconnaissance vocale : " + event.error);
+    console.error(event);
+    toast("Erreur micro : " + event.error);
     closeVoiceMode();
   };
 
   return true;
 }
 
-window.openVoiceMode = function() {
-  const btn = document.getElementById('vmHeroBtn');
-  const waves = document.getElementById('vmHeroWaves');
-  const status = document.getElementById('vmHeroStatus');
+function stopAllListeningAnimations() {
+  document.querySelectorAll('.voice-btn, #vmOrb').forEach(el => {
+    el.classList.remove('listening');
+  });
+}
 
+// Ouvrir mode vocal
+window.openVoiceMode = function() {
   if (!recognition) {
     if (!initVoiceRecognition()) return;
   }
 
   const overlay = document.getElementById('vmOverlay');
-  if (!overlay) {
-    toast("Erreur : overlay vocal non trouvé");
-    return;
+  if (overlay) {
+    overlay.style.display = 'flex';
   }
-
-  overlay.style.display = 'flex';
-  overlay.classList.add('vm-on');
-  if (btn) btn.classList.add('active');
-  if (waves) waves.classList.add('active');
-  if (status) { status.textContent = 'Écoute active…'; status.classList.add('active'); }
-  vmSetStatus('Je vous écoute…');
 
   const orb = document.getElementById('vmOrb');
   if (orb) orb.classList.add('listening');
@@ -1432,39 +1420,34 @@ window.openVoiceMode = function() {
   try {
     recognition.start();
   } catch(e) {
-    toast("Impossible de démarrer le micro");
+    toast("Impossible d'accéder au micro");
   }
 };
 
 window.closeVoiceMode = function() {
   const overlay = document.getElementById('vmOverlay');
-  if (overlay) {
-    overlay.style.display = 'none';
-    overlay.classList.remove('vm-on');
-  }
+  if (overlay) overlay.style.display = 'none';
 
-  if (recognition && isListening) {
-    recognition.stop();
-  }
+  if (recognition) recognition.stop();
   isListening = false;
-
-  const btn = document.getElementById('vmHeroBtn');
-  const waves = document.getElementById('vmHeroWaves');
-  const status = document.getElementById('vmHeroStatus');
-  if (btn) btn.classList.remove('active');
-  if (waves) waves.classList.remove('active');
-  if (status) { status.textContent = 'Appuyez pour parler'; status.classList.remove('active'); }
+  stopAllListeningAnimations();
 };
 
-// Créer le bouton flottant si pas présent
-if (!document.getElementById('vmFab')) {
-  const fab = document.createElement('button');
-  fab.id = 'vmFab';
-  fab.className = 'vm-fab';
-  fab.innerHTML = '🎤';
-  fab.onclick = openVoiceMode;
-  document.body.appendChild(fab);
-}
+// ==================== BOUTON MICRO DANS LA BARRE D'INPUT ====================
+(function() {
+  const inputContainer = document.querySelector('.input-container') ||
+                        document.querySelector('.chat-input') ||
+                        document.getElementById('inp').parentElement;
+
+  if (inputContainer) {
+    const voiceBtn = document.createElement('button');
+    voiceBtn.className = 'voice-btn';
+    voiceBtn.innerHTML = '🎤';
+    voiceBtn.title = "Mode vocal";
+    voiceBtn.onclick = openVoiceMode;
+    inputContainer.appendChild(voiceBtn);
+  }
+})();
 </script>
 </body>
 </html>
