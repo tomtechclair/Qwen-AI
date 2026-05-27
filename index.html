@@ -662,6 +662,9 @@ function switchConv(id) {
   if (conversationHistory.length > 0) {
     conversationHistory.forEach(m => addMsg(m.role, m.content, m.isImage));
   } else {
+    const greeting = "Bonjour ! 👋 Je suis **Qwen AI**, ton assistant gratuit et illimité. Pose-moi toutes tes questions, je suis là pour t'aider !";
+    addMsg('ai', greeting);
+    conversationHistory.push({ role: 'assistant', content: greeting });
     showWelcome();
   }
   renderSidebar();
@@ -686,6 +689,9 @@ window.deleteConv = function(id) {
     if (conversationHistory.length > 0) {
       conversationHistory.forEach(m => addMsg(m.role, m.content, m.isImage));
     } else {
+      const greeting = "Bonjour ! 👋 Je suis **Qwen AI**, ton assistant gratuit et illimité. Pose-moi toutes tes questions, je suis là pour t'aider !";
+      addMsg('ai', greeting);
+      conversationHistory.push({ role: 'assistant', content: greeting });
       showWelcome();
     }
   }
@@ -701,6 +707,9 @@ window.newChat = function() {
   activeConvId = id;
   conversationHistory = [];
   document.getElementById('msgs').querySelectorAll('.msg-row').forEach(el => el.remove());
+  const greeting = "Bonjour ! 👋 Je suis **Qwen AI**, ton assistant gratuit et illimité. Pose-moi toutes tes questions, je suis là pour t'aider !";
+  addMsg('ai', greeting);
+  conversationHistory.push({ role: 'assistant', content: greeting });
   showWelcome();
   saveConvs();
   renderSidebar();
@@ -719,6 +728,11 @@ function initConvs() {
   if (conv && conv.history.length) {
     conversationHistory = [...conv.history];
     conversationHistory.forEach(m => addMsg(m.role, m.content));
+  } else {
+    const greeting = "Bonjour ! 👋 Je suis **Qwen AI**, ton assistant gratuit et illimité. Pose-moi toutes tes questions, je suis là pour t'aider !";
+    addMsg('ai', greeting);
+    conversationHistory.push({ role: 'assistant', content: greeting });
+    showWelcome();
   }
   renderSidebar();
 }
