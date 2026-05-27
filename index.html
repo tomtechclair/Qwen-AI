@@ -382,51 +382,7 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
 .vm-particles{position:absolute;width:100%;height:100%;overflow:hidden;pointer-events:none;z-index:1;}
 .vm-particle{position:absolute;border-radius:50%;background:rgba(79,142,255,.4);animation:vm-float 4s ease-in-out infinite;}
 /* FLOATING MIC BUTTON */
-.vm-fab{position:fixed;bottom:90px;right:20px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#4f8eff,#7c3aed);border:none;color:#fff;font-size:24px;cursor:pointer;z-index:999;box-shadow:0 4px 20px rgba(79,142,255,.35);transition:all .25s;display:flex;align-items:center;justify-content:center;}
-.vm-fab:hover{transform:scale(1.08);box-shadow:0 6px 30px rgba(79,142,255,.5);}
-.vm-fab:active{transform:scale(.95);}
-/* CENTER GLASSMORPHISM VOICE BUTTON */
-.vm-hero{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;padding:20px;animation:fadeUp .6s ease both;flex:1;min-height:0;text-align:center;}
-.vm-hero-label{font-size:13px;color:rgba(255,255,255,0.35);letter-spacing:3px;text-transform:uppercase;font-weight:500;}
-.vm-hero-btn{position:relative;width:120px;height:120px;border-radius:50%;cursor:pointer;border:none;background:rgba(255,255,255,0.04);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;transition:all .3s cubic-bezier(.4,0,.2,1);touch-action:manipulation;}
-.vm-hero-btn::before{content:'';position:absolute;inset:-3px;border-radius:50%;background:linear-gradient(135deg,rgba(79,142,255,0.2),rgba(124,58,237,0.2));z-index:-1;filter:blur(8px);transition:all .3s;}
-.vm-hero-btn::after{content:'';position:absolute;inset:0;border-radius:50%;box-shadow:0 0 60px rgba(79,142,255,0.15),inset 0 0 60px rgba(79,142,255,0.03);transition:all .3s;}
-.vm-hero-btn:hover{transform:scale(1.05);border-color:rgba(255,255,255,0.15);}
-.vm-hero-btn:hover::before{inset:-6px;filter:blur(12px);opacity:.7;}
-.vm-hero-btn:hover::after{box-shadow:0 0 80px rgba(79,142,255,0.25),inset 0 0 60px rgba(79,142,255,0.05);}
-.vm-hero-btn:active{transform:scale(.97);}
-.vm-hero-btn.active{background:rgba(79,142,255,0.08);border-color:rgba(79,142,255,0.25);animation:vm-hero-pulse 1.5s ease-in-out infinite;}
-.vm-hero-btn.active::after{box-shadow:0 0 80px rgba(79,142,255,0.35),0 0 120px rgba(124,58,237,0.2),inset 0 0 60px rgba(79,142,255,0.08);}
-@keyframes vm-hero-pulse{0%,100%{transform:scale(1);box-shadow:0 0 40px rgba(79,142,255,0.15);}50%{transform:scale(1.03);box-shadow:0 0 80px rgba(79,142,255,0.3),0 0 120px rgba(124,58,237,0.15);}}
-.vm-hero-btn.active .vm-hero-pulse-ring{opacity:1;animation:vm-hero-ring 2s ease-out infinite;}
-.vm-hero-pulse-ring{position:absolute;width:100%;height:100%;border-radius:50%;border:1px solid rgba(79,142,255,0.3);opacity:0;pointer-events:none;}
-.vm-hero-pulse-ring:nth-child(2){animation-delay:.6s;}
-.vm-hero-pulse-ring:nth-child(3){animation-delay:1.2s;}
-@keyframes vm-hero-ring{0%{transform:scale(1);opacity:.8;}100%{transform:scale(1.8);opacity:0;}}
-.vm-hero-mic{width:44px;height:44px;color:rgba(255,255,255,0.9);position:relative;z-index:1;transition:all .3s;filter:drop-shadow(0 0 8px rgba(79,142,255,0.3));}
-.vm-hero-btn.active .vm-hero-mic{color:#4f8eff;filter:drop-shadow(0 0 16px rgba(79,142,255,0.6));}
-.vm-hero-waves{display:flex;align-items:center;gap:3px;height:24px;opacity:0;transition:opacity .4s;}
-.vm-hero-waves.active{opacity:1;}
-.vm-hero-wave{width:3px;border-radius:2px;background:linear-gradient(to top,#4f8eff,#a78bfa);animation:vm-hero-wave 1s ease-in-out infinite alternate;transform-origin:bottom;}
-.vm-hero-wave:nth-child(1){height:30%;animation-delay:0s;}
-.vm-hero-wave:nth-child(2){height:55%;animation-delay:.1s;}
-.vm-hero-wave:nth-child(3){height:85%;animation-delay:.2s;}
-.vm-hero-wave:nth-child(4){height:100%;animation-delay:.3s;}
-.vm-hero-wave:nth-child(5){height:70%;animation-delay:.4s;}
-.vm-hero-wave:nth-child(6){height:45%;animation-delay:.5s;}
-.vm-hero-wave:nth-child(7){height:25%;animation-delay:.6s;}
-@keyframes vm-hero-wave{0%{transform:scaleY(.3);opacity:.5;}100%{transform:scaleY(1);opacity:1;}}
-.vm-hero-status{font-size:13px;color:rgba(255,255,255,0.4);letter-spacing:1px;transition:color .3s;min-height:20px;}
-.vm-hero-status.active{color:rgba(79,142,255,0.7);}
-.voice-btn{width:42px;height:42px;border:none;background:none;color:#00ff9d;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:50%;transition:all .3s;}
-.voice-btn:hover{background:rgba(0,255,157,0.1);transform:scale(1.1);}
-.voice-btn.listening{color:#ff2d55;animation:pulse 1.5s infinite;}
-@keyframes pulse{0%{transform:scale(1);}50%{transform:scale(1.15);}100%{transform:scale(1);}}
 @media(max-width:600px){
-  .vm-hero-btn{width:100px;height:100px;}
-  .vm-hero-mic{width:36px;height:36px;}
-  .vm-hero-label{font-size:11px;letter-spacing:2px;}
-  .vm-orb{width:90px;height:90px;}
   .vm-ring{width:150px;height:150px;}
   .vm-ring2{width:200px;height:200px;}
   .vm-ring3{width:240px;height:240px;}
@@ -477,26 +433,6 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
 
     <!-- MESSAGES -->
     <section class="msgs" id="msgs">
-      <div class="vm-hero" id="vmHero">
-        <div class="vm-hero-label">Mode vocal</div>
-        <button class="vm-hero-btn" id="vmHeroBtn" onclick="openVoiceMode()">
-          <span class="vm-hero-pulse-ring"></span>
-          <span class="vm-hero-pulse-ring"></span>
-          <span class="vm-hero-pulse-ring"></span>
-          <svg class="vm-hero-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-            <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
-          </svg>
-        </button>
-        <div class="vm-hero-waves" id="vmHeroWaves">
-          <span class="vm-hero-wave"></span><span class="vm-hero-wave"></span>
-          <span class="vm-hero-wave"></span><span class="vm-hero-wave"></span>
-          <span class="vm-hero-wave"></span><span class="vm-hero-wave"></span>
-          <span class="vm-hero-wave"></span>
-        </div>
-        <div class="vm-hero-status" id="vmHeroStatus">Appuyez pour parler</div>
-      </div>
     </section>
 
     <!-- STOP -->
@@ -750,31 +686,7 @@ function renderSidebar() {
 }
 
 function showWelcome() {
-  const sec = document.getElementById('msgs');
-  let hero = document.getElementById('vmHero');
-  if (!hero) {
-    hero = document.createElement('div');
-    hero.className = 'vm-hero'; hero.id = 'vmHero';
-    hero.innerHTML = `<div class="vm-hero-label">Mode vocal</div>
-<button class="vm-hero-btn" id="vmHeroBtn" onclick="openVoiceMode()">
-  <span class="vm-hero-pulse-ring"></span>
-  <span class="vm-hero-pulse-ring"></span>
-  <span class="vm-hero-pulse-ring"></span>
-  <svg class="vm-hero-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-    <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-    <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
-  </svg>
-</button>
-<div class="vm-hero-waves" id="vmHeroWaves">
-  <span class="vm-hero-wave"></span><span class="vm-hero-wave"></span>
-  <span class="vm-hero-wave"></span><span class="vm-hero-wave"></span>
-  <span class="vm-hero-wave"></span><span class="vm-hero-wave"></span>
-  <span class="vm-hero-wave"></span>
-</div>
-<div class="vm-hero-status" id="vmHeroStatus">Appuyez pour parler</div>`;
-    sec.prepend(hero);
-  }
+  // Plus de hero central - le micro est dans la barre d'input
 }
 
 function saveCurrentConv() {
@@ -794,8 +706,6 @@ function switchConv(id) {
   activeConvId = id;
   saveConvs();
   document.getElementById('msgs').querySelectorAll('.msg-row').forEach(el => el.remove());
-  const w = document.getElementById('vmHero');
-  if (w) w.remove();
   const conv = currentConv();
   conversationHistory = conv ? [...conv.history] : [];
   if (conversationHistory.length > 0) {
@@ -822,8 +732,6 @@ window.deleteConv = function(id) {
     activeConvId = next.id;
     conversationHistory = [...next.history];
     document.getElementById('msgs').querySelectorAll('.msg-row').forEach(el => el.remove());
-    const w = document.getElementById('vmHero');
-    if (w) w.remove();
     if (conversationHistory.length > 0) {
       conversationHistory.forEach(m => addMsg(m.role, m.content, m.isImage));
     } else {
@@ -842,8 +750,6 @@ window.newChat = function() {
   activeConvId = id;
   conversationHistory = [];
   document.getElementById('msgs').querySelectorAll('.msg-row').forEach(el => el.remove());
-  const w = document.getElementById('vmHero');
-  if (w) w.remove();
   showWelcome();
   saveConvs();
   renderSidebar();
@@ -1105,6 +1011,7 @@ window.sendMsg = async function() {
       currentBubble.innerHTML = fmt(fullReply);
       addFeedback(currentBubble);
     }
+    if (fullReply.trim()) speak(fullReply);
     conversationHistory.push({ role: 'user', content: msgContent });
     conversationHistory.push({ role: 'assistant', content: fullReply });
     if (conversationHistory.length > 40) conversationHistory = conversationHistory.slice(-40);
@@ -1116,6 +1023,7 @@ window.sendMsg = async function() {
           currentBubble.innerHTML = fmt(fullReply);
           addFeedback(currentBubble);
         }
+        if (fullReply.trim()) speak(fullReply);
         conversationHistory.push({ role: 'user', content: msgContent });
         conversationHistory.push({ role: 'assistant', content: fullReply });
       }
@@ -1145,11 +1053,7 @@ window.quick = function(text) {
 };
 
 // DOM HELPERS
-function hideWelcome() { const w = document.getElementById('vmHero'); if (w) w.remove(); }
-
-window.toggleVoiceHero = function() {
-  openVoiceMode();
-};
+function hideWelcome() {}
 function addMsg(role, content, isImage) {
   const msgs = document.getElementById('msgs');
   const row = document.createElement('div');
@@ -1448,6 +1352,30 @@ window.closeVoiceMode = function() {
     inputContainer.appendChild(voiceBtn);
   }
 })();
+</script>
+
+<script>
+// ==================== RÉPONSE VOCALE (IA qui parle) ====================
+let speechSynth = window.speechSynthesis;
+let currentUtterance = null;
+
+function speak(text) {
+  if (speechSynth.speaking) speechSynth.cancel();
+
+  currentUtterance = new SpeechSynthesisUtterance(text);
+  currentUtterance.lang = 'fr-FR';
+  currentUtterance.rate = 1.0;
+  currentUtterance.pitch = 1.0;
+  currentUtterance.volume = 1.0;
+
+  const voices = speechSynth.getVoices();
+  const frenchVoice = voices.find(voice =>
+    voice.lang.includes('fr') || voice.name.toLowerCase().includes('fr')
+  );
+  if (frenchVoice) currentUtterance.voice = frenchVoice;
+
+  speechSynth.speak(currentUtterance);
+}
 </script>
 </body>
 </html>
