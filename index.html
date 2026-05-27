@@ -473,7 +473,7 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
     <button id="apiToggleCustomKey" onclick="apiToggleCustomKey()" style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:7px;border:1px solid var(--b2);background:var(--s1);color:var(--tx2);font-size:11px;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;width:100%;margin-bottom:12px;justify-content:center">➕ Ma propre clé</button>
     <div style="margin-top:8px;padding-top:12px;border-top:1px solid var(--b2)">
       <label class="modal-label">🎨 Token Hugging Face (images)</label>
-      <input class="modal-input" id="hfTokenInput" type="password" placeholder="hf_..." spellcheck="false" style="margin-bottom:8px">
+      <input class="modal-input" id="hfTokenInput" type="password" placeholder="hf_..." spellcheck="false" style="margin-bottom:8px" oncopy="return false" oncut="return false" oncontextmenu="return false">
       <button class="modal-btn primary" onclick="saveHfToken()" style="font-size:11px;padding:6px 12px">💾 Enregistrer token HF</button>
     </div>
     <div class="modal-actions">
@@ -1206,7 +1206,7 @@ document.addEventListener('contextmenu', function(e) {
   if (e.target.closest('.modal-overlay')) { e.preventDefault(); }
 });
 document.addEventListener('copy', function(e) {
-  if (e.target.id === 'apiKeyInput') { e.preventDefault(); toast('🔒 Copie désactivée'); }
+  if (e.target.id === 'apiKeyInput' || e.target.id === 'hfTokenInput') { e.preventDefault(); toast('🔒 Copie désactivée'); }
 });
 
 async function getAIResponse(userMessage, imageBase64 = null) {
