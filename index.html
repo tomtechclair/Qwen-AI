@@ -431,14 +431,6 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
   .vm-response{font-size:13px;max-width:90%;}
 }
 </style>
-<style>.vapi-btn{display:none!important;}</style>
-<!-- Vapi SDK -->
-<script>
-var vapiInstance = null;
-var VAPI_PUBLIC_KEY = '9a0d1d38-6481-40b1-8c05-7c09bf424318';
-var VAPI_ASSISTANT_ID = '5eb60484-60f1-4be3-902e-b93bab17974b';
-(function(d,t){var g=d.createElement(t),s=d.getElementsByTagName(t)[0];g.src='https://cdn.jsdelivr.net/gh/VapiAI/html-script-tag@latest/dist/assets/index.js';g.defer=true;g.async=true;s.parentNode.insertBefore(g,s);g.onload=function(){vapiInstance=window.vapiSDK.run({apiKey:VAPI_PUBLIC_KEY,assistant:VAPI_ASSISTANT_ID,config:{}});};})(document,'script');
-</script>
 </head>
 <body>
 <div class="app">
@@ -483,7 +475,7 @@ var VAPI_ASSISTANT_ID = '5eb60484-60f1-4be3-902e-b93bab17974b';
     <section class="msgs" id="msgs">
       <div class="vm-hero" id="vmHero">
         <div class="vm-hero-label">Mode vocal</div>
-        <button class="vm-hero-btn" id="vmHeroBtn" onclick="toggleVoiceHero()">
+        <button class="vm-hero-btn" id="vmHeroBtn" onclick="openVoiceMode()">
           <span class="vm-hero-pulse-ring"></span>
           <span class="vm-hero-pulse-ring"></span>
           <span class="vm-hero-pulse-ring"></span>
@@ -526,7 +518,7 @@ var VAPI_ASSISTANT_ID = '5eb60484-60f1-4be3-902e-b93bab17974b';
 
 <!-- VOICE MODE -->
 <div class="vm-overlay" id="vmOverlay">
-  <button class="vm-close" onclick="vmClose()">✕</button>
+  <button class="vm-close" onclick="closeVoiceMode()">✕</button>
   <div class="vm-particles" id="vmParticles"></div>
   <div class="vm-center">
     <div class="vm-ring3"></div>
@@ -760,7 +752,7 @@ function showWelcome() {
     hero = document.createElement('div');
     hero.className = 'vm-hero'; hero.id = 'vmHero';
     hero.innerHTML = `<div class="vm-hero-label">Mode vocal</div>
-<button class="vm-hero-btn" id="vmHeroBtn" onclick="toggleVoiceHero()">
+<button class="vm-hero-btn" id="vmHeroBtn" onclick="openVoiceMode()">
   <span class="vm-hero-pulse-ring"></span>
   <span class="vm-hero-pulse-ring"></span>
   <span class="vm-hero-pulse-ring"></span>
@@ -1152,22 +1144,7 @@ window.quick = function(text) {
 function hideWelcome() { const w = document.getElementById('vmHero'); if (w) w.remove(); }
 
 window.toggleVoiceHero = function() {
-  const btn = document.getElementById('vmHeroBtn');
-  const waves = document.getElementById('vmHeroWaves');
-  const status = document.getElementById('vmHeroStatus');
-  if (!btn.classList.contains('active')) {
-    btn.classList.add('active');
-    waves.classList.add('active');
-    status.textContent = 'Écoute active…';
-    status.classList.add('active');
-    vmOpen();
-  } else {
-    btn.classList.remove('active');
-    waves.classList.remove('active');
-    status.textContent = 'Appuyez pour parler';
-    status.classList.remove('active');
-    vmClose();
-  }
+  openVoiceMode();
 };
 function addMsg(role, content, isImage) {
   const msgs = document.getElementById('msgs');
@@ -1356,73 +1333,138 @@ document.addEventListener('copy', function(e) {
 });
 
 // VOICE MODE
-var vmListening = false;
+let recognition = null;
+let isListening = false;
+let finalTranscript = '';
 
-function vmSetStatus(txt) { document.getElementById('vmStatusText').textContent = txt; }
-
-function vmOpen() {
-  document.getElementById('vmOverlay').classList.add('vm-on');
-  document.getElementById('vmTranscript').textContent = '';
-  document.getElementById('vmResponse').textContent = '';
-  vmSetStatus('Connexion…');
-  document.getElementById('vmOrb').className = 'vm-orb';
-  if (vapiInstance && vapiInstance.start) {
-    vapiInstance.start();
-    vmListening = true;
-  } else {
-    vmSetStatus('⚠️ Vapi pas encore chargé');
-  }
+function checkVoiceSupport() {
+  return 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
 }
 
-function vmClose() {
-  if (vapiInstance && vapiInstance.stop) vapiInstance.stop();
-  vmListening = false;
-  document.getElementById('vmOverlay').classList.remove('vm-on');
+function vmSetStatus(txt) {
+  const el = document.getElementById('vmStatusText');
+  if (el) el.textContent = txt;
+}
+
+function initVoiceRecognition() {
+  if (!checkVoiceSupport()) {
+    toast("❌ Ton navigateur ne supporte pas la reconnaissance vocale.");
+    return false;
+  }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+
+  recognition.lang = 'fr-FR';
+  recognition.interimResults = true;
+  recognition.continuous = false;
+  recognition.maxAlternatives = 1;
+
+  recognition.onresult = function(event) {
+    let interim = '';
+    finalTranscript = '';
+
+    for (let i = event.resultIndex; i < event.results.length; ++i) {
+      if (event.results[i].isFinal) {
+        finalTranscript = event.results[i][0].transcript;
+      } else {
+        interim = event.results[i][0].transcript;
+      }
+    }
+
+    const transcriptEl = document.getElementById('vmTranscript');
+    if (transcriptEl) transcriptEl.textContent = finalTranscript || interim;
+  };
+
+  recognition.onend = function() {
+    isListening = false;
+    const orb = document.getElementById('vmOrb');
+    if (orb) orb.classList.remove('listening');
+
+    if (finalTranscript.trim()) {
+      setTimeout(() => {
+        document.getElementById('inp').value = finalTranscript;
+        sendMsg();
+        closeVoiceMode();
+      }, 600);
+    } else {
+      closeVoiceMode();
+    }
+  };
+
+  recognition.onerror = function(event) {
+    console.error('Voice error:', event);
+    toast("Erreur de reconnaissance vocale : " + event.error);
+    closeVoiceMode();
+  };
+
+  return true;
+}
+
+window.openVoiceMode = function() {
+  const btn = document.getElementById('vmHeroBtn');
+  const waves = document.getElementById('vmHeroWaves');
+  const status = document.getElementById('vmHeroStatus');
+
+  if (!recognition) {
+    if (!initVoiceRecognition()) return;
+  }
+
+  const overlay = document.getElementById('vmOverlay');
+  if (!overlay) {
+    toast("Erreur : overlay vocal non trouvé");
+    return;
+  }
+
+  overlay.style.display = 'flex';
+  overlay.classList.add('vm-on');
+  if (btn) btn.classList.add('active');
+  if (waves) waves.classList.add('active');
+  if (status) { status.textContent = 'Écoute active…'; status.classList.add('active'); }
+  vmSetStatus('Je vous écoute…');
+
+  const orb = document.getElementById('vmOrb');
+  if (orb) orb.classList.add('listening');
+
+  isListening = true;
+  finalTranscript = '';
+
+  try {
+    recognition.start();
+  } catch(e) {
+    toast("Impossible de démarrer le micro");
+  }
+};
+
+window.closeVoiceMode = function() {
+  const overlay = document.getElementById('vmOverlay');
+  if (overlay) {
+    overlay.style.display = 'none';
+    overlay.classList.remove('vm-on');
+  }
+
+  if (recognition && isListening) {
+    recognition.stop();
+  }
+  isListening = false;
+
   const btn = document.getElementById('vmHeroBtn');
   const waves = document.getElementById('vmHeroWaves');
   const status = document.getElementById('vmHeroStatus');
   if (btn) btn.classList.remove('active');
   if (waves) waves.classList.remove('active');
   if (status) { status.textContent = 'Appuyez pour parler'; status.classList.remove('active'); }
-}
+};
 
-// Vapi event listeners (set up after vapiInstance is created)
-function setupVapiListeners() {
-  if (!vapiInstance) return;
-  vapiInstance.on('call-start', function() {
-    vmSetStatus('Je vous écoute…');
-    document.getElementById('vmOrb').className = 'vm-orb listening';
-  });
-  vapiInstance.on('call-end', function() {
-    vmSetStatus('Appel terminé');
-    document.getElementById('vmOrb').className = 'vm-orb';
-    vmClose();
-  });
-  vapiInstance.on('speech-start', function() {
-    document.getElementById('vmOrb').className = 'vm-orb speaking';
-    vmSetStatus('🗣️ L’assistant parle…');
-  });
-  vapiInstance.on('speech-end', function() {
-    document.getElementById('vmOrb').className = 'vm-orb listening';
-    vmSetStatus('Je vous écoute…');
-  });
-  vapiInstance.on('message', function(msg) {
-    if (msg && msg.type === 'transcript') {
-      document.getElementById('vmTranscript').textContent = msg.transcript || '';
-    }
-  });
-  vapiInstance.on('error', function(e) {
-    vmSetStatus('⚠️ Erreur: ' + (e.message || e));
-  });
+// Créer le bouton flottant si pas présent
+if (!document.getElementById('vmFab')) {
+  const fab = document.createElement('button');
+  fab.id = 'vmFab';
+  fab.className = 'vm-fab';
+  fab.innerHTML = '🎤';
+  fab.onclick = openVoiceMode;
+  document.body.appendChild(fab);
 }
-
-// Poll for vapiInstance to set up listeners
-var vapiCheckInterval = setInterval(function() {
-  if (window.vapiInstance) {
-    setupVapiListeners();
-    clearInterval(vapiCheckInterval);
-  }
-}, 500);
 </script>
 </body>
 </html>
