@@ -667,7 +667,7 @@ function showWelcome() {
   if (document.getElementById('welcome')) return;
   const w = document.createElement('div');
   w.className = 'welcome'; w.id = 'welcome';
-  w.innerHTML = '<h1>Qwen AI</h1><p>Assistant gratuit et illimité — propulsé par Qwen Flash via MuleRouter • tom_visionai_pro</p><div class="q-suggest"><div class="q-card" onclick="quick(\'Écris-moi un composant React avec des hooks\')"><div class="q-card-ico">💻</div><div class="q-card-t">Code</div><div class="q-card-d">React, JS, Python…</div></div><div class="q-card" onclick="quick(\'Donne-moi 5 idées de startup innovantes\')"><div class="q-card-ico">💡</div><div class="q-card-t">Idées</div><div class="q-card-d">Business, projets</div></div><div class="q-card" onclick="quick(\'Résous ce problème pas à pas: Si 3x + 7 = 22, que vaut x ?\')"><div class="q-card-ico">🧮</div><div class="q-card-t">Maths</div><div class="q-card-d">Équations, logique</div></div></div>';
+  w.innerHTML = '<h1>Qwen AI</h1><p style="max-width:440px;margin-bottom:4px">Bonjour ! 👋 Je suis <strong>Qwen AI</strong>, ton assistant gratuit et illimité. Pose-moi toutes tes questions, je suis là pour t\'aider !</p><p>Assistant gratuit et illimité — propulsé par Qwen Flash via MuleRouter • tom_visionai_pro</p><div class="q-suggest"><div class="q-card" onclick="quick(\'Écris-moi un composant React avec des hooks\')"><div class="q-card-ico">💻</div><div class="q-card-t">Code</div><div class="q-card-d">React, JS, Python…</div></div><div class="q-card" onclick="quick(\'Donne-moi 5 idées de startup innovantes\')"><div class="q-card-ico">💡</div><div class="q-card-t">Idées</div><div class="q-card-d">Business, projets</div></div><div class="q-card" onclick="quick(\'Résous ce problème pas à pas: Si 3x + 7 = 22, que vaut x ?\')"><div class="q-card-ico">🧮</div><div class="q-card-t">Maths</div><div class="q-card-d">Équations, logique</div></div></div>';
   document.querySelector('.input-zone').insertBefore(w, document.querySelector('.inp-wrap'));
 }
 
@@ -693,9 +693,6 @@ function switchConv(id) {
   if (conversationHistory.length > 0) {
     conversationHistory.forEach(m => addMsg(m.role, m.content, m.isImage));
   } else {
-    const greeting = "Bonjour ! 👋 Je suis **Qwen AI**, ton assistant gratuit et illimité. Pose-moi toutes tes questions, je suis là pour t'aider !";
-    addMsg('ai', greeting);
-    conversationHistory.push({ role: 'assistant', content: greeting });
     showWelcome();
   }
   renderSidebar();
@@ -720,9 +717,6 @@ window.deleteConv = function(id) {
     if (conversationHistory.length > 0) {
       conversationHistory.forEach(m => addMsg(m.role, m.content, m.isImage));
     } else {
-      const greeting = "Bonjour ! 👋 Je suis **Qwen AI**, ton assistant gratuit et illimité. Pose-moi toutes tes questions, je suis là pour t'aider !";
-      addMsg('ai', greeting);
-      conversationHistory.push({ role: 'assistant', content: greeting });
       showWelcome();
     }
   }
@@ -738,9 +732,6 @@ window.newChat = function() {
   activeConvId = id;
   conversationHistory = [];
   document.getElementById('msgs').querySelectorAll('.msg-row').forEach(el => el.remove());
-  const greeting = "Bonjour ! 👋 Je suis **Qwen AI**, ton assistant gratuit et illimité. Pose-moi toutes tes questions, je suis là pour t'aider !";
-  addMsg('ai', greeting);
-  conversationHistory.push({ role: 'assistant', content: greeting });
   showWelcome();
   saveConvs();
   renderSidebar();
@@ -760,9 +751,6 @@ function initConvs() {
     conversationHistory = [...conv.history];
     conversationHistory.forEach(m => addMsg(m.role, m.content));
   } else {
-    const greeting = "Bonjour ! 👋 Je suis **Qwen AI**, ton assistant gratuit et illimité. Pose-moi toutes tes questions, je suis là pour t'aider !";
-    addMsg('ai', greeting);
-    conversationHistory.push({ role: 'assistant', content: greeting });
     showWelcome();
   }
   renderSidebar();
