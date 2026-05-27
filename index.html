@@ -497,6 +497,7 @@ let imageMode = false;
 let userName = localStorage.getItem('qh_user_name') || '';
 let pendingFileData = null;
 let pendingFileName = '';
+let savedModel = '';
 
 const TODAY = new Date().toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'numeric',day:'numeric'});
 const SYSTEM_PROMPT = `Tu es un assistant IA intégré dans un site web nommé "Mistral-AI", développé par tom_visionai_pro. Tu es gratuit, illimité et tu dois répondre comme un humain normal.
@@ -965,6 +966,7 @@ window.sendMsg = async function() {
   }
 
   generating = false;
+  if (savedModel && !pendingFileData) { selModelDropdown(savedModel); savedModel = ''; }
   document.getElementById('btnSend').disabled = false;
   document.getElementById('btnStop').classList.remove('vis');
   setStatus('ready', 'Prêt');
@@ -1081,24 +1083,46 @@ window.handleFile = function(input) {
   if (!file) return;
   if (file.size > 10 * 1024 * 1024) { toast('⚠️ Fichier trop lourd (max 10 Mo)'); input.value = ''; return; }
   pendingFileName = file.name;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    pendingFileData = e.target.result;
-    const ext = file.name.split('.').pop().toLowerCase();
-    const isImg = ['jpg','jpeg','png','gif','webp','bmp'].includes(ext);
-    const preview = document.getElementById('filePreview');
-    const wrap = document.getElementById('inpWrap');
-    preview.style.display = 'flex';
-    if (isImg) {
-      preview.innerHTML = `<img class="file-preview-img" src="${pendingFileData}"><span class="file-preview-name">${file.name}</span><button class="file-preview-rm" onclick="removeFile()">✕</button>`;
-    } else {
-      preview.innerHTML = `<span style="font-size:18px">📄</span><span class="file-preview-name">${file.name}</span><button class="file-preview-rm" onclick="removeFile()">✕</button>`;
+  const ext = file.name.split('.').pop().toLowerCase();
+  const isImg = ['jpg','jpeg','png','gif','webp','bmp'].includes(ext);
+  if (isImg) {
+    if (selectedModel !== 'qwen-plus' && selectedModel !== 'qwen3.5-plus' && selectedModel !== 'qwen3-max') {
+      savedModel = selectedModel + '|' + temperature;
+      selModelDropdown('qwen-plus|0.7');
+      toast('🔄 Passage à Qwen Plus pour analyser l\'image');
     }
-    wrap.style.borderColor = 'rgba(0,212,170,0.3)';
-    document.getElementById('inp').focus();
-  };
-  reader.readAsDataURL(file);
-  input.value = '';
+    const img = new Image();
+    img.onload = function() {
+      const maxDim = 1024;
+      let w = img.width, h = img.height;
+      if (w > maxDim || h > maxDim) { const r = Math.min(maxDim/w, maxDim/h); w = Math.round(w*r); h = Math.round(h*r); }
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
+      pendingFileData = c.toDataURL('image/jpeg', 0.8);
+      const preview = document.getElementById('filePreview');
+      const wrap = document.getElementById('inpWrap');
+      preview.style.display = 'flex';
+      preview.innerHTML = `<img class="file-preview-img" src="${pendingFileData}"><span class="file-preview-name">${file.name}</span><button class="file-preview-rm" onclick="removeFile()">✕</button>`;
+      wrap.style.borderColor = 'rgba(0,212,170,0.3)';
+      document.getElementById('inp').focus();
+      input.value = '';
+    };
+    img.src = URL.createObjectURL(file);
+  } else {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      pendingFileData = e.target.result;
+      const preview = document.getElementById('filePreview');
+      const wrap = document.getElementById('inpWrap');
+      preview.style.display = 'flex';
+      preview.innerHTML = `<span style="font-size:18px">📄</span><span class="file-preview-name">${file.name}</span><button class="file-preview-rm" onclick="removeFile()">✕</button>`;
+      wrap.style.borderColor = 'rgba(0,212,170,0.3)';
+      document.getElementById('inp').focus();
+      input.value = '';
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
 };
 window.removeFile = function() {
   pendingFileData = null;
@@ -1106,6 +1130,7 @@ window.removeFile = function() {
   document.getElementById('filePreview').style.display = 'none';
   document.getElementById('filePreview').innerHTML = '';
   document.getElementById('inpWrap').style.borderColor = '';
+  if (savedModel) { selModelDropdown(savedModel); savedModel = ''; }
 };
 
 const s = document.createElement('style');
