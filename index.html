@@ -502,7 +502,7 @@ let pendingFileName = '';
 let savedModel = '';
 
 const TODAY = new Date().toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'numeric',day:'numeric'});
-const SYSTEM_PROMPT = `Tu es un assistant IA intégré dans un site web nommé "Mistral-AI", développé par tom_visionai_pro. Tu es gratuit, illimité et tu dois répondre comme un humain normal.
+const SYSTEM_PROMPT = `Tu es un assistant IA intégré dans un site web nommé "Qwen AI", développé par tom_visionai_pro. Tu es gratuit, illimité et tu dois répondre comme un humain normal.
 
 Aujourd'hui on est le ${TODAY}.
 
@@ -881,7 +881,7 @@ window.sendMsg = async function() {
     systemContent = systemContent.replace('[NAME_INSTR]', nameInstr);
 
     if (isWeather) {
-      systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', '## ℹ MÉTÉO\n\nLa fonction météo n\'est pas encore disponible. Dis à l\'utilisateur que tom_visionai_pro travaille encore dessus et que ça arrivera bientôt. Utilise son prénom si tu le connais.');
+      systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', '## ℹ MÉTÉO\n\nLa fonction météo n\'est pas encore disponible sur Qwen AI. Dis à l\'utilisateur que tom_visionai_pro travaille encore dessus et que ça arrivera bientôt. Utilise son prénom si tu le connais.');
     } else if (hasSearchIntent) {
       setStatus('thinking', 'Recherche web…');
       removeTyping(typingId);
