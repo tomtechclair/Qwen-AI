@@ -1050,16 +1050,15 @@ function addStreamBubble(id) {
   return document.getElementById('bbl-' + id);
 }
 function addFeedback(bbl) {
-  if (bbl.parentElement.querySelector('.fb-btn')) return;
+  if (bbl.parentElement.querySelector('.fb-wrap')) return;
   const fb = document.createElement('div');
+  fb.className = 'fb-wrap';
   fb.style.cssText = 'display:flex;gap:6px;margin-top:6px;';
-  fb.innerHTML = '<button class="fb-btn" data-v="1" style="border:none;background:none;cursor:pointer;font-size:13px;padding:2px 6px;border-radius:5px;color:var(--tx3);transition:all .15s">👍</button><button class="fb-btn" data-v="-1" style="border:none;background:none;cursor:pointer;font-size:13px;padding:2px 6px;border-radius:5px;color:var(--tx3);transition:all .15s">👎</button>';
+  fb.innerHTML = `<button class="fb-btn" data-v="1" style="border:none;background:none;cursor:pointer;font-size:16px;padding:2px 6px;border-radius:5px;color:#666;transition:all .15s">👍</button><button class="fb-btn" data-v="-1" style="border:none;background:none;cursor:pointer;font-size:16px;padding:2px 6px;border-radius:5px;color:#666;transition:all .15s">👎</button>`;
   bbl.parentElement.appendChild(fb);
   fb.querySelectorAll('.fb-btn').forEach(b => {
-    b.onmouseenter = () => { if (!b.dataset.act) b.style.color = 'var(--tx)'; };
-    b.onmouseleave = () => { if (!b.dataset.act) b.style.color = 'var(--tx3)'; };
     b.onclick = () => {
-      fb.querySelectorAll('.fb-btn').forEach(x => { x.dataset.act = ''; x.style.color = 'var(--tx3)'; });
+      fb.querySelectorAll('.fb-btn').forEach(x => { x.dataset.act = ''; x.style.color = '#666'; });
       b.dataset.act = '1';
       b.style.color = b.dataset.v === '1' ? '#22c55e' : '#ef4444';
       toast(b.dataset.v === '1' ? '👍 Merci !' : '👎 Pris en compte');
