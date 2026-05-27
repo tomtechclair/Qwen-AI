@@ -162,6 +162,8 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
 .q-card-t{font-size:13px;font-weight:600;color:var(--tx);}
 .q-card-d{font-size:10.5px;color:var(--tx2);text-align:center;line-height:1.4;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+@keyframes sp{0%,100%{transform:rotate(0deg);}50%{transform:rotate(180deg);}}
+.search-pulse{display:inline-block;animation:sp .8s ease-in-out infinite;margin-right:4px;font-size:13px;}
 
 /* MESSAGE BUBBLES */
 .msg-row{display:flex;gap:10px;animation:fadeUp .25s ease both;max-width:780px;}
@@ -571,6 +573,31 @@ async function searchWeb(query) {
   }
 }
 
+function formatSources(raw) {
+  const lines = raw.split('\n');
+  const sources = [];
+  let current = null;
+  for (const l of lines) {
+    if (/^Source \d+ :/.test(l)) {
+      if (current && current.title) sources.push(current);
+      current = { title: l.replace(/^Source \d+ : /, ''), url: '', snippet: '' };
+    } else if (current && !current.url && l.startsWith('http')) {
+      current.url = l;
+    } else if (current) {
+      current.snippet += l + ' ';
+    }
+  }
+  if (current && current.title) sources.push(current);
+  if (!sources.length) return `<div style="padding:6px 0">${raw}</div>`;
+  return sources.map(s =>
+    `<div style="margin-bottom:6px;padding:6px 8px;border:1px solid var(--br);border-radius:8px">` +
+    `<div style="font-weight:600;margin-bottom:2px">${s.title}</div>` +
+    (s.url ? `<a href="${s.url}" target="_blank" style="font-size:10px;color:var(--a2);word-break:break-all">${s.url}</a>` : '') +
+    (s.snippet ? `<div style="margin-top:2px">${s.snippet.substring(0,200)}</div>` : '') +
+    `</div>`
+  ).join('');
+}
+
 window.toggleImage = function() {
   imageMode = !imageMode;
   document.getElementById('imgBtn').classList.toggle('sel');
@@ -834,14 +861,17 @@ window.sendMsg = async function() {
   setStatus('thinking', 'Réflexion…');
   abortController = new AbortController();
 
-  const hasSearchIntent = searchEnabled || /cherche|recherche|trouve|actualité|news|météo|weather|temps|pluie|soleil|température|info.+r[ée]cente|derni[èe]re|what.+new|search|google|prévision|prévisions/i.test(text);
+  let hasSearchIntent = searchEnabled || /cherche|recherche|trouve|actualité|news|météo|weather|temps|pluie|soleil|température|info.+r[ée]cente|derni[èe]re|what.+new|search|google|prévision|prévisions/i.test(text);
   const isWeather = /météo|temps|pluie|température|weather|forecast|soleil|degrés|°c|°f|prévision/i.test(text);
+
+  if (isWeather) hasSearchIntent = true;
 
   let typingLabel = '';
   if (isWeather) typingLabel = '⏳ Vérification…';
   else if (hasSearchIntent) typingLabel = '🔍 Recherche web en cours…';
 
   const typingId = addTyping(typingLabel);
+  let typingId2 = null;
   let fullReply = '';
   let currentBubble = null;
 
@@ -854,8 +884,18 @@ window.sendMsg = async function() {
       systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', '## ℹ MÉTÉO\n\nLa fonction météo n\'est pas encore disponible. Dis à l\'utilisateur que tom_visionai_pro travaille encore dessus et que ça arrivera bientôt. Utilise son prénom si tu le connais.');
     } else if (hasSearchIntent) {
       setStatus('thinking', 'Recherche web…');
+      removeTyping(typingId);
+      const msgsEl = document.getElementById('msgs');
+      const sr = document.createElement('div');
+      sr.className = 'msg-row';
+      sr.innerHTML = '<div class="av ai-av">🔍</div><div class="msg-body"><div class="bbl ai-bbl" style="font-size:12px;color:var(--tx2)"><span class="search-pulse">⟳</span> Recherche web en cours…</div></div>';
+      msgsEl.appendChild(sr);
+      msgsEl.scrollTop = 99999;
       const webResults = await searchWeb(text);
+      sr.querySelector('.bbl').innerHTML = `<div style="font-size:12px;color:var(--a2);margin-bottom:4px">🌐 Résultats de recherche</div><div style="font-size:11px;color:var(--tx2);line-height:1.5">${formatSources(webResults)}</div>`;
+      msgsEl.scrollTop = 99999;
       systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', '## 🌐 RÉSULTATS DE RECHERCHE\n\n' + webResults);
+      typingId2 = addTyping('✏️ Génération réponse…');
     } else {
       systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', 'Aucune recherche nécessaire — connaissance générale.');
     }
@@ -902,7 +942,7 @@ window.sendMsg = async function() {
       throw new Error(errMsg);
     }
 
-    removeTyping(typingId);
+    removeTyping(typingId2 || typingId);
     const rowId = 'msg-' + Date.now();
     currentBubble = addStreamBubble(rowId);
     const reader = response.body.getReader();
@@ -932,31 +972,21 @@ window.sendMsg = async function() {
       }
     }
 
-    if (currentBubble) currentBubble.innerHTML = fmt(fullReply);
+    if (currentBubble) {
+      currentBubble.innerHTML = fmt(fullReply);
+      addFeedback(currentBubble);
+    }
     conversationHistory.push({ role: 'user', content: msgContent });
     conversationHistory.push({ role: 'assistant', content: fullReply });
     if (conversationHistory.length > 40) conversationHistory = conversationHistory.slice(-40);
   } catch(e) {
-    removeTyping(typingId);
+    removeTyping(typingId2 || typingId);
     if (e.name === 'AbortError') {
       if (fullReply) {
         if (currentBubble) {
-      currentBubble.innerHTML = fmt(fullReply);
-      const fb = document.createElement('div');
-      fb.style.cssText = 'display:flex;gap:6px;margin-top:6px;';
-      fb.innerHTML = '<button class="fb-btn" data-v="1" style="border:none;background:none;cursor:pointer;font-size:13px;padding:2px 6px;border-radius:5px;color:var(--tx3);transition:all .15s">👍</button><button class="fb-btn" data-v="-1" style="border:none;background:none;cursor:pointer;font-size:13px;padding:2px 6px;border-radius:5px;color:var(--tx3);transition:all .15s">👎</button>';
-      currentBubble.parentElement.appendChild(fb);
-      fb.querySelectorAll('.fb-btn').forEach(b => {
-        b.onmouseenter = () => { if (!b.dataset.act) b.style.color = 'var(--tx)'; };
-        b.onmouseleave = () => { if (!b.dataset.act) b.style.color = 'var(--tx3)'; };
-        b.onclick = () => {
-          fb.querySelectorAll('.fb-btn').forEach(x => { x.dataset.act = ''; x.style.color = 'var(--tx3)'; });
-          b.dataset.act = '1';
-          b.style.color = b.dataset.v === '1' ? 'var(--a2)' : 'var(--a3)';
-          toast(b.dataset.v === '1' ? '👍 Merci !' : '👎 Pris en compte');
-        };
-      });
-    }
+          currentBubble.innerHTML = fmt(fullReply);
+          addFeedback(currentBubble);
+        }
         conversationHistory.push({ role: 'user', content: msgContent });
         conversationHistory.push({ role: 'assistant', content: fullReply });
       }
@@ -1018,6 +1048,23 @@ function addStreamBubble(id) {
   row.innerHTML = `<div class="av ai-av">🧠</div><div class="msg-body"><div class="bbl ai-bbl" id="bbl-${id}"></div></div>`;
   msgs.appendChild(row);
   return document.getElementById('bbl-' + id);
+}
+function addFeedback(bbl) {
+  if (bbl.parentElement.querySelector('.fb-btn')) return;
+  const fb = document.createElement('div');
+  fb.style.cssText = 'display:flex;gap:6px;margin-top:6px;';
+  fb.innerHTML = '<button class="fb-btn" data-v="1" style="border:none;background:none;cursor:pointer;font-size:13px;padding:2px 6px;border-radius:5px;color:var(--tx3);transition:all .15s">👍</button><button class="fb-btn" data-v="-1" style="border:none;background:none;cursor:pointer;font-size:13px;padding:2px 6px;border-radius:5px;color:var(--tx3);transition:all .15s">👎</button>';
+  bbl.parentElement.appendChild(fb);
+  fb.querySelectorAll('.fb-btn').forEach(b => {
+    b.onmouseenter = () => { if (!b.dataset.act) b.style.color = 'var(--tx)'; };
+    b.onmouseleave = () => { if (!b.dataset.act) b.style.color = 'var(--tx3)'; };
+    b.onclick = () => {
+      fb.querySelectorAll('.fb-btn').forEach(x => { x.dataset.act = ''; x.style.color = 'var(--tx3)'; });
+      b.dataset.act = '1';
+      b.style.color = b.dataset.v === '1' ? 'var(--a2)' : 'var(--a3)';
+      toast(b.dataset.v === '1' ? '👍 Merci !' : '👎 Pris en compte');
+    };
+  });
 }
 let tc = 0;
 function addTyping(label) {
