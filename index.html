@@ -1011,7 +1011,7 @@ window.sendMsg = async function() {
       currentBubble.innerHTML = fmt(fullReply);
       addFeedback(currentBubble);
     }
-    if (fullReply.trim()) speak(fullReply);
+    if (voiceSubmit) { if (fullReply.trim()) speak(fullReply); voiceSubmit = false; }
     conversationHistory.push({ role: 'user', content: msgContent });
     conversationHistory.push({ role: 'assistant', content: fullReply });
     if (conversationHistory.length > 40) conversationHistory = conversationHistory.slice(-40);
@@ -1023,7 +1023,7 @@ window.sendMsg = async function() {
           currentBubble.innerHTML = fmt(fullReply);
           addFeedback(currentBubble);
         }
-        if (fullReply.trim()) speak(fullReply);
+        if (voiceSubmit) { if (fullReply.trim()) speak(fullReply); voiceSubmit = false; }
         conversationHistory.push({ role: 'user', content: msgContent });
         conversationHistory.push({ role: 'assistant', content: fullReply });
       }
@@ -1244,6 +1244,7 @@ document.addEventListener('copy', function(e) {
 let recognition = null;
 let isListening = false;
 let finalTranscript = '';
+let voiceSubmit = false;
 
 function checkVoiceSupport() {
   return 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
@@ -1283,6 +1284,7 @@ function initVoiceRecognition() {
     stopAllListeningAnimations();
 
     if (finalTranscript.trim() !== '') {
+      voiceSubmit = true;
       document.getElementById('inp').value = finalTranscript;
       sendMsg();
       closeVoiceMode();
