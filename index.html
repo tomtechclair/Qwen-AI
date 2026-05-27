@@ -557,6 +557,8 @@ const DEFAULT_API_KEY = atob(_DK);
 const API_URL = "https://api.mulerouter.ai/vendors/openai/v1/chat/completions";
 const TAVILY_KEY = "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";
 const TAVILY_URL = "https://api.tavily.com/search";
+const VOICE_API_KEY = "sk-ff3b13142973427c996288bb899ebb00";
+const VOICE_API_URL = "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions";
 
 let savedKey = localStorage.getItem('ds_api_key');
 let apiKey = savedKey && savedKey.startsWith('sk-mr-') ? savedKey : DEFAULT_API_KEY;
@@ -1377,11 +1379,11 @@ async function vmSendVoice(text) {
   ];
 
   try {
-    const res = await fetch(API_URL, {
+    const res = await fetch(VOICE_API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + VOICE_API_KEY },
       body: JSON.stringify({
-        model: selectedModel, messages: msgs, stream: true, temperature,
+        model: 'qwen-plus', messages: msgs, stream: true, temperature: 0.7,
         max_tokens: 2048
       })
     });
