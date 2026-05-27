@@ -1011,7 +1011,6 @@ window.sendMsg = async function() {
 
     if (currentBubble) {
       currentBubble.innerHTML = fmt(fullReply);
-      addFeedback(currentBubble);
     }
     conversationHistory.push({ role: 'user', content: msgContent });
     conversationHistory.push({ role: 'assistant', content: fullReply });
@@ -1022,7 +1021,6 @@ window.sendMsg = async function() {
       if (fullReply) {
         if (currentBubble) {
           currentBubble.innerHTML = fmt(fullReply);
-          addFeedback(currentBubble);
         }
         conversationHistory.push({ role: 'user', content: msgContent });
         conversationHistory.push({ role: 'assistant', content: fullReply });
@@ -1087,22 +1085,6 @@ function addStreamBubble(id) {
   row.innerHTML = `<div class="av ai-av">🧠</div><div class="msg-body"><div class="bbl ai-bbl" id="bbl-${id}"></div></div>`;
   msgs.appendChild(row);
   return document.getElementById('bbl-' + id);
-}
-function addFeedback(bbl) {
-  if (bbl.parentElement.querySelector('.fb-wrap')) return;
-  const fb = document.createElement('div');
-  fb.className = 'fb-wrap';
-  fb.style.cssText = 'display:flex;gap:6px;margin-top:6px;';
-  fb.innerHTML = `<button class="fb-btn" data-v="1" style="border:none;background:none;cursor:pointer;font-size:16px;padding:2px 6px;border-radius:5px;color:#666;transition:all .15s">👍</button><button class="fb-btn" data-v="-1" style="border:none;background:none;cursor:pointer;font-size:16px;padding:2px 6px;border-radius:5px;color:#666;transition:all .15s">👎</button>`;
-  bbl.parentElement.appendChild(fb);
-  fb.querySelectorAll('.fb-btn').forEach(b => {
-    b.onclick = () => {
-      fb.querySelectorAll('.fb-btn').forEach(x => { x.dataset.act = ''; x.style.color = '#666'; });
-      b.dataset.act = '1';
-      b.style.color = b.dataset.v === '1' ? '#22c55e' : '#ef4444';
-      toast(b.dataset.v === '1' ? '👍 Merci !' : '👎 Pris en compte');
-    };
-  });
 }
 let tc = 0;
 function addTyping(label) {
