@@ -486,7 +486,6 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
 <script>
 const _DK = "c2stbXItYTMyYTdjZjBhZTJiMWVmNjEwZjY0YzAzODQyOWI5YjZlYTRhNTU3NTMxMmM4ZTg4OTk1NzZjZTM5ZTQ0NmYxZA==";
 const DEFAULT_API_KEY = atob(_DK);
-const GOOGLE_AI_KEY = String.fromCharCode(65,73,122,97,83,121,68,106,73,87,98,113,86,101,84,109,112,87,65,120,99,80,75,95,100,99,99,78,101,73,105,95,57,114,120,119,48,110,119);
 const API_URL = "https://api.mulerouter.ai/vendors/openai/v1/chat/completions";
 const TAVILY_KEY = "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";
 const TAVILY_URL = "https://api.tavily.com/search";
@@ -831,32 +830,55 @@ window.sendMsg = async function() {
     try {
       const bar = document.getElementById('imgProgBar');
       const pct = document.getElementById('imgProgPct');
+      let done = false;
       const anim = () => {
+        if (done) return;
         const w = parseFloat(bar.style.width) || 0;
-        if (w < 95) { bar.style.width = Math.min(95, w + 3) + '%'; pct.textContent = Math.round(Math.min(95, w + 3)) + '%'; requestAnimationFrame(anim); }
+        if (w < 92) {
+          const inc = Math.max(0.5, (92 - w) / 40);
+          bar.style.width = Math.min(92, w + inc) + '%';
+          pct.textContent = Math.round(Math.min(92, w + inc)) + '%';
+          requestAnimationFrame(anim);
+        }
       };
       requestAnimationFrame(anim);
-      const aiKey = localStorage.getItem('google_ai_key') || GOOGLE_AI_KEY;
-      const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=" + aiKey, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ instances: [{ prompt: text }], parameters: { sampleCount: 1 } })
-      });
-      if (!resp.ok) throw new Error("Erreur " + resp.status);
-      const data = await resp.json();
-      const b64 = data.predictions?.[0]?.bytesBase64Encoded;
-      if (!b64) throw new Error("Aucune image retournée");
-      bar.style.width = '100%'; pct.textContent = '100%';
-      setTimeout(() => {
-        imgWrap.innerHTML = '';
-        imgWrap.style.padding = '0';
+      const aiKey = localStorage.getItem('google_ai_key');
+      if (aiKey) {
+        const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=" + aiKey, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ instances: [{ prompt: text }], parameters: { sampleCount: 1 } })
+        });
+        if (!resp.ok) throw new Error("Erreur " + resp.status);
+        const data = await resp.json();
+        const b64 = data.predictions?.[0]?.bytesBase64Encoded;
+        if (!b64) throw new Error("Aucune image retournée");
+        done = true; bar.style.width = '100%'; pct.textContent = '100%';
+        setTimeout(() => {
+          imgWrap.innerHTML = '';
+          imgWrap.style.padding = '0';
+          const img = document.createElement('img');
+          img.style.cssText = 'width:100%;display:block;border-radius:10px;';
+          img.alt = text;
+          img.src = 'data:image/png;base64,' + b64;
+          imgWrap.appendChild(img);
+          msgs.scrollTop = 99999;
+        }, 200);
+      } else {
         const img = document.createElement('img');
         img.style.cssText = 'width:100%;display:block;border-radius:10px;';
         img.alt = text;
-        img.src = 'data:image/png;base64,' + b64;
-        imgWrap.appendChild(img);
-        msgs.scrollTop = 99999;
-      }, 200);
+        img.onload = () => {
+          done = true;
+          bar.style.width = '100%'; pct.textContent = '100%';
+          setTimeout(() => { imgWrap.innerHTML = ''; imgWrap.style.padding = '0'; imgWrap.appendChild(img); msgs.scrollTop = 99999; }, 300);
+        };
+        img.onerror = () => {
+          done = true;
+          imgWrap.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--a3)">⚠️ Erreur de chargement — réessaie</div>';
+        };
+        img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?width=1024&height=1024&model=flux&nofeed=true`;
+      }
     } catch(e) {
       imgWrap.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--a3)">⚠️ Erreur: ' + e.message + '</div>';
     }
@@ -1045,8 +1067,14 @@ function addMsg(role, content, isImage) {
   row.innerHTML = `<div class="av ${role === 'ai' ? 'ai-av' : 'usr-av'}">${emo}</div><div class="msg-body" style="${role === 'ai' && isImage ? '' : ''}"><div class="bbl ${role === 'ai' ? 'ai-bbl' : 'usr-bbl'}">${imgUrl && role === 'user' ? '' : isImage ? `<strong>🎨 Image générée :</strong><br>${escHtml(text)}` : role === 'user' && isArr ? '' : fmt(text)}</div>${imgUrl && role === 'user' ? `<div class="bbl ${role === 'ai' ? 'ai-bbl' : 'usr-bbl'}" style="padding:4px;margin-top:2px"><img class="uploaded-img" src="${imgUrl}"></div>` : ''}</div>`;
   if (isImage && role === 'ai') {
     const imgWrap = document.createElement('div');
-    imgWrap.style.cssText = 'margin:8px 0;border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.3);padding:16px 20px;text-align:center;font-size:13px;color:var(--tx2);';
-    imgWrap.textContent = '🎨 ' + text;
+    imgWrap.style.cssText = 'margin:8px 0;border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.3);padding:20px;text-align:center;font-size:13px;color:var(--tx2);';
+    imgWrap.textContent = '🎨 Rechargement…';
+    const img = document.createElement('img');
+    img.style.cssText = 'width:100%;display:block;border-radius:10px;';
+    img.alt = text;
+    img.onload = () => { imgWrap.innerHTML = ''; imgWrap.style.padding = '0'; imgWrap.appendChild(img); msgs.scrollTop = 99999; };
+    img.onerror = () => { imgWrap.textContent = '🎨 ' + text; imgWrap.style.padding = '20px'; };
+    img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?width=1024&height=1024&model=flux&nofeed=true`;
     row.querySelector('.msg-body').appendChild(imgWrap);
   }
   msgs.appendChild(row);
