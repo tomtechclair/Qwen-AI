@@ -395,8 +395,6 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
         </button>
       </div>
       <div class="tb-tools">
-        <button class="tb-btn" id="imgBtn" onclick="toggleImage()" title="Générer image">🎨</button>
-
       </div>
     </header>
 
@@ -410,7 +408,7 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
     <!-- INPUT -->
     <div class="input-zone">
       <div class="suggest-chips" id="suggestChips">
-        <button class="chip" onclick="quick('Crée une image de')">🎨 Créer image</button>
+        <button class="chip" onclick="activateImageMode()">🎨 Créer image</button>
         <button class="chip" onclick="quick('Écris du code pour')">💻 Écrire code</button>
         <button class="chip" onclick="quick('Explique-moi')">🧠 Expliquer</button>
         <button class="chip" onclick="quick('Traduis en anglais:')">🌍 Traduire</button>
@@ -594,12 +592,12 @@ function formatSources(raw) {
   ).join('');
 }
 
-window.toggleImage = function() {
-  imageMode = !imageMode;
-  document.getElementById('imgBtn').classList.toggle('sel');
-  document.getElementById('inp').placeholder = imageMode ? 'Décrivez l\'image à générer…' : 'Posez votre question…';
-  toast(imageMode ? '🎨 Mode image activé' : '🎨 Mode image désactivé');
-};
+window.activateImageMode = function() {
+  imageMode = true;
+  document.getElementById('inp').placeholder = 'Décris l\'image à générer…';
+  document.getElementById('inp').focus();
+  toast('🎨 Mode image — décris l\'image à créer');
+}
 
 // CONVERSATION MANAGEMENT
 let conversations = [];
@@ -852,6 +850,8 @@ window.sendMsg = async function() {
       imgWrap.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--a3)">⚠️ Erreur: ' + e.message + '</div>';
     }
     conversationHistory.push({ role: 'assistant', content: text, isImage: true });
+    imageMode = false;
+    document.getElementById('inp').placeholder = 'Posez votre question…';
     generating = false;
     document.getElementById('btnSend').disabled = false;
     setStatus('ready', 'Prêt');
@@ -1014,7 +1014,6 @@ window.stopGen = function() {
 };
 
 window.quick = function(text) {
-  if (text.includes('Génère une image')) { document.getElementById('imgBtn').classList.add('sel'); imageMode = true; document.getElementById('inp').placeholder = 'Décrivez l\'image à générer…'; }
   document.getElementById('inp').value = text;
   window.sendMsg();
 };
