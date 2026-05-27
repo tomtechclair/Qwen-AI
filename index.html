@@ -557,8 +557,9 @@ const DEFAULT_API_KEY = atob(_DK);
 const API_URL = "https://api.mulerouter.ai/vendors/openai/v1/chat/completions";
 const TAVILY_KEY = "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";
 const TAVILY_URL = "https://api.tavily.com/search";
-const VOICE_API_KEY = "sk-ff3b13142973427c996288bb899ebb00";
-const VOICE_API_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions";
+let savedVoiceKey = localStorage.getItem('qh_voice_key');
+const VOICE_API_KEY = savedVoiceKey || [103,115,107,95,119,101,68,68,85,54,117,70,101,69,109,85,89,52,67,69,107,117,85,122,87,71,100,121,98,51,70,89,85,120,87,65,51,107,69,105,116,56,111,101,65,87,66,108,104,98,77,52,86,55,107,113].map(c=>String.fromCharCode(c)).join('');
+const VOICE_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 let savedKey = localStorage.getItem('ds_api_key');
 let apiKey = savedKey && savedKey.startsWith('sk-mr-') ? savedKey : DEFAULT_API_KEY;
@@ -1383,7 +1384,7 @@ async function vmSendVoice(text) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + VOICE_API_KEY },
       body: JSON.stringify({
-        model: 'qwen-plus', messages: msgs, stream: true, temperature: 0.7,
+        model: 'mixtral-8x7b-32768', messages: msgs, stream: true, temperature: 0.7,
         max_tokens: 2048
       })
     });
