@@ -591,10 +591,6 @@ const DEFAULT_API_KEY = atob(_DK);
 const API_URL = "https://api.mulerouter.ai/vendors/openai/v1/chat/completions";
 const TAVILY_KEY = "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";
 const TAVILY_URL = "https://api.tavily.com/search";
-let savedVoiceKey = localStorage.getItem('qh_voice_key');
-if (!savedVoiceKey) { localStorage.setItem('qh_voice_key', '9a0d1d38-6481-40b1-8c05-7c09bf424318'); savedVoiceKey = '9a0d1d38-6481-40b1-8c05-7c09bf424318'; }
-const VOICE_API_KEY = savedVoiceKey;
-const VOICE_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 let savedKey = localStorage.getItem('ds_api_key');
 let apiKey = savedKey && savedKey.startsWith('sk-mr-') ? savedKey : DEFAULT_API_KEY;
@@ -1448,24 +1444,29 @@ async function vmSendVoice(text) {
   document.getElementById('vmOrb').className = 'vm-orb';
   vmFinalTranscript = '';
 
+  hideWelcome();
+  addMsg('user', text);
+  const typingId = addTyping('');
+  let fullReply = '';
+
   const msgs = [
     { role: 'system', content: `Tu es un assistant vocal intégré dans Qwen AI, développé par tom_visionai_pro. Réponds de façon concise, naturelle, et adaptée à une réponse vocale (évite les listes trop longues, les blocs de code, les markdown lourds). Aujourd'hui on est le ${TODAY}.` },
+    ...conversationHistory,
     { role: 'user', content: text }
   ];
 
   try {
-    const res = await fetch(VOICE_API_URL, {
+    const res = await fetch(API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + VOICE_API_KEY },
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
       body: JSON.stringify({
-        model: 'mixtral-8x7b-32768', messages: msgs, stream: true, temperature: 0.7,
+        model: selectedModel, messages: msgs, stream: true, temperature,
         max_tokens: 2048
       })
     });
     if (!res.ok) throw new Error('Erreur ' + res.status);
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
-    let reply = '';
     let buffer = '';
     const respEl = document.getElementById('vmResponse');
 
@@ -1481,15 +1482,20 @@ async function vmSendVoice(text) {
         try {
           const j = JSON.parse(t.slice(6));
           const d = j.choices?.[0]?.delta?.content || '';
-          if (d) { reply += d; respEl.textContent = reply; }
+          if (d) { fullReply += d; respEl.textContent = fullReply; }
         } catch(e) {}
       }
     }
 
+    removeTyping(typingId);
     vmSetStatus('🗣️ Réponse vocale…');
     document.getElementById('vmOrb').className = 'vm-orb speaking';
-    await vmSpeak(reply);
+    await vmSpeak(fullReply);
+    conversationHistory.push({ role: 'user', content: text });
+    conversationHistory.push({ role: 'assistant', content: fullReply });
+    saveCurrentConv();
   } catch(e) {
+    removeTyping(typingId);
     vmSetStatus('⚠️ Erreur: ' + e.message);
   }
 
