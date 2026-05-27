@@ -825,6 +825,9 @@ function loadAgents() {
     if (!agents.length) {
       agents.push({ id: 'agent_github', name: 'GitHub Dev Full-Access', prompt: DEFAULT_GITHUB_AGENT });
       saveAgents();
+    } else {
+      const existing = agents.find(a => a.id === 'agent_github');
+      if (existing && existing.prompt !== DEFAULT_GITHUB_AGENT) { existing.prompt = DEFAULT_GITHUB_AGENT; saveAgents(); }
     }
   } catch(e) { agents = []; }
   activeAgentId = localStorage.getItem('qh_active_agent');
