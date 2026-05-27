@@ -224,7 +224,19 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
 }
 .btn-send:hover{background:#3d7ae8;}
 .btn-send:active{transform:scale(.93);}
-.btn-send:disabled{opacity:.35;cursor:not-allowed;transform:none;}
+.inp-actions{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.btn-upload{
+  width:34px;height:34px;border-radius:9px;flex-shrink:0;border:1px solid var(--b2);cursor:pointer;
+  background:var(--s1);display:flex;align-items:center;justify-content:center;
+  font-size:15px;color:var(--tx2);transition:all .15s;touch-action:manipulation;
+}
+.btn-upload:hover{background:var(--s2);border-color:var(--b3);color:var(--tx);}
+.btn-upload:active{transform:scale(.93);}
+.file-preview-img{width:auto;height:36px;border-radius:6px;border:1px solid var(--b2);object-fit:cover;}
+.file-preview-name{font-size:11px;color:var(--tx2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px;}
+.file-preview-rm{width:18px;height:18px;border-radius:4px;border:none;background:rgba(255,95,160,0.1);color:var(--a3);cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+.file-preview-rm:hover{background:rgba(255,95,160,0.25);}
+.msg-body img.uploaded-img{max-width:100%;max-height:200px;border-radius:8px;margin-top:4px;object-fit:contain;background:rgba(0,0,0,0.3);}
 .inp-hint{text-align:center;font-size:10.5px;color:var(--tx3);margin-top:7px;}
 
 .btn-stop{
@@ -402,10 +414,15 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
 
     <!-- INPUT -->
     <div class="input-zone">
-      <div class="inp-wrap">
+      <div class="inp-wrap" id="inpWrap">
         <textarea id="inp" rows="1" placeholder="Posez votre question…" onkeydown="onKey(event)" oninput="resize(this)"></textarea>
-        <button class="btn-send" id="btnSend" onclick="sendMsg()">➤</button>
+        <div class="inp-actions">
+          <input type="file" id="fileInput" accept="image/*,.pdf,.txt,.doc,.docx,.csv,.json,.js,.py,.html,.css,.md" onchange="handleFile(this)" style="display:none">
+          <button class="btn-upload" id="btnUpload" onclick="document.getElementById('fileInput').click()" title="Joindre image/fichier">📎</button>
+          <button class="btn-send" id="btnSend" onclick="sendMsg()">➤</button>
+        </div>
       </div>
+      <div id="filePreview" style="display:none;padding:4px 0 6px;max-width:780px;margin:0 auto;gap:6px;align-items:center;"></div>
       <div class="inp-hint">Enter pour envoyer</div>
     </div>
   </div>
@@ -478,6 +495,8 @@ let conversationHistory = [];
 let searchEnabled = false;
 let imageMode = false;
 let userName = localStorage.getItem('qh_user_name') || '';
+let pendingFileData = null;
+let pendingFileName = '';
 
 const TODAY = new Date().toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'numeric',day:'numeric'});
 const SYSTEM_PROMPT = `Tu es un assistant IA intégré dans un site web nommé "Mistral-AI", développé par tom_visionai_pro. Tu es gratuit, illimité et tu dois répondre comme un humain normal.
@@ -738,11 +757,17 @@ window.apiSaveSettings = function() {
 window.sendMsg = async function() {
   const inp = document.getElementById('inp');
   const text = inp.value.trim();
-  if (!text || generating) return;
+  if ((!text && !pendingFileData) || generating) return;
   if (!apiKey) apiKey = DEFAULT_API_KEY;
 
   hideWelcome();
-  addMsg('user', text);
+  const hasFile = pendingFileData && pendingFileName;
+  const ext = hasFile ? pendingFileName.split('.').pop().toLowerCase() : '';
+  const isImgFile = hasFile && ['jpg','jpeg','png','gif','webp','bmp'].includes(ext);
+  const isTextFile = hasFile && ['txt','md','json','js','py','html','css','csv','xml','yml','yaml','ini','cfg','log','sh','bat','env'].includes(ext);
+  const userText = text || (hasFile ? (isImgFile ? 'Décris cette image' : 'Analyse ce fichier') : '');
+  const msgContent = isImgFile ? [{ type: 'text', text: userText }, { type: 'image_url', image_url: { url: pendingFileData } }] : userText;
+  addMsg('user', msgContent);
   inp.value = ''; inp.style.height = 'auto';
 
   if (imageMode) {
@@ -843,10 +868,20 @@ window.sendMsg = async function() {
       }
     }
 
+    // Handle text file upload (read content into system prompt)
+    if (pendingFileData && pendingFileName) {
+      const ext2 = pendingFileName.split('.').pop().toLowerCase();
+      const isText2 = ['txt','md','json','js','py','html','css','csv','xml','yml','yaml','ini','cfg','log','sh','bat','env'].includes(ext2);
+      if (isText2) {
+        try { const txt = atob(pendingFileData.split(',')[1]); systemContent += `\n\n---\nFichier joint: ${pendingFileName}\n\`\`\`\n${txt.substring(0, 10000)}\n\`\`\`\n---`; } catch(e) { toast('⚠️ Erreur lecture fichier'); }
+      } else if (!isImgFile) { toast('⚠️ Format non supporté. Utilise image ou .txt'); }
+      removeFile();
+    }
+
     const messages = [
       { role: 'system', content: systemContent },
       ...conversationHistory,
-      { role: 'user', content: text }
+      { role: 'user', content: msgContent }
     ];
 
     const response = await fetch(API_URL, {
@@ -897,14 +932,14 @@ window.sendMsg = async function() {
     }
 
     if (currentBubble) currentBubble.innerHTML = fmt(fullReply);
-    conversationHistory.push({ role: 'user', content: text });
+    conversationHistory.push({ role: 'user', content: msgContent });
     conversationHistory.push({ role: 'assistant', content: fullReply });
     if (conversationHistory.length > 40) conversationHistory = conversationHistory.slice(-40);
   } catch(e) {
     removeTyping(typingId);
     if (e.name === 'AbortError') {
       if (fullReply) {
-    if (currentBubble) {
+        if (currentBubble) {
       currentBubble.innerHTML = fmt(fullReply);
       const fb = document.createElement('div');
       fb.style.cssText = 'display:flex;gap:6px;margin-top:6px;';
@@ -921,7 +956,7 @@ window.sendMsg = async function() {
         };
       });
     }
-        conversationHistory.push({ role: 'user', content: text });
+        conversationHistory.push({ role: 'user', content: msgContent });
         conversationHistory.push({ role: 'assistant', content: fullReply });
       }
     } else {
@@ -950,13 +985,16 @@ window.quick = function(text) {
 
 // DOM HELPERS
 function hideWelcome() { const w = document.getElementById('welcome'); if (w) w.remove(); }
-function addMsg(role, text, isImage) {
+function addMsg(role, content, isImage) {
   const msgs = document.getElementById('msgs');
   const row = document.createElement('div');
   row.className = 'msg-row ' + (role === 'user' ? 'usr' : '');
   const emo = role === 'ai' ? '🧠' : '👤';
-  row.innerHTML = `<div class="av ${role === 'ai' ? 'ai-av' : 'usr-av'}">${emo}</div><div class="msg-body"><div class="bbl ${role === 'ai' ? 'ai-bbl' : 'usr-bbl'}">${isImage ? `<strong>🎨 Image générée :</strong><br>${escHtml(text)}` : fmt(text)}</div></div>`;
-  if (isImage) {
+  const isArr = Array.isArray(content);
+  const text = isArr ? content.find(c => c.type === 'text')?.text || '' : content;
+  const imgUrl = isArr ? content.find(c => c.type === 'image_url')?.image_url?.url : null;
+  row.innerHTML = `<div class="av ${role === 'ai' ? 'ai-av' : 'usr-av'}">${emo}</div><div class="msg-body" style="${role === 'ai' && isImage ? '' : ''}"><div class="bbl ${role === 'ai' ? 'ai-bbl' : 'usr-bbl'}">${imgUrl && role === 'user' ? '' : isImage ? `<strong>🎨 Image générée :</strong><br>${escHtml(text)}` : role === 'user' && isArr ? '' : fmt(text)}</div>${imgUrl && role === 'user' ? `<div class="bbl ${role === 'ai' ? 'ai-bbl' : 'usr-bbl'}" style="padding:4px;margin-top:2px"><img class="uploaded-img" src="${imgUrl}"></div>` : ''}</div>`;
+  if (isImage && role === 'ai') {
     const imgWrap = document.createElement('div');
     imgWrap.style.cssText = 'margin:8px 0;border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.3);padding:20px;text-align:center;font-size:13px;color:var(--tx2);';
     imgWrap.textContent = '🎨 Rechargement…';
@@ -1036,6 +1074,39 @@ function toast(msg) {
   clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2800);
 }
 window.toast = toast;
+
+// FILE UPLOAD
+window.handleFile = function(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { toast('⚠️ Fichier trop lourd (max 10 Mo)'); input.value = ''; return; }
+  pendingFileName = file.name;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    pendingFileData = e.target.result;
+    const ext = file.name.split('.').pop().toLowerCase();
+    const isImg = ['jpg','jpeg','png','gif','webp','bmp'].includes(ext);
+    const preview = document.getElementById('filePreview');
+    const wrap = document.getElementById('inpWrap');
+    preview.style.display = 'flex';
+    if (isImg) {
+      preview.innerHTML = `<img class="file-preview-img" src="${pendingFileData}"><span class="file-preview-name">${file.name}</span><button class="file-preview-rm" onclick="removeFile()">✕</button>`;
+    } else {
+      preview.innerHTML = `<span style="font-size:18px">📄</span><span class="file-preview-name">${file.name}</span><button class="file-preview-rm" onclick="removeFile()">✕</button>`;
+    }
+    wrap.style.borderColor = 'rgba(0,212,170,0.3)';
+    document.getElementById('inp').focus();
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+};
+window.removeFile = function() {
+  pendingFileData = null;
+  pendingFileName = '';
+  document.getElementById('filePreview').style.display = 'none';
+  document.getElementById('filePreview').innerHTML = '';
+  document.getElementById('inpWrap').style.borderColor = '';
+};
 
 const s = document.createElement('style');
 s.textContent = `.cursor-blink{animation:cb .7s step-end infinite;}@keyframes cb{0%,100%{opacity:1;}50%{opacity:0;}}`;
