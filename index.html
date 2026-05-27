@@ -1061,7 +1061,7 @@ function addFeedback(bbl) {
     b.onclick = () => {
       fb.querySelectorAll('.fb-btn').forEach(x => { x.dataset.act = ''; x.style.color = 'var(--tx3)'; });
       b.dataset.act = '1';
-      b.style.color = b.dataset.v === '1' ? 'var(--a2)' : 'var(--a3)';
+      b.style.color = b.dataset.v === '1' ? '#22c55e' : '#ef4444';
       toast(b.dataset.v === '1' ? '👍 Merci !' : '👎 Pris en compte');
     };
   });
