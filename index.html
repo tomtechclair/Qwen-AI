@@ -392,7 +392,6 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
         </button>
       </div>
       <div class="tb-tools">
-        <button class="tb-btn" id="searchBtn" onclick="toggleSearch()" title="Recherche web">🌐</button>
         <button class="tb-btn" id="imgBtn" onclick="toggleImage()" title="Générer image">🎨</button>
 
       </div>
@@ -485,7 +484,7 @@ let temperature = 0.7;
 let generating = false;
 let abortController = null;
 let conversationHistory = [];
-let searchEnabled = false;
+let searchEnabled = true;
 let imageMode = false;
 let userName = localStorage.getItem('qh_user_name') || '';
 let pendingFileData = null;
@@ -534,12 +533,6 @@ window.selModelDropdown = function(val) {
 window.toggleSidebar = function() {
   document.getElementById('sidebar').classList.toggle('open');
   document.getElementById('sidebarBackdrop').classList.toggle('show');
-};
-window.toggleSearch = function() {
-  searchEnabled = !searchEnabled;
-  if (imageMode) toggleImage();
-  document.getElementById('searchBtn').classList.toggle('sel');
-  toast(searchEnabled ? '🌐 Recherche web activée' : '🌐 Web désactivé');
 };
 
 // TAVILY SEARCH
@@ -595,7 +588,6 @@ window.toggleImage = function() {
   imageMode = !imageMode;
   document.getElementById('imgBtn').classList.toggle('sel');
   document.getElementById('inp').placeholder = imageMode ? 'Décrivez l\'image à générer…' : 'Posez votre question…';
-  if (imageMode && searchEnabled) toggleSearch();
   toast(imageMode ? '🎨 Mode image activé' : '🎨 Mode image désactivé');
 };
 
