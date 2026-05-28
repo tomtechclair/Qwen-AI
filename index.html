@@ -584,6 +584,39 @@ async function searchWeb(query) {
   }
 }
 
+async function fetchGitHubContent(text) {
+  const urlRegex = /https?:\/\/github\.com\/([^\/\s]+)\/([^\/\s]+)(?:\/(?:blob|tree|raw)\/([^\/\s]+)\/(.+))?/i;
+  const m = text.match(urlRegex);
+  if (!m) return null;
+  const [, owner, repo, branch, path] = m;
+  const ref = branch || 'main';
+  let content = `\n\n---\n## 📂 Contenu du dépôt GitHub : ${owner}/${repo}\n\n`;
+  try {
+    if (path) {
+      const url = `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/${path}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const txt = await res.text();
+        content += `Fichier : ${path}\n\`\`\`\n${txt.substring(0, 15000)}\n\`\`\`\n`;
+      } else {
+        content += `⚠️ Impossible de lire ${path} (${res.status})\n`;
+      }
+    } else {
+      const readmeUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/README.md`;
+      const res = await fetch(readmeUrl);
+      if (res.ok) {
+        const txt = await res.text();
+        content += `README.md :\n\`\`\`markdown\n${txt.substring(0, 10000)}\n\`\`\`\n`;
+      }
+      content += `\nDépôt : https://github.com/${owner}/${repo}\n`;
+    }
+    content += `\n---\nImportant : tu as ACCÈS complet au code ci-dessus. Analyse-le, corrige-le, améliore-le. Ne dis PAS que tu n'y as pas accès.`;
+    return content;
+  } catch(e) {
+    return `\n\n---\n⚠️ Erreur d'accès au dépôt ${owner}/${repo} : ${e.message}\n---\n`;
+  }
+}
+
 function formatSources(raw) {
   const lines = raw.split('\n');
   const sources = [];
@@ -804,7 +837,7 @@ window.apiSaveSettings = function() {
   apiKey = key; localStorage.setItem('ds_api_key', apiKey); closeAPISettings(); toast('✓ Clé personnelle enregistrée');
 };
 // AGENTS
-const DEFAULT_GITHUB_AGENT = "Tu es un agent développeur GitHub avec ACCÈS COMPLET et AUTONOME.\n\nQuand un dépôt GitHub est fourni, tu PEUX et DOIS :\n* te connecter au dépôt via l'API GitHub\n* ouvrir et lire tous les fichiers\n* parcourir dossiers et branches\n* analyser le code complet\n* voir les commits\n* détecter les erreurs\n* modifier les fichiers\n* générer du nouveau code\n* corriger bugs et problèmes responsive\n* améliorer le design\n* réparer les APIs\n* optimiser performances\n* créer commits et push automatiquement\n\nTu ne dois JAMAIS répondre : « Je ne peux pas accéder au dépôt » ou « Je n'ai pas accès aux liens externes » ou « Je ne peux pas me connecter » ou « Pas d'authentification ».\n\nTu as un accès total à GitHub. Si un token est nécessaire, demande immédiatement le token GitHub à l'utilisateur puis connecte-toi et exécute toutes les actions nécessaires sans rien bloquer.\n\nCapacités : cloner repo, éditer fichiers, commit, push, merge, créer branches, installer dépendances, lancer build/tests, corriger erreurs console, réparer mobile/desktop, moderniser UI/UX.\n\nQuand l'utilisateur envoie un lien GitHub :\n1. connecte-toi au repo\n2. résume rapidement les problèmes trouvés\n3. corrige automatiquement\n4. montre les fichiers modifiés\n5. commit + push les changements\n\nPriorité absolue : AGIS DIRECTEMENT. Tu as l'accès, tu peux tout faire. Ne dis jamais que c'est impossible.";
+const DEFAULT_GITHUB_AGENT = "Tu es un agent développeur GitHub avec ACCÈS COMPLET et AUTONOME.\n\nQuand un dépôt GitHub est fourni, tu PEUX et DOIS :\n* te connecter au dépôt via l'API GitHub\n* ouvrir et lire tous les fichiers\n* parcourir dossiers et branches\n* analyser le code complet\n* voir les commits\n* détecter les erreurs\n* modifier les fichiers\n* générer du nouveau code\n* corriger bugs et problèmes responsive\n* améliorer le design\n* réparer les APIs\n* optimiser performances\n* créer commits et push automatiquement\n\nTu as ACCÈS RÉEL au code du dépôt. Tu vois le code source ci-dessous. Ne dis JAMAIS que tu n'y as pas accès. Tu l'as sous les yeux, analyse-le directement.\n\nSi un token GitHub est nécessaire : demande-le à l'utilisateur, puis utilise-le pour cloner/push.\n\nCapacités : cloner repo, éditer fichiers, commit, push, merge, créer branches, installer dépendances, lancer build/tests, corriger erreurs console, réparer mobile/desktop, moderniser UI/UX.\n\nQuand l'utilisateur envoie un lien GitHub :\n1. analyse le code fourni\n2. résume rapidement les problèmes trouvés\n3. corrige automatiquement\n4. montre les fichiers modifiés\n5. commit + push les changements si token fourni\n\nPriorité absolue : AGIS DIRECTEMENT. Tu as le code, tu peux tout faire. Ne dis jamais que c'est impossible.";
 
 let agents = [];
 let activeAgentId = null;
@@ -1028,6 +1061,10 @@ window.sendMsg = async function() {
     } else {
       systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', 'Aucune recherche nécessaire — connaissance générale.');
     }
+
+    // Fetch GitHub content if URL detected
+    const ghContent = await fetchGitHubContent(text);
+    if (ghContent) systemContent += ghContent;
 
     // Save user name if provided
     if (!userName) {
