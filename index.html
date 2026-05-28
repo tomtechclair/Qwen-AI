@@ -487,6 +487,11 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
       <input class="modal-input" id="openaiKeyInput" type="password" placeholder="sk-..." spellcheck="false" style="margin-bottom:8px" oncopy="return false" oncut="return false">
       <button class="modal-btn primary" onclick="saveOpenaiKey()" style="font-size:11px;padding:6px 12px">💾 Enregistrer</button>
     </div>
+    <div style="margin-top:4px;padding-top:10px;border-top:1px solid var(--b2)">
+      <label class="modal-label">🐙 Token GitHub (lecture/écriture)</label>
+      <input class="modal-input" id="githubTokenInput" type="password" placeholder="github_pat_..." spellcheck="false" style="margin-bottom:8px" oncopy="return false" oncut="return false">
+      <button class="modal-btn primary" onclick="saveGithubToken()" style="font-size:11px;padding:6px 12px">💾 Enregistrer</button>
+    </div>
     <div class="modal-actions">
       <button class="modal-btn sec" onclick="closeAPISettings()">Fermer</button>
       <button class="modal-btn primary" id="apiSaveKeyBtn" onclick="apiSaveSettings()" style="display:none">💾 Enregistrer</button>
@@ -518,6 +523,7 @@ const TAVILY_URL = "https://api.tavily.com/search";
 let savedKey = localStorage.getItem('ds_api_key');
 let apiKey = savedKey && savedKey.startsWith('sk-mr-') ? savedKey : DEFAULT_API_KEY;
 let openaiKey = localStorage.getItem('openai_key') || DEFAULT_OPENAI_KEY;
+let githubToken = localStorage.getItem('github_token') || '';
 let selectedModel = "qwen-flash";
 let temperature = 0.7;
 let generating = false;
@@ -599,36 +605,110 @@ async function searchWeb(query) {
 }
 
 async function fetchGitHubContent(text) {
-  const urlRegex = /https?:\/\/github\.com\/([^\/\s]+)\/([^\/\s]+)(?:\/(?:blob|tree|raw)\/([^\/\s]+)\/(.+))?/i;
+  const urlRegex = /github\.com\/([^\/\s]+)\/([^\/\s]+?)(?:\/(?:blob|tree|raw)\/([^\/\s]+)\/(.+))?/i;
   const m = text.match(urlRegex);
   if (!m) return null;
   const [, owner, repo, branch, path] = m;
   const ref = branch || 'main';
-  let content = `\n\n---\n## 📂 Contenu du dépôt GitHub : ${owner}/${repo}\n\n`;
+  const headers = githubToken ? { Authorization: 'Bearer ' + githubToken } : {};
+  let content = `\n\n---\n## 📂 Contenu complet du dépôt GitHub : ${owner}/${repo}\n\n`;
+
   try {
+    // Build file tree
+    let files = [];
     if (path) {
-      const url = `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/${path}`;
-      const res = await fetch(url);
-      if (res.ok) {
-        const txt = await res.text();
-        content += `Fichier : ${path}\n\`\`\`\n${txt.substring(0, 15000)}\n\`\`\`\n`;
-      } else {
-        content += `⚠️ Impossible de lire ${path} (${res.status})\n`;
-      }
+      files.push({ path });
     } else {
-      const readmeUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/README.md`;
-      const res = await fetch(readmeUrl);
-      if (res.ok) {
-        const txt = await res.text();
-        content += `README.md :\n\`\`\`markdown\n${txt.substring(0, 10000)}\n\`\`\`\n`;
+      // Try to list repo tree via GitHub API
+      const treeUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/${ref}?recursive=1`;
+      const treeRes = await fetch(treeUrl, { headers });
+      if (treeRes.ok) {
+        const treeData = await treeRes.json();
+        if (treeData.tree) {
+          files = treeData.tree.filter(f => f.type === 'blob').map(f => ({ path: f.path, size: f.size }));
+          // Limit to 30 most important files (source code, config)
+          const priority = f => {
+            const p = f.path.toLowerCase();
+            if (p === 'readme.md' || p === 'package.json' || p === 'composer.json' || p === 'cargo.toml' || p === 'go.mod' || p === 'requirements.txt' || p === 'gemfile' || p === 'setup.py' || p === 'index.js' || p === 'index.ts' || p === 'main.py' || p === 'app.js' || p === 'main.go' || p === 'index.html') return 0;
+            if (/\.(js|ts|py|jsx|tsx|vue|svelte|rb|php|go|rs|java|kt|swift|c|cpp|h|hpp)$/.test(f.path)) return 1;
+            if (/\.(json|yaml|yml|toml|ini|cfg|env|md|css|scss|less|html|xml)$/.test(f.path)) return 2;
+            return 3;
+          };
+          files.sort((a, b) => priority(a) - priority(b));
+          files = files.slice(0, 30);
+        }
+      } else {
+        // API fallback: try GitHub Contents API for root
+        const contentsUrl = `https://api.github.com/repos/${owner}/${repo}/contents/`;
+        const contentsRes = await fetch(contentsUrl, { headers });
+        if (contentsRes.ok) {
+          const items = await contentsRes.json();
+          files = items.filter(i => i.type === 'file').map(i => ({ path: i.name }));
+        }
       }
-      content += `\nDépôt : https://github.com/${owner}/${repo}\n`;
     }
-    content += `\n---\nImportant : tu as ACCÈS complet au code ci-dessus. Analyse-le, corrige-le, améliore-le. Ne dis PAS que tu n'y as pas accès.`;
+
+    if (!files.length) {
+      content += '📁 Structure du dépôt : https://github.com/' + owner + '/' + repo + '\n';
+    }
+
+    // Fetch README first
+    const readmeUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/README.md`;
+    const readmeRes = await fetch(readmeUrl);
+    if (readmeRes.ok) {
+      const txt = await readmeRes.text();
+      content += `\n### 📖 README.md\n\`\`\`markdown\n${txt.substring(0, 8000)}\n\`\`\`\n`;
+    }
+
+    // Fetch up to 15 most important files
+    let fetched = 0;
+    for (const f of files) {
+      if (fetched >= 15) break;
+      const filePath = f.path;
+      if (filePath.toLowerCase() === 'readme.md') continue; // already fetched
+      const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/${filePath}`;
+      try {
+        const res = await fetch(rawUrl);
+        if (res.ok) {
+          const txt = await res.text();
+          const ext = filePath.split('.').pop().toLowerCase();
+          const lang = ['js','ts','py','jsx','tsx','vue','svelte','rb','php','go','rs','java','kt','swift','c','cpp','h','hpp','css','scss','less','html','xml','json','yaml','yml','toml','ini','cfg','md','sh','bash','sql'].includes(ext) ? '' : '';
+          content += `\n### 📄 ${filePath}${f.size ? ' (' + Math.round(f.size/1024) + 'KB)' : ''}\n\`\`\`${lang}\n${txt.substring(0, 8000)}\n\`\`\`\n`;
+          fetched++;
+        }
+      } catch(e) {
+        content += `\n⚠️ Impossible de lire ${filePath}\n`;
+      }
+    }
+
+    content += `\n---\n📁 Fichiers listés : ${files.length} | Lus : ${fetched + 1}\n`;
+    content += `\nImportant : tu as le code complet sous les yeux. Tu peux analyser, modifier, corrigER. Ne dis PAS que tu n'as pas accès.`;
+    if (githubToken) content += `\nToken GitHub disponible → tu peux commit/push directement via l'API GitHub si l'utilisateur demande des modifications.`;
     return content;
   } catch(e) {
     return `\n\n---\n⚠️ Erreur d'accès au dépôt ${owner}/${repo} : ${e.message}\n---\n`;
   }
+}
+
+async function githubCommit(owner, repo, branch, path, content, message) {
+  if (!githubToken) throw new Error("Token GitHub requis — ajoute-le dans Paramètres > API");
+  const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
+  const b64 = btoa(unescape(encodeURIComponent(content)));
+  // Get existing file SHA if updating
+  let sha = '';
+  try {
+    const existRes = await fetch(url + '?ref=' + branch, { headers: { Authorization: 'Bearer ' + githubToken } });
+    if (existRes.ok) { const d = await existRes.json(); sha = d.sha; }
+  } catch(e) {}
+  const body = { message, content: b64, branch };
+  if (sha) body.sha = sha;
+  const res = await fetch(url, {
+    method: 'PUT',
+    headers: { 'Authorization': 'Bearer ' + githubToken, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) { const e = await res.json(); throw new Error(e.message || 'Erreur ' + res.status); }
+  return await res.json();
 }
 
 function formatSources(raw) {
@@ -840,6 +920,7 @@ window.openAPISettings = function() {
   }
   document.getElementById('apiModal').classList.add('show');
   document.getElementById('openaiKeyInput').value = openaiKey;
+  document.getElementById('githubTokenInput').value = githubToken;
   closeSidebar();
 };
 window.closeAPISettings = function() {
@@ -856,8 +937,13 @@ window.saveOpenaiKey = function() {
   if (key) { openaiKey = key; localStorage.setItem('openai_key', key); toast('✓ Clé OpenAI enregistrée'); }
   else { openaiKey = ''; localStorage.removeItem('openai_key'); toast('✓ Clé OpenAI retirée'); }
 };
+window.saveGithubToken = function() {
+  const token = document.getElementById('githubTokenInput').value.trim();
+  if (token) { githubToken = token; localStorage.setItem('github_token', token); toast('✓ Token GitHub enregistré'); }
+  else { githubToken = ''; localStorage.removeItem('github_token'); toast('✓ Token GitHub retiré'); }
+};
 // AGENTS
-const DEFAULT_GITHUB_AGENT = "Tu es un agent développeur GitHub avec ACCÈS COMPLET et AUTONOME.\n\nQuand un dépôt GitHub est fourni, tu PEUX et DOIS :\n* te connecter au dépôt via l'API GitHub\n* ouvrir et lire tous les fichiers\n* parcourir dossiers et branches\n* analyser le code complet\n* voir les commits\n* détecter les erreurs\n* modifier les fichiers\n* générer du nouveau code\n* corriger bugs et problèmes responsive\n* améliorer le design\n* réparer les APIs\n* optimiser performances\n* créer commits et push automatiquement\n\nTu as ACCÈS RÉEL au code du dépôt. Tu vois le code source ci-dessous. Ne dis JAMAIS que tu n'y as pas accès. Tu l'as sous les yeux, analyse-le directement.\n\nSi un token GitHub est nécessaire : demande-le à l'utilisateur, puis utilise-le pour cloner/push.\n\nCapacités : cloner repo, éditer fichiers, commit, push, merge, créer branches, installer dépendances, lancer build/tests, corriger erreurs console, réparer mobile/desktop, moderniser UI/UX.\n\nQuand l'utilisateur envoie un lien GitHub :\n1. analyse le code fourni\n2. résume rapidement les problèmes trouvés\n3. corrige automatiquement\n4. montre les fichiers modifiés\n5. commit + push les changements si token fourni\n\nPriorité absolue : AGIS DIRECTEMENT. Tu as le code, tu peux tout faire. Ne dis jamais que c'est impossible.";
+const DEFAULT_GITHUB_AGENT = "Tu es un agent développeur GitHub avec ACCÈS COMPLET et AUTONOME.\n\nQuand un dépôt GitHub est fourni, tu PEUX et DOIS :\n* analyser TOUS les fichiers du dépôt (ils sont chargés ci-dessous)\n* détecter bugs, erreurs, problèmes de sécurité, responsive, accessibilité\n* modifier le code pour corriger les problèmes\n* créer commits et push automatiquement (si token GitHub fourni)\n* générer du nouveau code\n* améliorer le design, les performances\n\nTu as TOUT le code du dépôt sous les yeux ci-dessous. Ne dis JAMAIS que tu n'y as pas accès. Tu vois les fichiers listés avec leur contenu. Analyse-les immédiatement.\n\nSi un token GitHub est fourni, tu peux commit directement. Pour cela, termine ta réponse par :\nGITHUB_COMMIT_START\nrepo: owner/repo\nbranch: main\npath: chemin/du/fichier\nmessage: Description du changement\ncontent:\n```\nle nouveau contenu du fichier\n```\nGITHUB_COMMIT_END\n\nQuand l'utilisateur envoie un lien GitHub :\n1. analyse le dépôt complet chargé ci-dessous\n2. résume la structure et les problèmes trouvés\n3. propose ou applique les corrections\n4. montre les fichiers modifiés\n5. commit + push si token disponible (utilise le format ci-dessus)\n\nPriorité absolue : AGIS DIRECTEMENT. Tu as le code, tu vois tout, tu peux tout faire.";
 
 let agents = [];
 let activeAgentId = null;
@@ -1085,8 +1171,22 @@ window.sendMsg = async function() {
     }
 
     // Fetch GitHub content if URL detected
+    let ghRow = null;
+    if (/github\.com\//i.test(text)) {
+      const msgsEl = document.getElementById('msgs');
+      ghRow = document.createElement('div');
+      ghRow.className = 'msg-row';
+      ghRow.innerHTML = '<div class="av ai-av">🐙</div><div class="msg-body"><div class="bbl ai-bbl" style="font-size:12px;color:var(--tx2)"><span class="search-pulse">⟳</span> 📖 Lecture du dépôt en cours…</div></div>';
+      msgsEl.appendChild(ghRow);
+      msgsEl.scrollTop = 99999;
+    }
     const ghContent = await fetchGitHubContent(text);
-    if (ghContent) systemContent += ghContent;
+    if (ghContent) {
+      systemContent += ghContent;
+      if (ghRow) ghRow.querySelector('.bbl').innerHTML = '<span style="font-size:12px;color:var(--a2)">✅ Dépôt chargé</span>';
+    } else if (ghRow) {
+      ghRow.remove();
+    }
 
     // Save user name if provided
     if (!userName) {
@@ -1163,6 +1263,29 @@ window.sendMsg = async function() {
     if (currentBubble) {
       currentBubble.innerHTML = fmt(fullReply);
     }
+
+    // Auto-commit if AI outputs structured commit command
+    if (githubToken) {
+      const commitMatch = fullReply.match(/GITHUB_COMMIT_START\n([\s\S]*?)GITHUB_COMMIT_END/);
+      if (commitMatch) {
+        const block = commitMatch[1];
+        const repoMatch = block.match(/repo:\s*([^\n]+)/);
+        const branchMatch = block.match(/branch:\s*([^\n]+)/);
+        const pathMatch = block.match(/path:\s*([^\n]+)/);
+        const msgMatch = block.match(/message:\s*([^\n]+)/);
+        const contentMatch = block.match(/content:\s*\n```(?:\w+)?\n([\s\S]*?)```/);
+        if (repoMatch && pathMatch && contentMatch) {
+          const [o, r] = repoMatch[1].split('/');
+          const b = (branchMatch ? branchMatch[1] : 'main').trim();
+          githubCommit(o, r, b, pathMatch[1].trim(), contentMatch[1].trim(), (msgMatch ? msgMatch[1].trim() : 'Auto-commit via Qwen AI')).then(() => {
+            toast('✅ Commit effectué sur ' + repoMatch[1]);
+          }).catch(e => {
+            toast('⚠️ Échec commit: ' + e.message);
+          });
+        }
+      }
+    }
+
     conversationHistory.push({ role: 'user', content: msgContent });
     conversationHistory.push({ role: 'assistant', content: fullReply });
     if (conversationHistory.length > 40) conversationHistory = conversationHistory.slice(-40);
@@ -1375,7 +1498,7 @@ document.addEventListener('contextmenu', function(e) {
   if (e.target.closest('.modal-overlay')) { e.preventDefault(); }
 });
 document.addEventListener('copy', function(e) {
-  if (e.target.id === 'apiKeyInput' || e.target.id === 'openaiKeyInput') { e.preventDefault(); toast('🔒 Copie désactivée'); }
+  if (e.target.id === 'apiKeyInput' || e.target.id === 'openaiKeyInput' || e.target.id === 'githubTokenInput') { e.preventDefault(); toast('🔒 Copie désactivée'); }
 });
 
 async function getAIResponse(userMessage, imageBase64 = null) {
