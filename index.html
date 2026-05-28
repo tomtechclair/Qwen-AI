@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
@@ -326,6 +326,24 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
   font-size:11.5px;color:var(--a4);line-height:1.5;
 }
 
+/* WEATHER WIDGET */
+.weather-widget {
+  background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(147,51,234,0.1));
+  border: 1px solid var(--b2);
+  border-radius: 12px;
+  padding: 12px;
+  margin: 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+.weather-icon { font-size: 24px; }
+.weather-info { flex: 1; }
+.weather-temp { font-size: 18px; font-weight: 700; color: var(--tx); }
+.weather-desc { font-size: 11px; color: var(--tx2); }
+.weather-details { font-size: 10px; color: var(--tx3); margin-top: 4px; display: flex; gap: 8px; }
+
 /* RESPONSIVE */
 @media(max-width:768px){
   .topbar{padding:10px 14px;}
@@ -396,9 +414,9 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
       <div class="tb-left">
         <button class="tb-menu-btn" id="menuBtn" onclick="toggleSidebar()">☰</button>
         <button class="tb-model" onclick="document.querySelector('.tb-model-sel').focus();document.querySelector('.tb-model-sel').click()">
-          <span id="modelLabel">⚡ Flash</span>
+          <span id="modelLabel"> Flash</span>
           <select class="tb-model-sel" id="modelSelect" onchange="selModelDropdown(this.value)">
-            <option value="qwen-flash|0.7">⚡ Flash (rapide)</option>
+            <option value="qwen-flash|0.7"> Flash (rapide)</option>
             <option value="qwen-plus|0.7">🚀 Qwen Plus</option>
             <option value="qwen3.5-plus|0.7">🧠 3.5 Plus (précis)</option>
             <option value="qwen3-max|0.5">🔍 3 Max (raisonnement)</option>
@@ -414,7 +432,7 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
     </section>
 
     <!-- STOP -->
-    <button class="btn-stop" id="btnStop" onclick="stopGen()">⏹ Arrêter</button>
+    <button class="btn-stop" id="btnStop" onclick="stopGen()"> Arrêter</button>
 
     <!-- INPUT -->
     <div class="input-zone">
@@ -429,7 +447,7 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
         <textarea id="inp" rows="1" placeholder="Posez votre question…" onkeydown="onKey(event)" oninput="resize(this)"></textarea>
         <div class="inp-actions">
           <input type="file" id="fileInput" accept="image/*,.pdf,.txt,.doc,.docx,.csv,.json,.js,.py,.html,.css,.md" onchange="handleFile(this)" style="display:none">
-          <button class="btn-upload" id="btnUpload" onclick="document.getElementById('fileInput').click()" title="Joindre image/fichier">📎</button>
+          <button class="btn-upload" id="btnUpload" onclick="document.getElementById('fileInput').click()" title="Joindre image/fichier"></button>
           <button class="btn-send" id="btnSend" onclick="sendMsg()">➤</button>
         </div>
       </div>
@@ -458,8 +476,8 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
       <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;background:rgba(255,95,160,0.06);border:1px solid rgba(255,95,160,0.15);font-size:12px;color:var(--a3)">
         <span>🎨</span> Génération d'images (Pollinations.ai)
       </div>
-      <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.15);font-size:12px;color:var(--a4)">
-        <span>🌤</span> Météo (bientôt disponible)
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;background:rgba(0,212,170,0.06);border:1px solid rgba(0,212,170,0.15);font-size:12px;color:#00d4aa;">
+        <span>🌤</span> Météo en temps réel (Open-Meteo)
       </div>
     </div>
     <div class="modal-actions">
@@ -473,7 +491,7 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
   <div class="modal-box">
     <div class="modal-title">🔑 API</div>
     <div class="modal-desc">Clé intégrée active automatiquement — gratuit et illimité via MuleRouter.</div>
-    <div class="modal-warn">💡 Ce site utilise l'<strong>API MuleRouter</strong> (compatible OpenAI) avec une clé intégrée, et <strong>Tavily</strong> pour la recherche web. La météo arrive bientôt — tom_visionai_pro travaille dessus.</div>
+    <div class="modal-warn">💡 Ce site utilise l'<strong>API MuleRouter</strong> (compatible OpenAI) avec une clé intégrée, et <strong>Tavily</strong> pour la recherche web.</div>
     <div id="apiDefaultKeyStatus" style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;background:rgba(0,212,170,0.07);border:1px solid rgba(0,212,170,0.18);font-size:12px;color:var(--a2);margin-bottom:12px">
       <span>🔒</span> <span><strong>Clé intégrée active</strong></span>
     </div>
@@ -621,11 +639,32 @@ function formatSources(raw) {
   ).join('');
 }
 
+// METEO FUNCTION (NEW)
+async function getWeatherData() {
+  try {
+    // Demander la position
+    const pos = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+    });
+    const { latitude, longitude } = pos.coords;
+    
+    // Appel API Open-Meteo
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&wind_speed_unit=ms`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Erreur météo');
+    const data = await res.json();
+    return data.current_weather;
+  } catch (e) {
+    console.error("Météo échouée:", e);
+    return null;
+  }
+}
+
 window.activateImageMode = function() {
   imageMode = true;
   document.getElementById('inp').placeholder = 'Décris l\'image à générer…';
   document.getElementById('inp').focus();
-  toast('🎨 Mode image — décris l\'image à créer');
+  toast(' Mode image — décris l\'image à créer');
 }
 
 // CONVERSATION MANAGEMENT
@@ -727,7 +766,7 @@ window.deleteConv = function(id) {
   }
   saveConvs();
   renderSidebar();
-  toast('🗑 Conversation supprimée');
+  toast(' Conversation supprimée');
 };
 
 window.newChat = function() {
@@ -849,7 +888,7 @@ function getActiveAgent() {
 function updateAgentBtn() {
   const act = getActiveAgent();
   const sb = document.getElementById('sidebarAgentBtn');
-  if (sb) { sb.textContent = act ? '🤖 ' + act.name : '🤖 Agents'; sb.style.background = act ? 'var(--b1)' : ''; }
+  if (sb) { sb.textContent = act ? ' ' + act.name : '🤖 Agents'; sb.style.background = act ? 'var(--b1)' : ''; }
 }
 
 window.openAgents = function() {
@@ -954,7 +993,7 @@ window.sendMsg = async function() {
     const msgs = document.getElementById('msgs');
     const row = document.createElement('div');
     row.className = 'msg-row';
-    row.innerHTML = `<div class="av ai-av">🧠</div><div class="msg-body"><div class="bbl ai-bbl"><strong>🎨 Image générée :</strong><br>${text}</div></div>`;
+    row.innerHTML = `<div class="av ai-av">🧠</div><div class="msg-body"><div class="bbl ai-bbl"><strong> Image générée :</strong><br>${text}</div></div>`;
     const imgWrap = document.createElement('div');
     imgWrap.style.cssText = 'margin:8px 0;border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.3);';
     row.querySelector('.msg-body').appendChild(imgWrap);
@@ -963,7 +1002,7 @@ window.sendMsg = async function() {
     conversationHistory.push({ role: 'user', content: text });
     const progDiv = document.createElement('div');
     progDiv.style.cssText = 'padding:24px 20px;text-align:center;';
-    progDiv.innerHTML = '<div style="font-size:12px;color:var(--tx2);margin-bottom:8px">🎨 Génération…</div><div style="height:4px;border-radius:2px;background:var(--b1);overflow:hidden;max-width:240px;margin:0 auto"><div id="imgProgBar" style="height:100%;width:0%;border-radius:2px;background:linear-gradient(90deg,var(--a1),var(--a2));transition:width .3s ease"></div></div><div id="imgProgPct" style="font-size:13px;font-weight:600;color:var(--tx);margin-top:6px;font-variant-numeric:tabular-nums">0%</div>';
+    progDiv.innerHTML = '<div style="font-size:12px;color:var(--tx2);margin-bottom:8px"> Génération…</div><div style="height:4px;border-radius:2px;background:var(--b1);overflow:hidden;max-width:240px;margin:0 auto"><div id="imgProgBar" style="height:100%;width:0%;border-radius:2px;background:linear-gradient(90deg,var(--a1),var(--a2));transition:width .3s ease"></div></div><div id="imgProgPct" style="font-size:13px;font-weight:600;color:var(--tx);margin-top:6px;font-variant-numeric:tabular-nums">0%</div>';
     imgWrap.appendChild(progDiv);
     try {
       const bar = document.getElementById('imgProgBar');
@@ -1018,7 +1057,7 @@ window.sendMsg = async function() {
         img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?width=1024&height=1024&model=flux&nofeed=true`;
       }
     } catch(e) {
-      imgWrap.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--a3)">⚠️ Erreur: ' + e.message + '</div>';
+      imgWrap.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--a3)">️ Erreur: ' + e.message + '</div>';
     }
     conversationHistory.push({ role: 'assistant', content: text, isImage: true });
     imageMode = false;
@@ -1042,7 +1081,7 @@ window.sendMsg = async function() {
   if (isWeather) hasSearchIntent = true;
 
   let typingLabel = '';
-  if (isWeather) typingLabel = '⏳ Vérification…';
+  if (isWeather) typingLabel = '⏳ Vérification météo…';
   else if (hasSearchIntent) typingLabel = '🔍 Recherche web en cours…';
 
   const typingId = addTyping(typingLabel);
@@ -1058,7 +1097,44 @@ window.sendMsg = async function() {
     systemContent = systemContent.replace('[NAME_INSTR]', nameInstr);
 
     if (isWeather) {
-      systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', '## ℹ MÉTÉO\n\nLa fonction météo n\'est pas encore disponible sur Qwen AI. Dis à l\'utilisateur que tom_visionai_pro travaille encore dessus et que ça arrivera bientôt. Utilise son prénom si tu le connais.');
+      // NOUVELLE LOGIQUE MÉTÉO
+      removeTyping(typingId);
+      const weatherData = await getWeatherData();
+      
+      let weatherInfo = "Je n'ai pas pu récupérer ta localisation. Autorise l'accès à ta position ou donne-moi ta ville.";
+      let weatherWidgetHTML = "";
+
+      if (weatherData) {
+        const icons = { 0: '☀️', 1: '🌤️', 2: '⛅', 3: '☁️', 45: '🌫️', 48: '🌫️', 51: '️', 53: '️', 55: '️', 61: '️', 63: '️', 65: '️', 71: '❄️', 73: '❄️', 75: '❄️', 80: '🌦️', 81: '️', 82: '️', 95: '️', 96: '️', 99: '️' };
+        const icon = icons[weatherData.weathercode] || '🌤️';
+        const desc = ["Ciel dégagé", "Principalement dégagé", "Partiellement nuageux", "Nuageux", "Brouillard", "Brouillard givrant", "Bruine faible", "Bruine modérée", "Bruine dense", "Pluie faible", "Pluie modérée", "Pluie forte", "Chute de neige faible", "Chute de neige modérée", "Chute de neige forte", "Averses de pluie", "Averses de pluie fortes", "Averses de neige"][weatherData.weathercode] || "Inconnu";
+        
+        weatherInfo = `Il fait actuellement **${weatherData.temperature}°C**. Le ciel est **${desc}** avec un vent de **${(weatherData.windspeed * 3.6).toFixed(0)} km/h**.`;
+        
+        weatherWidgetHTML = `
+        <div class="weather-widget">
+          <div class="weather-icon">${icon}</div>
+          <div class="weather-info">
+            <div class="weather-temp">${weatherData.temperature}°C</div>
+            <div class="weather-desc">${desc}</div>
+            <div class="weather-details">Vent: ${(weatherData.windspeed * 3.6).toFixed(0)} km/h • Code: ${weatherData.weathercode}</div>
+          </div>
+        </div>`;
+      }
+
+      systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', `## 🌤 MÉTÉO ACTUELLE\n\n${weatherInfo}\n\nUtilise ces données pour répondre précisément. Si tu peux, affiche le widget HTML suivant dans ta réponse :\n\n${weatherWidgetHTML}`);
+      
+      // Affichage immédiat du widget dans le chat avant la réponse textuelle
+      if(weatherWidgetHTML) {
+         const msgsEl = document.getElementById('msgs');
+         const wr = document.createElement('div');
+         wr.className = 'msg-row';
+         wr.innerHTML = `<div class="av ai-av">🌤</div><div class="msg-body"><div class="bbl ai-bbl" style="padding:0;border:none;background:none;">${weatherWidgetHTML}</div></div>`;
+         msgsEl.appendChild(wr);
+         msgsEl.scrollTop = 99999;
+      }
+
+      typingId2 = addTyping('✏️ Génération réponse…');
     } else if (hasSearchIntent) {
       setStatus('thinking', 'Recherche web…');
       removeTyping(typingId);
@@ -1069,9 +1145,9 @@ window.sendMsg = async function() {
       msgsEl.appendChild(sr);
       msgsEl.scrollTop = 99999;
       const webResults = await searchWeb(text);
-      sr.querySelector('.bbl').innerHTML = `<div style="font-size:12px;color:var(--a2);margin-bottom:4px">🌐 Résultats de recherche</div><div style="font-size:11px;color:var(--tx2);line-height:1.5">${formatSources(webResults)}</div>`;
+      sr.querySelector('.bbl').innerHTML = `<div style="font-size:12px;color:var(--a2);margin-bottom:4px"> Résultats de recherche</div><div style="font-size:11px;color:var(--tx2);line-height:1.5">${formatSources(webResults)}</div>`;
       msgsEl.scrollTop = 99999;
-      systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', '## 🌐 RÉSULTATS DE RECHERCHE\n\n' + webResults);
+      systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', '##  RÉSULTATS DE RECHERCHE\n\n' + webResults);
       typingId2 = addTyping('✏️ Génération réponse…');
     } else {
       systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', 'Aucune recherche nécessaire — connaissance générale.');
@@ -1181,7 +1257,7 @@ window.sendMsg = async function() {
 window.stopGen = function() {
   if (abortController) abortController.abort();
   document.getElementById('btnStop').classList.remove('vis');
-  toast('⏹ Arrêté');
+  toast(' Arrêté');
 };
 
 window.quick = function(text) {
@@ -1247,155 +1323,4 @@ function setStatus(state, txt) {
 
 // MARKDOWN
 function fmt(text) {
-  text = text.replace(/```(\w+)?\n?([\s\S]*?)```/g, (_, lang, code) => {
-    const l = (lang || 'code').toLowerCase();
-    const esc = code.trim().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    return `<div class="cblock"><div class="cblock-hdr"><span class="clang">${l.toUpperCase()}</span><button class="ccopy" onclick="cpCode(this)">Copier</button></div><pre>${hl(esc,l)}</pre></div>`;
-  });
-  text = text.replace(/`([^`\n]+)`/g, '<code>$1</code>');
-  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
-  text = text.replace(/^### (.+)$/gm, '<strong style="font-size:14px;color:var(--a1)">$1</strong>');
-  text = text.replace(/^## (.+)$/gm, '<strong style="font-size:15px;color:var(--a2)">$1</strong>');
-  text = text.replace(/^# (.+)$/gm, '<strong style="font-size:16px;color:var(--tx)">$1</strong>');
-  text = text.replace(/^[-*] (.+)$/gm, '• $1');
-  text = text.replace(/^(\d+)\. (.+)$/gm, '$1. $2');
-  text = text.replace(/\n/g, '<br>');
-  return text;
-}
-function hl(code, lang) {
-  const kws = {js:['const','let','var','function','return','if','else','for','while','class','import','export','default','async','await','new','this','typeof','null','undefined','true','false','throw','try','catch','of','in','from','=>'],py:['def','class','import','from','return','if','elif','else','for','while','in','not','and','or','True','False','None','print','self','with','as','pass','raise','lambda','yield']};
-  const map = {js:'js',jsx:'js',ts:'js',tsx:'js',javascript:'js',typescript:'js',python:'py',py:'py'};
-  const k = map[lang];
-  if (k && kws[k]) code = code.replace(new RegExp(`\\b(${kws[k].join('|')})\\b`,'g'), '<span class="kw">$1</span>');
-  code = code.replace(/(["'`])([^"'`\n]*)\1/g, '<span class="str">$1$2$1</span>');
-  code = code.replace(/\b(\d+\.?\d*)\b/g, '<span class="num">$1</span>');
-  code = code.replace(/(\/\/.*|#.*)/g, '<span class="cm">$1</span>');
-  return code;
-}
-window.cpCode = function(btn) {
-  const pre = btn.closest('.cblock').querySelector('pre');
-  navigator.clipboard.writeText(pre.innerText).then(() => { btn.textContent = '✓ Copié'; setTimeout(() => btn.textContent = 'Copier', 2000); });
-};
-function toast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2800);
-}
-window.toast = toast;
-
-// FILE UPLOAD
-window.handleFile = function(input) {
-  const file = input.files[0];
-  if (!file) return;
-  if (file.size > 10 * 1024 * 1024) { toast('⚠️ Fichier trop lourd (max 10 Mo)'); input.value = ''; return; }
-  pendingFileName = file.name;
-  const ext = file.name.split('.').pop().toLowerCase();
-  const isImg = ['jpg','jpeg','png','gif','webp','bmp'].includes(ext);
-  if (isImg) {
-    if (selectedModel !== 'qwen-plus' && selectedModel !== 'qwen3.5-plus' && selectedModel !== 'qwen3-max') {
-      savedModel = selectedModel + '|' + temperature;
-      selModelDropdown('qwen-plus|0.7');
-      toast('🔄 Passage à Qwen Plus pour analyser l\'image');
-    }
-    const img = new Image();
-    img.onload = function() {
-      const maxDim = 1024;
-      let w = img.width, h = img.height;
-      if (w > maxDim || h > maxDim) { const r = Math.min(maxDim/w, maxDim/h); w = Math.round(w*r); h = Math.round(h*r); }
-      const c = document.createElement('canvas'); c.width = w; c.height = h;
-      const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
-      pendingFileData = c.toDataURL('image/jpeg', 0.8);
-      const preview = document.getElementById('filePreview');
-      const wrap = document.getElementById('inpWrap');
-      preview.style.display = 'flex';
-      preview.innerHTML = `<img class="file-preview-img" src="${pendingFileData}"><span class="file-preview-name">${file.name}</span><button class="file-preview-rm" onclick="removeFile()">✕</button>`;
-      wrap.style.borderColor = 'rgba(0,212,170,0.3)';
-      document.getElementById('inp').focus();
-      input.value = '';
-    };
-    img.src = URL.createObjectURL(file);
-  } else {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      pendingFileData = e.target.result;
-      const preview = document.getElementById('filePreview');
-      const wrap = document.getElementById('inpWrap');
-      preview.style.display = 'flex';
-      preview.innerHTML = `<span style="font-size:18px">📄</span><span class="file-preview-name">${file.name}</span><button class="file-preview-rm" onclick="removeFile()">✕</button>`;
-      wrap.style.borderColor = 'rgba(0,212,170,0.3)';
-      document.getElementById('inp').focus();
-      input.value = '';
-    };
-    reader.readAsDataURL(file);
-    input.value = '';
-  }
-};
-window.removeFile = function() {
-  pendingFileData = null;
-  pendingFileName = '';
-  document.getElementById('filePreview').style.display = 'none';
-  document.getElementById('filePreview').innerHTML = '';
-  document.getElementById('inpWrap').style.borderColor = '';
-  if (savedModel) { selModelDropdown(savedModel); savedModel = ''; }
-};
-
-const s = document.createElement('style');
-s.textContent = `.cursor-blink{animation:cb .7s step-end infinite;}@keyframes cb{0%,100%{opacity:1;}50%{opacity:0;}}`;
-document.head.appendChild(s);
-</script>
-
-<script>
-function resize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,150)+'px';}
-function onKey(e){
-  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();
-  if(window.sendMsg) window.sendMsg();}
-}
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') { closeSettings(); closeAPISettings(); }
-});
-
-initConvs();
-
-document.addEventListener('contextmenu', function(e) {
-  if (e.target.closest('.modal-overlay')) { e.preventDefault(); }
-});
-document.addEventListener('copy', function(e) {
-  if (e.target.id === 'apiKeyInput' || e.target.id === 'googleAiKeyInput') { e.preventDefault(); toast('🔒 Copie désactivée'); }
-});
-
-async function getAIResponse(userMessage, imageBase64 = null) {
-  const apiUrl = "https://api.mulerouter.com/v1/chat/completions";
-  let messages = [];
-  if (imageBase64) {
-    messages.push({
-      role: "user",
-      content: [
-        { type: "text", text: userMessage || "Décris cette image en détail et répond à ma question." },
-        { type: "image_url", image_url: { url: imageBase64 } }
-      ]
-    });
-  } else {
-    messages.push({ role: "user", content: userMessage });
-  }
-  try {
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "qwen/qwen2.5-vl-72b-instruct" || "qwen-flash",
-        messages,
-        temperature: 0.7,
-        max_tokens: 1024
-      })
-    });
-    const data = await response.json();
-    return data.choices?.[0]?.message?.content || "Désolé, je n'ai pas pu répondre.";
-  } catch (error) {
-    console.error("Erreur API:", error);
-    return "Erreur de connexion avec l'IA.";
-  }
-}
-</script>
-</body>
-</html>
+  text = text.replace(/
