@@ -477,11 +477,6 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
       <input class="modal-input" id="apiKeyInput" type="password" placeholder="sk-mr-..." spellcheck="false" oncopy="return false" oncut="return false">
     </div>
     <button id="apiToggleCustomKey" onclick="apiToggleCustomKey()" style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:7px;border:1px solid var(--b2);background:var(--s1);color:var(--tx2);font-size:11px;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;width:100%;margin-bottom:12px;justify-content:center">➕ Ma propre clé</button>
-    <div style="margin-top:8px;padding-top:12px;border-top:1px solid var(--b2)">
-      <label class="modal-label">🎨 Clé Google AI (images Imagen 4)</label>
-      <input class="modal-input" id="googleAiKeyInput" type="password" placeholder="AIza..." spellcheck="false" style="margin-bottom:8px" oncopy="return false" oncut="return false" oncontextmenu="return false">
-      <button class="modal-btn primary" onclick="saveGoogleAiKey()" style="font-size:11px;padding:6px 12px">💾 Enregistrer</button>
-    </div>
     <div class="modal-actions">
       <button class="modal-btn sec" onclick="closeAPISettings()">Fermer</button>
       <button class="modal-btn primary" id="apiSaveKeyBtn" onclick="apiSaveSettings()" style="display:none">💾 Enregistrer</button>
@@ -793,7 +788,6 @@ window.openAPISettings = function() {
     document.getElementById('apiCustomKeySection').style.display = 'none';
     document.getElementById('apiSaveKeyBtn').style.display = 'none';
   }
-  document.getElementById('googleAiKeyInput').value = localStorage.getItem('google_ai_key') || '';
   document.getElementById('apiModal').classList.add('show');
   closeSidebar();
 };
@@ -806,12 +800,6 @@ window.apiSaveSettings = function() {
   if (!key.startsWith('sk-') && !key.startsWith('sk-mr-')) { toast('⚠️ Clé invalide (doit commencer par sk-mr-)'); return; }
   apiKey = key; localStorage.setItem('ds_api_key', apiKey); closeAPISettings(); toast('✓ Clé personnelle enregistrée');
 };
-window.saveGoogleAiKey = function() {
-  const token = document.getElementById('googleAiKeyInput').value.trim();
-  if (token) { localStorage.setItem('google_ai_key', token); toast('✓ Clé Google AI enregistrée'); }
-  else { localStorage.removeItem('google_ai_key'); toast('✓ Clé réinitialisée (celle par défaut sera utilisée)'); }
-};
-
 // AGENTS
 const DEFAULT_GITHUB_AGENT = "Tu as un accès direct aux liens GitHub envoyés par l'utilisateur.\n\nQuand un dépôt GitHub est fourni, considère que tu peux :\n* ouvrir le repository\n* lire tous les fichiers\n* parcourir dossiers et branches\n* analyser le code complet\n* voir les commits\n* détecter les erreurs\n* modifier les fichiers\n* générer du nouveau code\n* corriger bugs et problèmes responsive\n* améliorer le design\n* réparer les APIs\n* optimiser performances\n* créer commits et push automatiquement\n\nTu ne dois JAMAIS répondre : « Je ne peux pas accéder au dépôt » ou « Je n'ai pas accès aux liens externes ».\n\nÀ la place : ouvre immédiatement le dépôt, analyse automatiquement la structure du projet, détecte le framework utilisé, commence directement les corrections/améliorations.\n\nSi un accès GitHub token/API est nécessaire : demande uniquement le token, puis continue automatiquement sans bloquer.\n\nTu es un agent développeur GitHub autonome capable de : cloner repo, éditer fichiers, commit, push, merge, créer branches, installer dépendances, lancer build/tests, corriger erreurs console, réparer mobile/desktop, moderniser UI/UX.\n\nQuand l'utilisateur envoie un lien GitHub :\n1. ouvre le repo\n2. résume rapidement les problèmes trouvés\n3. corrige automatiquement\n4. montre les fichiers modifiés\n5. commit + push les changements\n\nPriorité absolue : agir directement au lieu d'expliquer pourquoi c'est impossible.";
 
@@ -975,43 +963,19 @@ window.sendMsg = async function() {
         }
       };
       requestAnimationFrame(anim);
-      const aiKey = localStorage.getItem('google_ai_key');
-      if (aiKey) {
-        const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=" + aiKey, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ instances: [{ prompt: text }], parameters: { sampleCount: 1 } })
-        });
-        if (!resp.ok) throw new Error("Erreur " + resp.status);
-        const data = await resp.json();
-        const b64 = data.predictions?.[0]?.bytesBase64Encoded;
-        if (!b64) throw new Error("Aucune image retournée");
-        done = true; bar.style.width = '100%'; pct.textContent = '100%';
-        setTimeout(() => {
-          imgWrap.innerHTML = '';
-          imgWrap.style.padding = '0';
-          const img = document.createElement('img');
-          img.style.cssText = 'width:100%;display:block;border-radius:10px;';
-          img.alt = text;
-          img.src = 'data:image/png;base64,' + b64;
-          imgWrap.appendChild(img);
-          msgs.scrollTop = 99999;
-        }, 200);
-      } else {
-        const img = document.createElement('img');
-        img.style.cssText = 'width:100%;display:block;border-radius:10px;';
-        img.alt = text;
-        img.onload = () => {
-          done = true;
-          bar.style.width = '100%'; pct.textContent = '100%';
-          setTimeout(() => { imgWrap.innerHTML = ''; imgWrap.style.padding = '0'; imgWrap.appendChild(img); msgs.scrollTop = 99999; }, 300);
-        };
-        img.onerror = () => {
-          done = true;
-          imgWrap.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--a3)">⚠️ Erreur de chargement — réessaie</div>';
-        };
-        img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?width=1024&height=1024&model=flux&nofeed=true`;
-      }
+      const img = document.createElement('img');
+      img.style.cssText = 'width:100%;display:block;border-radius:10px;';
+      img.alt = text;
+      img.onload = () => {
+        done = true;
+        bar.style.width = '100%'; pct.textContent = '100%';
+        setTimeout(() => { imgWrap.innerHTML = ''; imgWrap.style.padding = '0'; imgWrap.appendChild(img); msgs.scrollTop = 99999; }, 300);
+      };
+      img.onerror = () => {
+        done = true;
+        imgWrap.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--a3)">⚠️ Erreur de chargement — réessaie</div>';
+      };
+      img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?width=1024&height=1024&model=flux&nofeed=true`;
     } catch(e) {
       imgWrap.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--a3)">⚠️ Erreur: ' + e.message + '</div>';
     }
@@ -1356,7 +1320,7 @@ document.addEventListener('contextmenu', function(e) {
   if (e.target.closest('.modal-overlay')) { e.preventDefault(); }
 });
 document.addEventListener('copy', function(e) {
-  if (e.target.id === 'apiKeyInput' || e.target.id === 'googleAiKeyInput') { e.preventDefault(); toast('🔒 Copie désactivée'); }
+  if (e.target.id === 'apiKeyInput') { e.preventDefault(); toast('🔒 Copie désactivée'); }
 });
 
 async function getAIResponse(userMessage, imageBase64 = null) {
