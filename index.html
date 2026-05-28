@@ -174,6 +174,7 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
 .q-card-t{font-size:13px;font-weight:600;color:var(--tx);}
 .q-card-d{font-size:10.5px;color:var(--tx2);text-align:center;line-height:1.4;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+@keyframes spin{to{transform:rotate(360deg);}}
 
 /* MESSAGE BUBBLES */
 .msg-row{display:flex;gap:12px;animation:fadeUp .3s ease both;max-width:800px;margin:0 auto;width:100%;}
@@ -609,10 +610,15 @@ function formatSources(raw) {
 }
 
 window.activateImageMode = function() {
-  imageMode = true;
-  document.getElementById('inp').placeholder = 'Décris l\'image à générer…';
-  document.getElementById('inp').focus();
-  toast('🎨 Mode image — décris l\'image à créer');
+  imageMode = !imageMode;
+  if (imageMode) {
+    document.getElementById('inp').placeholder = 'Décris l\'image à générer…';
+    document.getElementById('inp').focus();
+    toast('🎨 Mode image activé');
+  } else {
+    document.getElementById('inp').placeholder = 'Posez votre question…';
+    toast('🎨 Mode image désactivé');
+  }
 }
 
 // CONVERSATION MANAGEMENT
@@ -943,36 +949,26 @@ window.sendMsg = async function() {
     conversationHistory.push({ role: 'user', content: text });
     const progDiv = document.createElement('div');
     progDiv.style.cssText = 'padding:24px 20px;text-align:center;';
-    progDiv.innerHTML = '<div style="font-size:12px;color:var(--tx2);margin-bottom:8px">🎨 Génération…</div><div style="height:4px;border-radius:2px;background:var(--b1);overflow:hidden;max-width:240px;margin:0 auto"><div id="imgProgBar" style="height:100%;width:0%;border-radius:2px;background:linear-gradient(90deg,var(--a1),var(--a2));transition:width .3s ease"></div></div><div id="imgProgPct" style="font-size:13px;font-weight:600;color:var(--tx);margin-top:6px;font-variant-numeric:tabular-nums">0%</div>';
+    progDiv.innerHTML = '<div style="font-size:12px;color:var(--tx2);margin-bottom:8px">🎨 Génération</div><div class="pulse-loader" style="width:24px;height:24px;margin:0 auto;border:3px solid var(--b1);border-top-color:var(--a1);border-radius:50%;animation:spin .8s linear infinite"></div>';
     imgWrap.appendChild(progDiv);
     try {
-      const bar = document.getElementById('imgProgBar');
-      const pct = document.getElementById('imgProgPct');
-      let done = false;
-      const anim = () => {
-        if (done) return;
-        const w = parseFloat(bar.style.width) || 0;
-        if (w < 92) {
-          const inc = Math.max(0.5, (92 - w) / 40);
-          bar.style.width = Math.min(92, w + inc) + '%';
-          pct.textContent = Math.round(Math.min(92, w + inc)) + '%';
-          requestAnimationFrame(anim);
-        }
-      };
-      requestAnimationFrame(anim);
-      const img = document.createElement('img');
+      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?width=1024&height=1024&model=flux&nofeed=true`;
+      const img = new Image();
       img.style.cssText = 'width:100%;display:block;border-radius:10px;';
-      img.alt = text;
+      let done = false;
+      const timeout = setTimeout(() => {
+        if (!done) { done = true; imgWrap.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--a3)">⚠️ Trop long — réessaie plus tard</div>'; }
+      }, 30000);
       img.onload = () => {
-        done = true;
-        bar.style.width = '100%'; pct.textContent = '100%';
-        setTimeout(() => { imgWrap.innerHTML = ''; imgWrap.style.padding = '0'; imgWrap.appendChild(img); msgs.scrollTop = 99999; }, 300);
+        done = true; clearTimeout(timeout);
+        imgWrap.innerHTML = ''; imgWrap.style.padding = '0'; imgWrap.appendChild(img);
+        msgs.scrollTop = 99999;
       };
       img.onerror = () => {
-        done = true;
-        imgWrap.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--a3)">⚠️ Erreur de chargement — réessaie</div>';
+        done = true; clearTimeout(timeout);
+        imgWrap.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--a3)">⚠️ Image indisponible — vérifie ta connexion</div>';
       };
-      img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?width=1024&height=1024&model=flux&nofeed=true`;
+      img.src = url;
     } catch(e) {
       imgWrap.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--a3)">⚠️ Erreur: ' + e.message + '</div>';
     }
