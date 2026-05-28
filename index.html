@@ -1,470 +1,1395 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Qwen AI - Assistant Intelligent</title>
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Code Highlighting -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
-    <style>
-        :root {
-            --primary-color: #6366f1;
-            --primary-hover: #4f46e5;
-            --bg-gradient: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-            --ai-bubble: #ffffff;
-            --user-bubble: #6366f1;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Qwen AI – Assistant Gratuit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#ffffff;
+  --bg2:#f7f8fc;
+  --sd:#ffffff;
+  --s1:#f7f8fc;
+  --s2:#f0f2f8;
+  --s3:#e8eaf2;
+  --b1:#e8eaee;
+  --b2:#dcdee4;
+  --b3:#d0d2d8;
+  --tx:#232326;
+  --tx2:#6b6d76;
+  --tx3:#9ea0a8;
+  --a1:#615ced;
+  --a2:#7b77f0;
+  --a3:#4a45d0;
+  --a4:#f5a623;
+  --r:16px;
+}
+html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:clip !important;position:relative;left:0;right:0;background:var(--bg);color:var(--tx);font-family:system-ui,ui-sans-serif,-apple-system,BlinkMacSystemFont,'Inter',sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden;touch-action:manipulation;-webkit-text-size-adjust:100%;}
+::selection{background:rgba(97,92,237,0.2);color:#fff;}
+.app{display:flex;height:100%;height:100dvh;overflow:hidden;width:100%;max-width:100%;background:var(--bg);}
+*{min-width:0;}
+:focus-visible{outline:2px solid var(--a1);outline-offset:2px;border-radius:4px;}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+/* SIDEBAR */
+.sidebar{
+  width:280px;flex-shrink:0;background:var(--sd);
+  border-right:1px solid var(--b1);
+  display:flex;flex-direction:column;
+  padding:0;height:100%;overflow:hidden;
+}
+.sidebar-brand{
+  display:flex;align-items:center;gap:10px;padding:14px 16px;
+}
+.sb-logo{
+  width:32px;height:32px;border-radius:8px;
+  background:var(--a1);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:700;color:#fff;flex-shrink:0;
+  box-shadow:0 2px 8px rgba(97,92,237,0.3);
+}
+.sb-name{font-size:14px;font-weight:600;letter-spacing:-.2px;color:var(--tx);}
+.sb-sub{font-size:10px;color:var(--tx2);font-weight:400;}
+.sb-section{font-size:10px;font-weight:600;color:var(--tx2);padding:12px 16px 4px;letter-spacing:.5px;text-transform:uppercase;}
+.sb-item{
+  display:flex;align-items:center;gap:9px;padding:8px 16px;
+  border-radius:0;cursor:pointer;transition:all .15s;
+  font-size:13px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.sb-item:hover{background:var(--s1);color:var(--tx);}
+.sb-item.act{background:var(--s1);color:var(--tx);font-weight:500;}
+.sb-convs{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:1px;margin:4px 0;min-height:0;padding:0 8px;}
+.sb-convs::-webkit-scrollbar{width:4px;}
+.sb-convs::-webkit-scrollbar-thumb{background:var(--b1);border-radius:4px;}
+.sb-convs::-webkit-scrollbar-track{background:transparent;}
+.sb-conv{
+  display:flex;align-items:center;gap:6px;padding:7px 10px;
+  border-radius:6px;cursor:pointer;transition:all .12s;
+  font-size:12px;color:var(--tx2);position:relative;
+}
+.sb-conv:hover{background:var(--s1);color:var(--tx);}
+.sb-conv.act{background:var(--s1);color:var(--tx);font-weight:500;}
+.sb-conv-t{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;}
+.sb-conv-del{
+  width:18px;height:18px;border-radius:4px;border:none;background:none;
+  font-size:8px;color:var(--tx3);cursor:pointer;display:none;flex-shrink:0;
+  align-items:center;justify-content:center;transition:all .12s;
+}
+.sb-conv:hover .sb-conv-del,.sb-conv.act .sb-conv-del{display:flex;}
+.sb-conv-del:hover{background:rgba(255,95,160,0.15);color:#ff5fa0;}
+.sb-bottom{margin-top:auto;display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--b1);padding:8px;}
+.sb-bottom .sb-item{font-size:12px;border-radius:6px;padding:7px 12px;}
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-gradient);
-            color: var(--text-main);
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+/* MOBILE SIDEBAR OVERLAY */
+.sidebar-backdrop{display:none;}
+@media(max-width:768px){
+  .sidebar{
+    display:none;position:fixed;top:0;left:0;bottom:0;width:280px;z-index:200;
+    transform:translateX(-100%);transition:transform .25s ease;border-right:1px solid var(--b2);
+  }
+  .sidebar.open{display:flex;transform:translateX(0);}
+  .sidebar-backdrop{
+    display:none;position:fixed;inset:0;z-index:199;
+    background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);
+  }
+  .sidebar-backdrop.show{display:block;}
+  .main{width:100%;}
+}
 
-        header {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(10px);
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;width:100%;overflow-x:hidden;background:var(--bg);}
 
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 700;
-            font-size: 1.25rem;
-            color: var(--primary-color);
-        }
+/* TOPBAR */
+.topbar{
+  display:flex;align-items:center;gap:10px;
+  padding:0 20px;height:56px;border-bottom:1px solid var(--b1);
+  flex-shrink:0;background:var(--bg);
+}
+.tb-left{display:flex;align-items:center;gap:8px;flex:1;min-width:0;}
+.tb-menu-btn{
+  display:none;width:30px;height:30px;border-radius:8px;border:none;background:transparent;
+  cursor:pointer;align-items:center;justify-content:center;font-size:18px;color:var(--tx);
+  transition:all .15s;flex-shrink:0;
+}
+.tb-menu-btn:hover{background:var(--s1);}
+.tb-model{
+  display:flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:960px;border:1px solid var(--b1);
+  background:var(--s1);font-size:13px;font-weight:500;color:var(--tx);
+  cursor:pointer;transition:all .15s;font-family:inherit;
+}
+.tb-model:hover{border-color:var(--b2);background:var(--s2);}
+.tb-model-sel{appearance:none;background:none;border:none;color:var(--tx);font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;outline:none;}
+.tb-model-sel option{background:var(--bg);color:var(--tx);}
+.tb-tools{display:flex;align-items:center;gap:6px;margin-left:auto;}
+.tb-agent-btn{background:none;border:none;color:var(--tx2);font-size:13px;padding:6px 12px;border-radius:960px;cursor:pointer;transition:all .15s;font-family:inherit;}
+.tb-agent-btn:hover{background:var(--s1);color:var(--tx);}
+.tb-agent-btn.act{color:var(--a1);background:var(--s1);}
+.agent-item{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:8px;border:1px solid var(--b2);background:var(--s1);cursor:pointer;transition:all .15s;}
+.agent-item:hover{border-color:var(--a2);}
+.agent-item.act{border-color:var(--a2);background:var(--b1);}
+.agent-item .ai-name{flex:1;font-size:13px;font-weight:600;color:var(--tx);}
+.agent-item .ai-prev{font-size:11px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;}
+.agent-item .ai-rm{background:none;border:none;color:var(--tx3);font-size:15px;cursor:pointer;padding:2px 6px;border-radius:4px;}
+.agent-item .ai-rm:hover{background:var(--b2);color:var(--a3);}
+.tb-btn{
+  width:30px;height:30px;border-radius:7px;border:1px solid var(--b1);background:var(--s1);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:var(--tx2);transition:all .15s;flex-shrink:0;
+}
+.tb-btn:hover{background:var(--s2);border-color:var(--b2);color:var(--tx);}
+.tb-btn.sel{background:rgba(59,130,246,0.15);border-color:rgba(59,130,246,0.3);color:var(--a1);}
 
-        .settings-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--text-muted);
-            font-size: 1.2rem;
-            transition: color 0.2s;
-        }
+/* MESSAGES */
+.msgs{
+  flex:1;min-height:0;overflow-y:auto;padding:32px 24px 16px;
+  display:flex;flex-direction:column;gap:16px;scroll-behavior:smooth;
+  -webkit-overflow-scrolling:touch;overflow-x:hidden;
+}
+.msgs::-webkit-scrollbar{width:4px;}
+.msgs::-webkit-scrollbar-thumb{background:var(--b2);border-radius:4px;}
+.msgs::-webkit-scrollbar-track{background:transparent;}
 
-        .settings-btn:hover {
-            color: var(--primary-color);
-        }
+/* WELCOME */
+.welcome{
+  display:flex;flex-direction:column;align-items:center;text-align:center;
+  gap:10px;padding:60px 20px 20px;margin:auto;overflow-y:auto;width:100%;
+  animation:fadeUp .6s ease both;max-width:560px;
+}
+.welcome h1{font-size:28px;font-weight:700;letter-spacing:-.3px;color:var(--tx);}
+.welcome p{font-size:13px;color:var(--tx2);line-height:1.6;max-width:360px;}
+.q-suggest{
+  display:flex;gap:8px;margin-top:20px;flex-wrap:wrap;justify-content:center;
+}
+.q-card{
+  width:150px;border-radius:12px;cursor:pointer;
+  border:1px solid var(--b1);background:var(--s1);
+  transition:all .2s;padding:16px 12px 12px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+}
+.q-card:hover{transform:translateY(-2px);border-color:var(--a1);background:var(--s2);}
+.q-card-ico{font-size:28px;}
+.q-card-t{font-size:13px;font-weight:600;color:var(--tx);}
+.q-card-d{font-size:10.5px;color:var(--tx2);text-align:center;line-height:1.4;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
 
-        .main-container {
-            flex: 1;
-            max-width: 900px;
-            margin: 0 auto;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            overflow: hidden;
-        }
+/* MESSAGE BUBBLES */
+.msg-row{display:flex;gap:12px;animation:fadeUp .3s ease both;max-width:800px;margin:0 auto;width:100%;}
+.msg-row.usr{margin-left:auto;flex-direction:row-reverse;margin-right:0;}
+.av{
+  width:30px;height:30px;border-radius:50%;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:13px;
+  margin-top:2px;
+}
+.av.ai-av{background:var(--s2);color:var(--tx);}
+.av.usr-av{background:var(--a1);color:#fff;}
+.msg-body{max-width:75%;display:flex;flex-direction:column;gap:4px;}
+.msg-row.usr .msg-body{align-items:flex-end;}
+.bbl{
+  padding:10px 16px;border-radius:18px;
+  font-size:14px;line-height:1.6;overflow-wrap:break-word;word-break:break-word;
+}
+.ai-bbl{background:var(--s1);border:1px solid var(--b1);border-radius:4px 18px 18px 18px;color:var(--tx);}
+.usr-bbl{background:var(--a1);color:#fff;border-radius:18px 4px 18px 18px;}
 
-        #chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding-bottom: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+.bbl code{background:rgba(0,0,0,0.06);padding:2px 5px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--tx2);}
+.cblock{background:var(--s1);border:1px solid var(--b1);border-radius:12px;overflow:hidden;margin:6px 0;}
+.cblock-hdr{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:var(--s2);border-bottom:1px solid var(--b1);}
+.clang{font-size:10px;font-weight:600;color:var(--tx2);font-family:'JetBrains Mono',monospace;letter-spacing:.3px;}
+.ccopy{font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid var(--b1);background:var(--s1);color:var(--tx2);cursor:pointer;transition:all .15s;font-family:inherit;}
+.ccopy:hover{color:var(--tx);border-color:var(--b2);background:var(--s2);}
+.cblock pre{padding:12px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.7;color:var(--tx);overflow-x:auto;white-space:pre-wrap;}
+.kw{color:#c792ea;}.str{color:#c3e88d;}.fn{color:#82aaff;}.num{color:#f78c6c;}.cm{color:#546e7a;}.op{color:#89ddff;}
 
-        /* Custom Scrollbar */
-        #chat-container::-webkit-scrollbar {
-            width: 6px;
-        }
-        #chat-container::-webkit-scrollbar-thumb {
-            background-color: rgba(0,0,0,0.1);
-            border-radius: 10px;
-        }
+.typing{display:flex;gap:5px;padding:6px 4px 4px;}
+.td{width:7px;height:7px;border-radius:50%;background:var(--tx2);animation:td 1.1s ease-in-out infinite;}
+.td:nth-child(2){animation-delay:.18s;background:var(--tx3);}
+.td:nth-child(3){animation-delay:.36s;background:var(--b3);}
+@keyframes td{0%,60%,100%{transform:translateY(0);opacity:.4;}30%{transform:translateY(-6px);opacity:1;}}
 
-        .message-wrapper {
-            display: flex;
-            flex-direction: column;
-            max-width: 85%;
-        }
+/* INPUT */
+.input-zone{
+  padding:8px 24px 12px;padding-bottom:max(12px,env(safe-area-inset-bottom,0px));
+  flex-shrink:0;transition:bottom .15s;
+}
+.inp-wrap{
+  display:flex;align-items:flex-end;gap:8px;
+  background:#f7f8fc;border:1px solid transparent;
+  border-radius:28px;padding:8px 8px 8px 20px;
+  max-width:720px;margin:0 auto;
+  transition:border-color .2s,box-shadow .2s;
+  box-shadow:0 1px 3px rgba(0,0,0,0.06);
+}
+.inp-wrap:focus-within{border-color:var(--b2);box-shadow:0 0 0 3px rgba(97,92,237,0.08),0 2px 8px rgba(0,0,0,0.06);}
+.suggest-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;justify-content:center;}
+.chip{padding:5px 14px;border-radius:100px;border:1px solid var(--b1);background:var(--s1);color:var(--tx2);font-size:11px;cursor:pointer;transition:all .15s;font-family:inherit;}
+.chip:hover{background:var(--s2);border-color:var(--b2);color:var(--tx);}
+#inp{
+  flex:1;background:none;border:none;outline:none;
+  color:#1d1d1f;font-family:inherit;font-size:15px;
+  resize:none;min-height:22px;max-height:150px;line-height:1.5;
+}
+#inp::placeholder{color:#9ea0a8;}
+#inp::-webkit-scrollbar{width:0;}
+.btn-send{
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;border:none;cursor:pointer;
+  background:var(--a1);display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:#fff;transition:all .2s;touch-action:manipulation;
+  box-shadow:0 2px 8px rgba(97,92,237,0.25);
+}
+.btn-send:hover{background:var(--a2);transform:scale(1.05);box-shadow:0 4px 14px rgba(97,92,237,0.35);}
+.btn-send:active{transform:scale(.93);}
+.inp-actions{display:flex;align-items:center;gap:4px;flex-shrink:0;}
+.btn-upload{
+  width:34px;height:34px;border-radius:50%;flex-shrink:0;border:none;cursor:pointer;
+  background:transparent;display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:var(--tx2);transition:all .15s;touch-action:manipulation;
+}
+.btn-upload:hover{background:var(--s1);color:var(--tx);}
+.btn-upload:active{transform:scale(.93);}
+.file-preview-img{width:auto;height:36px;border-radius:6px;border:1px solid var(--b2);object-fit:cover;}
+.file-preview-name{font-size:11px;color:var(--tx2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px;}
+.file-preview-rm{width:18px;height:18px;border-radius:4px;border:none;background:rgba(255,95,160,0.1);color:#ff5fa0;cursor:pointer;font-size:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+.file-preview-rm:hover{background:rgba(255,95,160,0.25);}
+.msg-body img.uploaded-img{max-width:100%;max-height:200px;border-radius:8px;margin-top:4px;object-fit:contain;background:var(--s1);}
+.inp-hint{text-align:center;font-size:10.5px;color:var(--tx3);margin-top:7px;}
 
-        .user-wrapper {
-            align-self: flex-end;
-        }
+.btn-stop{
+  padding:6px 14px;border-radius:100px;border:1px solid var(--b1);
+  background:var(--s1);color:var(--tx2);
+  font-size:11px;font-weight:500;cursor:pointer;transition:all .2s;
+  margin:0 24px 4px;display:none;font-family:inherit;
+  width:fit-content;margin-left:auto;margin-right:auto;
+}
+.btn-stop.vis{display:block;}
+.btn-stop:hover{background:var(--s2);border-color:var(--b2);color:var(--tx);}
 
-        .ai-wrapper {
-            align-self: flex-start;
-        }
+.toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(12px);
+  background:var(--tx);border:1px solid var(--b1);box-shadow:0 4px 16px rgba(0,0,0,0.12);
+  border-radius:100px;padding:10px 20px;font-size:12px;color:var(--bg);
+  opacity:0;pointer-events:none;z-index:999;transition:all .3s cubic-bezier(.4,0,.2,1);white-space:nowrap;
+  box-shadow:0 4px 20px rgba(0,0,0,0.3);
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-        .message {
-            padding: 12px 16px;
-            border-radius: 18px;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
+/* SETTINGS */
+.settings-btn{
+  width:30px;height:30px;border-radius:7px;border:1px solid var(--b1);background:var(--s1);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:var(--tx2);transition:all .15s;flex-shrink:0;
+}
+.settings-btn:hover{background:var(--s2);border-color:var(--b2);color:var(--tx);}
 
-        .user-message {
-            background: var(--user-bubble);
-            color: white;
-            border-bottom-right-radius: 4px;
-        }
+.modal-overlay{
+  position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;padding:20px;
+}
+.modal-overlay.show{display:flex;}
+.modal,.modal-box{
+  background:var(--bg);border:1px solid var(--b1);border-radius:20px;
+  max-width:440px;width:100%;padding:28px 30px;
+  box-shadow:0 25px 60px rgba(0,0,0,0.15);animation:fadeUp .25s ease both;
+}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:6px;}
+.modal-h{font-size:18px;font-weight:700;margin-bottom:12px;}
+.modal-desc{font-size:12.5px;color:var(--tx2);line-height:1.6;margin-bottom:16px;}
+.modal-label{font-size:11px;font-weight:600;color:var(--tx2);margin-bottom:4px;display:block;}
+.modal-input{
+  width:100%;padding:9px 12px;border-radius:8px;
+  border:1px solid var(--b1);background:var(--s1);
+  color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:12px;
+  outline:none;transition:border-color .2s;
+}
+.modal-input:focus{border-color:var(--a1);}
+.modal-actions{display:flex;gap:8px;margin-top:16px;}
+.modal-btn{
+  flex:1;padding:9px;border-radius:8px;border:none;
+  font-size:12.5px;font-weight:600;cursor:pointer;transition:all .15s;
+  font-family:inherit;
+}
+.modal-btn.primary{background:var(--a1);color:#fff;box-shadow:0 2px 8px rgba(97,92,237,0.3);}
+.modal-btn.primary:hover{box-shadow:0 4px 14px rgba(97,92,237,0.4);transform:translateY(-1px);}
+.modal-btn.sec{background:var(--s1);border:1px solid var(--b1);color:var(--tx2);}
+.modal-btn.sec:hover{background:var(--s2);}
+.modal-warn{
+  background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.2);
+  border-radius:8px;padding:9px 12px;margin-bottom:14px;
+  font-size:11.5px;color:var(--a4);line-height:1.5;
+}
 
-        .ai-message {
-            background: var(--ai-bubble);
-            color: var(--text-main);
-            border-bottom-left-radius: 4px;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-
-        .ai-message pre {
-            background: #1e1e1e;
-            padding: 12px;
-            border-radius: 8px;
-            margin: 10px 0;
-            overflow-x: auto;
-        }
-
-        .ai-message code {
-            font-family: 'Fira Code', monospace;
-            font-size: 0.85rem;
-        }
-
-        .input-area {
-            background: white;
-            padding: 15px;
-            border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-
-        #user-input {
-            flex: 1;
-            border: none;
-            outline: none;
-            font-size: 1rem;
-            font-family: inherit;
-            padding: 5px;
-        }
-
-        .send-btn {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .send-btn:hover {
-            background: var(--primary-hover);
-            transform: scale(1.02);
-        }
-
-        .send-btn:disabled {
-            background: #cbd5e1;
-            cursor: not-allowed;
-        }
-
-        .loading-dots {
-            display: flex;
-            gap: 4px;
-            padding: 5px 0;
-        }
-
-        .dot {
-            width: 6px;
-            height: 6px;
-            background: var(--text-muted);
-            border-radius: 50%;
-            animation: bounce 1.4s infinite ease-in-out both;
-        }
-
-        .dot:nth-child(1) { animation-delay: -0.32s; }
-        .dot:nth-child(2) { animation-delay: -0.16s; }
-
-        @keyframes bounce {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
-        }
-
-        /* Modal Settings */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
-            align-items: center;
-            justify-content: center;
-        }
-
-        .modal-content {
-            background: white;
-            padding: 2rem;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-        }
-
-        .modal-header {
-            margin-bottom: 1.5rem;
-            font-size: 1.25rem;
-            font-weight: 700;
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            outline: none;
-        }
-
-        .modal-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            margin-top: 1.5rem;
-        }
-
-        .btn {
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            border: none;
-        }
-
-        .btn-primary { background: var(--primary-color); color: white; }
-        .btn-secondary { background: #f1f5f9; color: var(--text-main); }
-
-        footer {
-            text-align: center;
-            padding: 10px;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-        }
-
-        @media (max-width: 600px) {
-            .main-container { padding: 10px; }
-            .message-wrapper { max-width: 95%; }
-        }
-    </style>
+/* RESPONSIVE */
+@media(max-width:768px){
+  .topbar{padding:10px 14px;}
+  .msgs{padding:16px 14px 6px;gap:14px;}
+  .input-zone{padding:10px 14px;}
+  .inp-wrap{max-width:100%;}
+  .msg-body{max-width:88%;}
+  .msg-row{max-width:100%;}
+  .bbl{font-size:13.5px;padding:9px 12px;}
+  .welcome h1{font-size:22px;}
+  .q-card{width:140px;padding:14px 10px 12px;}
+  .q-card-ico{font-size:22px;}
+  .q-card-t{font-size:12px;}
+  .q-card-d{font-size:9.5px;}
+  .tb-tools{gap:4px;}
+  .tb-btn{width:28px;height:28px;font-size:12px;}
+  .tb-menu-btn{display:flex;}
+}
+@media(max-width:480px){
+  .topbar{padding:8px 10px;gap:6px;}
+  .msgs{padding:12px 10px 4px;gap:10px;}
+  .input-zone{padding:8px 10px;}
+  .inp-wrap{padding:8px 8px 8px 14px;border-radius:13px;}
+  #inp{font-size:13px;}
+  .btn-send{width:34px;height:34px;font-size:14px;border-radius:9px;}
+  .msg-body{max-width:92%;}
+  .msg-row{max-width:100%;gap:7px;}
+  .av{width:26px;height:26px;font-size:12px;border-radius:50%;}
+  .bbl{font-size:13px;padding:8px 11px;border-radius:12px;}
+  .ai-bbl{border-radius:3px 12px 12px 12px;}
+  .usr-bbl{border-radius:12px 3px 12px 12px;}
+  .welcome h1{font-size:19px;}
+  .welcome p{font-size:12px;}
+  .q-card{width:120px;padding:12px 8px 10px;}
+  .q-card-ico{font-size:20px;}
+  .q-card-t{font-size:11px;}
+  .q-card-d{font-size:9px;}
+  .q-suggest{gap:8px;margin-top:12px;}
+  .tb-model{font-size:12px;padding:4px 8px;}
+  .tb-model-sel{font-size:12px;}
+  .tb-btn{width:26px;height:26px;font-size:11px;}
+  .inp-hint{font-size:9px;}
+  .modal-box{padding:18px;margin:8px;border-radius:14px;}
+}
+</style>
 </head>
 <body>
-    <header>
-        <div class="logo">
-            <span>🤖</span> Qwen AI
-        </div>
-        <button class="settings-btn" onclick="toggleModal(true)">⚙️</button>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="sb-logo">Q</div>
+      <div><div class="sb-name">Qwen AI</div><div class="sb-sub">Gratuit · Illimité</div></div>
+    </div>
+    <div class="sb-section">Conversations</div>
+    <div class="sb-item" onclick="newChat()">💬 Nouvelle discussion</div>
+    <div class="sb-convs" id="convList"></div>
+    <div class="sb-bottom">
+      <div class="sb-item" id="sidebarAgentBtn" onclick="openAgents()">🤖 Agents</div>
+      <div class="sb-item" onclick="openSettings()">⚙ Paramètres</div>
+      <div class="sb-item" onclick="openAPISettings()">🔑 API</div>
+    </div>
+  </aside>
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+  <div class="main">
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="tb-left">
+        <button class="tb-menu-btn" id="menuBtn" onclick="toggleSidebar()">☰</button>
+        <button class="tb-model" onclick="document.querySelector('.tb-model-sel').focus();document.querySelector('.tb-model-sel').click()">
+          <span id="modelLabel">⚡ Flash</span>
+          <select class="tb-model-sel" id="modelSelect" onchange="selModelDropdown(this.value)">
+            <option value="qwen-flash|0.7">⚡ Flash (rapide)</option>
+            <option value="qwen-plus|0.7">🚀 Qwen Plus</option>
+            <option value="qwen3.5-plus|0.7">🧠 3.5 Plus (précis)</option>
+            <option value="qwen3-max|0.5">🔍 3 Max (raisonnement)</option>
+          </select>
+        </button>
+      </div>
+      <div class="tb-tools">
+      </div>
     </header>
 
-    <div class="main-container">
-        <div id="chat-container">
-            <div class="message-wrapper ai-wrapper">
-                <div class="message ai-message">
-                    Bonjour ! Je suis Qwen AI. Comment puis-je vous aider aujourd'hui ?
-                </div>
-            </div>
-        </div>
+    <!-- MESSAGES -->
+    <section class="msgs" id="msgs">
+    </section>
 
-        <div class="input-area">
-            <input type="text" id="user-input" placeholder="Écrivez votre message ici..." onkeypress="handleKeyPress(event)">
-            <button class="send-btn" id="send-btn" onclick="sendMessage()">Envoyer</button>
+    <!-- STOP -->
+    <button class="btn-stop" id="btnStop" onclick="stopGen()">⏹ Arrêter</button>
+
+    <!-- INPUT -->
+    <div class="input-zone">
+      <div class="suggest-chips" id="suggestChips">
+        <button class="chip" onclick="activateImageMode()">🎨 Créer image</button>
+        <button class="chip" onclick="quick('Écris du code pour')">💻 Écrire code</button>
+        <button class="chip" onclick="quick('Explique-moi')">🧠 Expliquer</button>
+        <button class="chip" onclick="quick('Traduis en anglais:')">🌍 Traduire</button>
+        <button class="chip" onclick="quick('Résume ce texte:')">📝 Résumer</button>
+      </div>
+      <div class="inp-wrap" id="inpWrap">
+        <textarea id="inp" rows="1" placeholder="Posez votre question…" onkeydown="onKey(event)" oninput="resize(this)"></textarea>
+        <div class="inp-actions">
+          <input type="file" id="fileInput" accept="image/*,.pdf,.txt,.doc,.docx,.csv,.json,.js,.py,.html,.css,.md" onchange="handleFile(this)" style="display:none">
+          <button class="btn-upload" id="btnUpload" onclick="document.getElementById('fileInput').click()" title="Joindre image/fichier">📎</button>
+          <button class="btn-send" id="btnSend" onclick="sendMsg()">➤</button>
         </div>
+      </div>
+      <div id="filePreview" style="display:none;padding:4px 0 6px;max-width:780px;margin:0 auto;gap:6px;align-items:center;"></div>
+      <div class="inp-hint">Enter pour envoyer</div>
     </div>
+  </div>
+</div>
 
-    <footer>
-        Développé par tom_visionai_pro • Propulsé par MuleRouter
-    </footer>
+<div class="toast" id="toast"></div>
 
-    <!-- Settings Modal -->
-    <div id="settings-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">Paramètres API</div>
-            <div class="form-group">
-                <label for="api-key">Clé API MuleRouter</label>
-                <input type="password" id="api-key" placeholder="sk-...">
-                <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 5px;">
-                    Obtenez votre clé sur <a href="https://mulerouter.ai/" target="_blank">mulerouter.ai</a>
-                </p>
-            </div>
-            <div class="modal-actions">
-                <button class="btn btn-secondary" onclick="toggleModal(false)">Annuler</button>
-                <button class="btn btn-primary" onclick="saveSettings()">Enregistrer</button>
-            </div>
-        </div>
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal" oncontextmenu="return false">
+  <div class="modal-box">
+    <div class="modal-title">⚙ Paramètres</div>
+    <div class="modal-desc">Développé par <strong>tom_visionai_pro</strong> — chantier en cours, améliorations à venir.</div>
+    <div class="modal-warn">🔓 Propulsé par <strong>Qwen Flash</strong> via MuleRouter — gratuit et illimité.</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.15);font-size:12px;color:var(--a1)">
+        <span>🤖</span> Modèle par défaut : <strong>Qwen Flash</strong>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.15);font-size:12px;color:var(--a4)">
+        <span>🌐</span> Recherche web via Tavily
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;background:rgba(255,95,160,0.06);border:1px solid rgba(255,95,160,0.15);font-size:12px;color:var(--a3)">
+        <span>🎨</span> Génération d'images (Pollinations.ai)
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.15);font-size:12px;color:var(--a4)">
+        <span>🌤</span> Météo (bientôt disponible)
+      </div>
     </div>
+    <div class="modal-actions">
+      <button class="modal-btn primary" onclick="closeSettings()">Fermer</button>
+    </div>
+  </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<!-- API MODAL -->
+<div class="modal-overlay" id="apiModal" oncontextmenu="return false">
+  <div class="modal-box">
+    <div class="modal-title">🔑 API</div>
+    <div class="modal-desc">Clé intégrée active automatiquement — gratuit et illimité via MuleRouter.</div>
+    <div class="modal-warn">💡 Ce site utilise l'<strong>API MuleRouter</strong> (compatible OpenAI) avec une clé intégrée, et <strong>Tavily</strong> pour la recherche web. La météo arrive bientôt — tom_visionai_pro travaille dessus.</div>
+    <div id="apiDefaultKeyStatus" style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;background:rgba(0,212,170,0.07);border:1px solid rgba(0,212,170,0.18);font-size:12px;color:var(--a2);margin-bottom:12px">
+      <span>🔒</span> <span><strong>Clé intégrée active</strong></span>
+    </div>
+    <div id="apiCustomKeySection" style="display:none">
+      <label class="modal-label">Votre propre clé (optionnel)</label>
+      <input class="modal-input" id="apiKeyInput" type="password" placeholder="sk-mr-..." spellcheck="false" oncopy="return false" oncut="return false">
+    </div>
+    <button id="apiToggleCustomKey" onclick="apiToggleCustomKey()" style="display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:7px;border:1px solid var(--b2);background:var(--s1);color:var(--tx2);font-size:11px;cursor:pointer;transition:all .15s;font-family:'Inter',sans-serif;width:100%;margin-bottom:12px;justify-content:center">➕ Ma propre clé</button>
+    <div style="margin-top:8px;padding-top:12px;border-top:1px solid var(--b2)">
+      <label class="modal-label">🎨 Clé Google AI (images Imagen 4)</label>
+      <input class="modal-input" id="googleAiKeyInput" type="password" placeholder="AIza..." spellcheck="false" style="margin-bottom:8px" oncopy="return false" oncut="return false" oncontextmenu="return false">
+      <button class="modal-btn primary" onclick="saveGoogleAiKey()" style="font-size:11px;padding:6px 12px">💾 Enregistrer</button>
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn sec" onclick="closeAPISettings()">Fermer</button>
+      <button class="modal-btn primary" id="apiSaveKeyBtn" onclick="apiSaveSettings()" style="display:none">💾 Enregistrer</button>
+    </div>
+  </div>
+</div>
 
-    <script>
-        const chatContainer = document.getElementById('chat-container');
-        const userInput = document.getElementById('user-input');
-        const sendBtn = document.getElementById('send-btn');
-        const apiKeyInput = document.getElementById('api-key');
+<!-- AGENTS MODAL -->
+<div class="modal-overlay" id="agentModal" onclick="if(event.target===this)closeAgents()">
+  <div class="modal" style="max-width:540px">
+    <div class="modal-h">🤖 Mes agents</div>
+    <div style="margin-bottom:12px;font-size:12px;color:var(--tx2)">Crée des agents IA personnalisés. L'agent actif définit le comportement du chat.</div>
+    <div id="agentList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;max-height:300px;overflow-y:auto"></div>
+    <button class="modal-btn primary" onclick="createAgent()" style="font-size:12px;padding:8px 14px;width:100%">➕ Nouvel agent</button>
+    <div class="modal-actions" style="margin-top:12px">
+      <button class="modal-btn sec" onclick="closeAgents()">Fermer</button>
+    </div>
+  </div>
+</div>
 
-        // Chat history
-        let chatHistory = [
-            { role: 'system', content: 'Tu es Qwen AI, un assistant intelligent et utile.' }
-        ];
+<script>
+const _DK = "c2stbXItYTMyYTdjZjBhZTJiMWVmNjEwZjY0YzAzODQyOWI5YjZlYTRhNTU3NTMxMmM4ZTg4OTk1NzZjZTM5ZTQ0NmYxZA==";
+const DEFAULT_API_KEY = atob(_DK);
+const API_URL = "https://api.mulerouter.ai/vendors/openai/v1/chat/completions";
+const TAVILY_KEY = "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";
+const TAVILY_URL = "https://api.tavily.com/search";
 
-        // Load API key from localStorage
-        let MULE_API_KEY = localStorage.getItem('mule_api_key') || '';
-        if (MULE_API_KEY) apiKeyInput.value = MULE_API_KEY;
+let savedKey = localStorage.getItem('ds_api_key');
+let apiKey = savedKey && savedKey.startsWith('sk-mr-') ? savedKey : DEFAULT_API_KEY;
+let selectedModel = "qwen-flash";
+let temperature = 0.7;
+let generating = false;
+let abortController = null;
+let conversationHistory = [];
+let searchEnabled = false;
+let imageMode = false;
+let userName = localStorage.getItem('qh_user_name') || '';
+let pendingFileData = null;
+let pendingFileName = '';
+let savedModel = '';
 
-        function toggleModal(show) {
-            document.getElementById('settings-modal').style.display = show ? 'flex' : 'none';
+const TODAY = new Date().toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'numeric',day:'numeric'});
+const SYSTEM_PROMPT = `Tu es un assistant IA intégré dans un site web nommé "Qwen AI", développé par tom_visionai_pro. Tu es gratuit, illimité et tu dois répondre comme un humain normal.
+
+Aujourd'hui on est le ${TODAY}.
+
+[NAME_INSTR]
+
+Quand on te demande qui t'a créé, tu réponds que t'as été créé par tom_visionai_pro mais qu'il a pas encore terminé — il travaille encore sur toi.
+
+## 🌐 RECHERCHE WEB
+
+Pour les questions d'actualités, prix, dates, événements récents, utilise les résultats de recherche ci-dessous. NE RIEN INVENTER. Cite tes sources.
+
+Ton créateur est tom_visionai_pro.
+
+Voici les données disponibles pour répondre :
+[TAVILY_RESULTS]
+
+Réponds maintenant en utilisant ces informations.
+
+Pour les questions de connaissance générale (histoire, science, culture, code, maths…) réponds normalement sans recherche, mais garde le ton naturel et humain.
+
+Quand tu écris du code, utilise des blocs Markdown avec le langage spécifié.
+
+Si l'utilisateur te demande si tu peux voir, lire ou analyser une image ou un fichier, réponds OUI avec enthousiasme. Dis-lui qu'il peut joindre une image (JPG, PNG, GIF, WebP, BMP) ou un fichier texte (TXT, MD, JSON, JS, PY, HTML, CSS, CSV, XML, etc.) via le bouton 📎 et que tu analyseras le contenu.
+
+Sois concis, naturel, et direct. Commence tes réponses directement sans phrases introductives inutiles.`;
+
+// MODEL DROPDOWN
+window.selModelDropdown = function(val) {
+  const parts = val.split('|');
+  selectedModel = parts[0];
+  temperature = parseFloat(parts[1]) || 0.7;
+  const label = document.querySelector(`.tb-model-sel option[value="${val}"]`)?.textContent?.split(' ')[1] || selectedModel;
+  document.getElementById('modelLabel').textContent = label;
+  toast('✓ ' + label);
+};
+
+// TOGGLES
+window.toggleSidebar = function() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarBackdrop').classList.toggle('show');
+};
+
+// TAVILY SEARCH
+async function searchWeb(query) {
+  setStatus('thinking', 'Recherche web…');
+  try {
+    const res = await fetch(TAVILY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ api_key: TAVILY_KEY, query, search_depth: 'advanced', include_answer: true, max_results: 5 })
+    });
+    if (!res.ok) throw new Error('Erreur recherche ' + res.status);
+    const data = await res.json();
+    let results = '';
+    if (data.answer) results += 'Résumé : ' + data.answer + '\n\n';
+    if (data.results && data.results.length) {
+      data.results.forEach((r, i) => {
+        results += `Source ${i+1} : ${r.title}\n${r.url}\n${r.content.substring(0, 500)}\n\n`;
+      });
+    }
+    return results || 'Aucun résultat trouvé.';
+  } catch(e) {
+    return 'Erreur lors de la recherche : ' + e.message;
+  }
+}
+
+function formatSources(raw) {
+  const lines = raw.split('\n');
+  const sources = [];
+  let current = null;
+  for (const l of lines) {
+    if (/^Source \d+ :/.test(l)) {
+      if (current && current.title) sources.push(current);
+      current = { title: l.replace(/^Source \d+ : /, ''), url: '', snippet: '' };
+    } else if (current && !current.url && l.startsWith('http')) {
+      current.url = l;
+    } else if (current) {
+      current.snippet += l + ' ';
+    }
+  }
+  if (current && current.title) sources.push(current);
+  if (!sources.length) return `<div style="padding:6px 0">${raw}</div>`;
+  return sources.map(s =>
+    `<div style="margin-bottom:6px;padding:6px 8px;border:1px solid var(--br);border-radius:8px">` +
+    `<div style="font-weight:600;margin-bottom:2px">${s.title}</div>` +
+    (s.url ? `<a href="${s.url}" target="_blank" style="font-size:10px;color:var(--a2);word-break:break-all">${s.url}</a>` : '') +
+    (s.snippet ? `<div style="margin-top:2px">${s.snippet.substring(0,200)}</div>` : '') +
+    `</div>`
+  ).join('');
+}
+
+window.activateImageMode = function() {
+  imageMode = true;
+  document.getElementById('inp').placeholder = 'Décris l\'image à générer…';
+  document.getElementById('inp').focus();
+  toast('🎨 Mode image — décris l\'image à créer');
+}
+
+// CONVERSATION MANAGEMENT
+let conversations = [];
+let activeConvId = null;
+
+function genId() { return 'c' + Date.now() + Math.random().toString(36).slice(2,6); }
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function saveConvs() {
+  try { localStorage.setItem('qh_convs', JSON.stringify(conversations)); localStorage.setItem('qh_active', activeConvId || ''); } catch(e) {}
+}
+function loadConvs() {
+  try {
+    const d = localStorage.getItem('qh_convs');
+    if (d) conversations = JSON.parse(d);
+    activeConvId = localStorage.getItem('qh_active') || null;
+  } catch(e) { conversations = []; }
+}
+
+function currentConv() { return conversations.find(c => c.id === activeConvId); }
+
+function renderSidebar() {
+  const list = document.getElementById('convList');
+  list.innerHTML = '';
+  conversations.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'sb-conv' + (c.id === activeConvId ? ' act' : '');
+    const title = c.title || 'Nouvelle conversation';
+    div.innerHTML = `<span class="sb-conv-t">${escHtml(title)}</span><button class="sb-conv-del" data-cid="${c.id}">✕</button>`;
+    div.querySelector('.sb-conv-del').onclick = (e) => { e.stopPropagation(); deleteConv(c.id); };
+    div.onclick = () => switchConv(c.id);
+    list.appendChild(div);
+  });
+}
+
+function showWelcome() {
+  if (document.getElementById('welcome')) return;
+  const w = document.createElement('div');
+  w.className = 'welcome'; w.id = 'welcome';
+  w.innerHTML = '<h1>Qwen AI</h1><p>Assistant gratuit et illimité — propulsé par Qwen Flash via MuleRouter • tom_visionai_pro</p><div class="q-suggest"><div class="q-card" onclick="quick(\'Écris-moi un composant React avec des hooks\')"><div class="q-card-ico">💻</div><div class="q-card-t">Code</div><div class="q-card-d">React, JS, Python…</div></div><div class="q-card" onclick="quick(\'Donne-moi 5 idées de startup innovantes\')"><div class="q-card-ico">💡</div><div class="q-card-t">Idées</div><div class="q-card-d">Business, projets</div></div><div class="q-card" onclick="quick(\'Résous ce problème pas à pas: Si 3x + 7 = 22, que vaut x ?\')"><div class="q-card-ico">🧮</div><div class="q-card-t">Maths</div><div class="q-card-d">Équations, logique</div></div></div>';
+  document.getElementById('msgs').appendChild(w);
+}
+
+function saveCurrentConv() {
+  const conv = currentConv();
+  if (!conv) return;
+  conv.history = [...conversationHistory];
+  if (conv.history.length > 0 && (!conv.title || conv.title === 'Nouvelle conversation')) {
+    const first = conv.history.find(m => m.role === 'user');
+    if (first) conv.title = first.content.substring(0, 35) + (first.content.length > 35 ? '…' : '');
+  }
+  saveConvs();
+  renderSidebar();
+}
+
+function switchConv(id) {
+  saveCurrentConv();
+  activeConvId = id;
+  saveConvs();
+  document.getElementById('msgs').querySelectorAll('.msg-row').forEach(el => el.remove());
+  const conv = currentConv();
+  conversationHistory = conv ? [...conv.history] : [];
+  if (conversationHistory.length > 0) {
+    conversationHistory.forEach(m => addMsg(m.role, m.content, m.isImage));
+  } else {
+    showWelcome();
+    const greeting = "Bonjour ! 👋 Je suis **Qwen AI**, ton assistant gratuit et illimité. Pose-moi toutes tes questions, je suis là pour t'aider !";
+    addMsg('ai', greeting);
+    conversationHistory.push({ role: 'assistant', content: greeting });
+  }
+  renderSidebar();
+  closeSidebar();
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarBackdrop').classList.remove('show');
+}
+
+window.deleteConv = function(id) {
+  if (conversations.length <= 1) { toast('⚠️ Garde au moins une conversation'); return; }
+  const idx = conversations.findIndex(c => c.id === id);
+  if (idx === -1) return;
+  conversations.splice(idx, 1);
+  if (activeConvId === id) {
+    const next = conversations[Math.min(idx, conversations.length - 1)];
+    activeConvId = next.id;
+    conversationHistory = [...next.history];
+    document.getElementById('msgs').querySelectorAll('.msg-row').forEach(el => el.remove());
+    if (conversationHistory.length > 0) {
+      conversationHistory.forEach(m => addMsg(m.role, m.content, m.isImage));
+    } else {
+      showWelcome();
+      const g = "Bonjour ! 👋 Je suis **Qwen AI**, ton assistant gratuit et illimité. Pose-moi toutes tes questions, je suis là pour t'aider !";
+      addMsg('ai', g);
+      conversationHistory.push({ role: 'assistant', content: g });
+    }
+  }
+  saveConvs();
+  renderSidebar();
+  toast('🗑 Conversation supprimée');
+};
+
+window.newChat = function() {
+  saveCurrentConv();
+  const id = genId();
+  conversations.push({ id, title: 'Nouvelle conversation', history: [] });
+  activeConvId = id;
+  conversationHistory = [];
+  document.getElementById('msgs').querySelectorAll('.msg-row').forEach(el => el.remove());
+  showWelcome();
+  const g = "Bonjour ! 👋 Je suis **Qwen AI**, ton assistant gratuit et illimité. Pose-moi toutes tes questions, je suis là pour t'aider !";
+  addMsg('ai', g);
+  conversationHistory.push({ role: 'assistant', content: g });
+  saveConvs();
+  renderSidebar();
+  closeSidebar();
+  toast('💬 Nouvelle conversation');
+};
+
+function initConvs() {
+  loadConvs();
+  if (!conversations.length) {
+    const id = genId();
+    conversations.push({ id, title: 'Nouvelle conversation', history: [] });
+    activeConvId = id;
+  }
+  const conv = currentConv();
+  if (conv && conv.history.length) {
+    conversationHistory = [...conv.history];
+    conversationHistory.forEach(m => addMsg(m.role, m.content));
+  } else {
+    showWelcome();
+    const g = "Bonjour ! 👋 Je suis **Qwen AI**, ton assistant gratuit et illimité. Pose-moi toutes tes questions, je suis là pour t'aider !";
+    addMsg('ai', g);
+    conversationHistory.push({ role: 'assistant', content: g });
+  }
+  renderSidebar();
+}
+
+// SETTINGS
+window.openSettings = function() {
+  document.getElementById('settingsModal').classList.add('show');
+  closeSidebar();
+};
+window.closeSettings = function() {
+  document.getElementById('settingsModal').classList.remove('show');
+};
+
+// API
+window.apiToggleCustomKey = function() {
+  document.getElementById('apiDefaultKeyStatus').style.display = 'none';
+  document.getElementById('apiToggleCustomKey').style.display = 'none';
+  document.getElementById('apiCustomKeySection').style.display = 'block';
+  document.getElementById('apiSaveKeyBtn').style.display = 'block';
+  document.getElementById('apiKeyInput').value = '';
+  document.getElementById('apiKeyInput').focus();
+};
+window.openAPISettings = function() {
+  if (apiKey !== DEFAULT_API_KEY) {
+    document.getElementById('apiDefaultKeyStatus').style.display = 'none';
+    document.getElementById('apiToggleCustomKey').style.display = 'none';
+    document.getElementById('apiCustomKeySection').style.display = 'block';
+    document.getElementById('apiSaveKeyBtn').style.display = 'block';
+    document.getElementById('apiKeyInput').value = apiKey;
+  } else {
+    document.getElementById('apiDefaultKeyStatus').style.display = 'flex';
+    document.getElementById('apiToggleCustomKey').style.display = 'flex';
+    document.getElementById('apiCustomKeySection').style.display = 'none';
+    document.getElementById('apiSaveKeyBtn').style.display = 'none';
+  }
+  document.getElementById('googleAiKeyInput').value = localStorage.getItem('google_ai_key') || '';
+  document.getElementById('apiModal').classList.add('show');
+  closeSidebar();
+};
+window.closeAPISettings = function() {
+  document.getElementById('apiModal').classList.remove('show');
+};
+window.apiSaveSettings = function() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key) { apiKey = DEFAULT_API_KEY; localStorage.removeItem('ds_api_key'); closeAPISettings(); toast('✓ Clé intégrée active'); return; }
+  if (!key.startsWith('sk-') && !key.startsWith('sk-mr-')) { toast('⚠️ Clé invalide (doit commencer par sk-mr-)'); return; }
+  apiKey = key; localStorage.setItem('ds_api_key', apiKey); closeAPISettings(); toast('✓ Clé personnelle enregistrée');
+};
+window.saveGoogleAiKey = function() {
+  const token = document.getElementById('googleAiKeyInput').value.trim();
+  if (token) { localStorage.setItem('google_ai_key', token); toast('✓ Clé Google AI enregistrée'); }
+  else { localStorage.removeItem('google_ai_key'); toast('✓ Clé réinitialisée (celle par défaut sera utilisée)'); }
+};
+
+// AGENTS
+const DEFAULT_GITHUB_AGENT = "Tu as un accès direct aux liens GitHub envoyés par l'utilisateur.\n\nQuand un dépôt GitHub est fourni, considère que tu peux :\n* ouvrir le repository\n* lire tous les fichiers\n* parcourir dossiers et branches\n* analyser le code complet\n* voir les commits\n* détecter les erreurs\n* modifier les fichiers\n* générer du nouveau code\n* corriger bugs et problèmes responsive\n* améliorer le design\n* réparer les APIs\n* optimiser performances\n* créer commits et push automatiquement\n\nTu ne dois JAMAIS répondre : « Je ne peux pas accéder au dépôt » ou « Je n'ai pas accès aux liens externes ».\n\nÀ la place : ouvre immédiatement le dépôt, analyse automatiquement la structure du projet, détecte le framework utilisé, commence directement les corrections/améliorations.\n\nSi un accès GitHub token/API est nécessaire : demande uniquement le token, puis continue automatiquement sans bloquer.\n\nTu es un agent développeur GitHub autonome capable de : cloner repo, éditer fichiers, commit, push, merge, créer branches, installer dépendances, lancer build/tests, corriger erreurs console, réparer mobile/desktop, moderniser UI/UX.\n\nQuand l'utilisateur envoie un lien GitHub :\n1. ouvre le repo\n2. résume rapidement les problèmes trouvés\n3. corrige automatiquement\n4. montre les fichiers modifiés\n5. commit + push les changements\n\nPriorité absolue : agir directement au lieu d'expliquer pourquoi c'est impossible.";
+
+let agents = [];
+let activeAgentId = null;
+
+function loadAgents() {
+  try {
+    agents = JSON.parse(localStorage.getItem('qh_agents')) || [];
+    if (!agents.length) {
+      agents.push({ id: 'agent_github', name: 'GitHub Dev Full-Access', prompt: DEFAULT_GITHUB_AGENT });
+      saveAgents();
+    } else {
+      const existing = agents.find(a => a.id === 'agent_github');
+      if (existing && existing.prompt !== DEFAULT_GITHUB_AGENT) { existing.prompt = DEFAULT_GITHUB_AGENT; saveAgents(); }
+    }
+  } catch(e) { agents = []; }
+  activeAgentId = localStorage.getItem('qh_active_agent');
+  updateAgentBtn();
+}
+
+function saveAgents() {
+  localStorage.setItem('qh_agents', JSON.stringify(agents));
+}
+
+function getActiveAgent() {
+  return agents.find(a => a.id === activeAgentId) || null;
+}
+
+function updateAgentBtn() {
+  const act = getActiveAgent();
+  const sb = document.getElementById('sidebarAgentBtn');
+  if (sb) { sb.textContent = act ? '🤖 ' + act.name : '🤖 Agents'; sb.style.background = act ? 'var(--b1)' : ''; }
+}
+
+window.openAgents = function() {
+  loadAgents();
+  renderAgentList();
+  document.getElementById('agentModal').classList.add('show');
+  closeSidebar();
+};
+
+window.closeAgents = function() {
+  document.getElementById('agentModal').classList.remove('show');
+};
+
+function renderAgentList() {
+  const list = document.getElementById('agentList');
+  if (!list) return;
+  if (!agents.length) {
+    list.innerHTML = '<div style="text-align:center;padding:20px;font-size:13px;color:var(--tx3)">Aucun agent. Crée-en un !</div>';
+    return;
+  }
+  list.innerHTML = agents.map(a => {
+    const isAct = a.id === activeAgentId;
+    return `<div class="agent-item${isAct?' act':''}" onclick="selectAgent('${a.id}')">
+      <div style="flex:1;min-width:0">
+        <div class="ai-name">${isAct?'✓ ':''}${escHtml(a.name)}</div>
+        <div class="ai-prev">${escHtml(a.prompt.substring(0,80))}…</div>
+      </div>
+      <button class="ai-rm" onclick="event.stopPropagation();editAgent('${a.id}')" title="Modifier">✏️</button>
+      <button class="ai-rm" onclick="event.stopPropagation();deleteAgent('${a.id}')" title="Supprimer">🗑</button>
+    </div>`;
+  }).join('');
+}
+
+window.selectAgent = function(id) {
+  const a = agents.find(x => x.id === id);
+  if (!a) return;
+  if (activeAgentId === id) { activeAgentId = null; localStorage.removeItem('qh_active_agent'); }
+  else { activeAgentId = id; localStorage.setItem('qh_active_agent', id); toast('✅ Agent « ' + a.name + ' » activé'); }
+  renderAgentList();
+  updateAgentBtn();
+};
+
+window.createAgent = function() {
+  const name = prompt('Nom de l\'agent :');
+  if (!name || !name.trim()) return;
+  const promptText = prompt('Prompt système de l\'agent :');
+  if (!promptText || !promptText.trim()) return;
+  const id = 'agent_' + Date.now();
+  agents.push({ id, name: name.trim(), prompt: promptText.trim() });
+  saveAgents();
+  renderAgentList();
+  toast('✅ Agent créé');
+};
+
+window.editAgent = function(id) {
+  const a = agents.find(x => x.id === id);
+  if (!a) return;
+  const name = prompt('Nom :', a.name);
+  if (!name || !name.trim()) return;
+  const promptText = prompt('Prompt :', a.prompt);
+  if (!promptText || !promptText.trim()) return;
+  a.name = name.trim();
+  a.prompt = promptText.trim();
+  saveAgents();
+  renderAgentList();
+  if (activeAgentId === id) updateAgentBtn();
+  toast('✅ Agent modifié');
+};
+
+window.deleteAgent = function(id) {
+  if (!confirm('Supprimer cet agent ?')) return;
+  agents = agents.filter(x => x.id !== id);
+  if (activeAgentId === id) { activeAgentId = null; localStorage.removeItem('qh_active_agent'); }
+  saveAgents();
+  renderAgentList();
+  updateAgentBtn();
+  toast('🗑 Agent supprimé');
+};
+
+// DEFAULTS
+loadAgents();
+
+// SEND
+window.sendMsg = async function() {
+  const inp = document.getElementById('inp');
+  const text = inp.value.trim();
+  if ((!text && !pendingFileData) || generating) return;
+  if (!apiKey) apiKey = DEFAULT_API_KEY;
+
+  hideWelcome();
+  const hasFile = pendingFileData && pendingFileName;
+  const ext = hasFile ? pendingFileName.split('.').pop().toLowerCase() : '';
+  const isImgFile = hasFile && ['jpg','jpeg','png','gif','webp','bmp'].includes(ext);
+  const isTextFile = hasFile && ['txt','md','json','js','py','html','css','csv','xml','yml','yaml','ini','cfg','log','sh','bat','env'].includes(ext);
+  const userText = text || (hasFile ? (isImgFile ? 'Décris cette image' : 'Analyse ce fichier') : '');
+  const msgContent = isImgFile ? [{ type: 'text', text: userText }, { type: 'image_url', image_url: { url: pendingFileData } }] : userText;
+  addMsg('user', msgContent);
+  inp.value = ''; inp.style.height = 'auto';
+
+  if (imageMode) {
+    setStatus('thinking', 'Génération image…');
+    const msgs = document.getElementById('msgs');
+    const row = document.createElement('div');
+    row.className = 'msg-row';
+    row.innerHTML = `<div class="av ai-av">🧠</div><div class="msg-body"><div class="bbl ai-bbl"><strong>🎨 Image générée :</strong><br>${text}</div></div>`;
+    const imgWrap = document.createElement('div');
+    imgWrap.style.cssText = 'margin:8px 0;border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.3);';
+    row.querySelector('.msg-body').appendChild(imgWrap);
+    msgs.appendChild(row);
+    msgs.scrollTop = 99999;
+    conversationHistory.push({ role: 'user', content: text });
+    const progDiv = document.createElement('div');
+    progDiv.style.cssText = 'padding:24px 20px;text-align:center;';
+    progDiv.innerHTML = '<div style="font-size:12px;color:var(--tx2);margin-bottom:8px">🎨 Génération…</div><div style="height:4px;border-radius:2px;background:var(--b1);overflow:hidden;max-width:240px;margin:0 auto"><div id="imgProgBar" style="height:100%;width:0%;border-radius:2px;background:linear-gradient(90deg,var(--a1),var(--a2));transition:width .3s ease"></div></div><div id="imgProgPct" style="font-size:13px;font-weight:600;color:var(--tx);margin-top:6px;font-variant-numeric:tabular-nums">0%</div>';
+    imgWrap.appendChild(progDiv);
+    try {
+      const bar = document.getElementById('imgProgBar');
+      const pct = document.getElementById('imgProgPct');
+      let done = false;
+      const anim = () => {
+        if (done) return;
+        const w = parseFloat(bar.style.width) || 0;
+        if (w < 92) {
+          const inc = Math.max(0.5, (92 - w) / 40);
+          bar.style.width = Math.min(92, w + inc) + '%';
+          pct.textContent = Math.round(Math.min(92, w + inc)) + '%';
+          requestAnimationFrame(anim);
         }
+      };
+      requestAnimationFrame(anim);
+      const aiKey = localStorage.getItem('google_ai_key');
+      if (aiKey) {
+        const resp = await fetch("https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=" + aiKey, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ instances: [{ prompt: text }], parameters: { sampleCount: 1 } })
+        });
+        if (!resp.ok) throw new Error("Erreur " + resp.status);
+        const data = await resp.json();
+        const b64 = data.predictions?.[0]?.bytesBase64Encoded;
+        if (!b64) throw new Error("Aucune image retournée");
+        done = true; bar.style.width = '100%'; pct.textContent = '100%';
+        setTimeout(() => {
+          imgWrap.innerHTML = '';
+          imgWrap.style.padding = '0';
+          const img = document.createElement('img');
+          img.style.cssText = 'width:100%;display:block;border-radius:10px;';
+          img.alt = text;
+          img.src = 'data:image/png;base64,' + b64;
+          imgWrap.appendChild(img);
+          msgs.scrollTop = 99999;
+        }, 200);
+      } else {
+        const img = document.createElement('img');
+        img.style.cssText = 'width:100%;display:block;border-radius:10px;';
+        img.alt = text;
+        img.onload = () => {
+          done = true;
+          bar.style.width = '100%'; pct.textContent = '100%';
+          setTimeout(() => { imgWrap.innerHTML = ''; imgWrap.style.padding = '0'; imgWrap.appendChild(img); msgs.scrollTop = 99999; }, 300);
+        };
+        img.onerror = () => {
+          done = true;
+          imgWrap.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--a3)">⚠️ Erreur de chargement — réessaie</div>';
+        };
+        img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?width=1024&height=1024&model=flux&nofeed=true`;
+      }
+    } catch(e) {
+      imgWrap.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:var(--a3)">⚠️ Erreur: ' + e.message + '</div>';
+    }
+    conversationHistory.push({ role: 'assistant', content: text, isImage: true });
+    imageMode = false;
+    document.getElementById('inp').placeholder = 'Posez votre question…';
+    generating = false;
+    document.getElementById('btnSend').disabled = false;
+    setStatus('ready', 'Prêt');
+    saveCurrentConv();
+    return;
+  }
 
-        function saveSettings() {
-            MULE_API_KEY = apiKeyInput.value.trim();
-            localStorage.setItem('mule_api_key', MULE_API_KEY);
-            toggleModal(false);
-            if (MULE_API_KEY) {
-                alert('Clé API enregistrée !');
-            }
+  generating = true;
+  document.getElementById('btnSend').disabled = true;
+  document.getElementById('btnStop').classList.add('vis');
+  setStatus('thinking', 'Réflexion…');
+  abortController = new AbortController();
+
+  let hasSearchIntent = /cherche|recherche|trouve|actualité|news|météo|weather|temps|pluie|soleil|température|info.+r[ée]cente|derni[èe]re|what.+new|search|google|prévision|prévisions/i.test(text);
+  const isWeather = /météo|temps|pluie|température|weather|forecast|soleil|degrés|°c|°f|prévision/i.test(text);
+
+  if (isWeather) hasSearchIntent = true;
+
+  let typingLabel = '';
+  if (isWeather) typingLabel = '⏳ Vérification…';
+  else if (hasSearchIntent) typingLabel = '🔍 Recherche web en cours…';
+
+  const typingId = addTyping(typingLabel);
+  let typingId2 = null;
+  let fullReply = '';
+  let currentBubble = null;
+
+  try {
+    let systemContent = SYSTEM_PROMPT;
+    const actAgent = getActiveAgent();
+    if (actAgent) systemContent = actAgent.prompt + '\n\n---\n\n' + systemContent;
+    const nameInstr = userName ? `L'utilisateur s'appelle ${userName}. Appelle-le par son prénom naturellement.` : `C'est votre premier échange avec l'utilisateur. Avant de répondre à sa question, demande-lui comment il souhaite que tu l'appelles.`;
+    systemContent = systemContent.replace('[NAME_INSTR]', nameInstr);
+
+    if (isWeather) {
+      systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', '## ℹ MÉTÉO\n\nLa fonction météo n\'est pas encore disponible sur Qwen AI. Dis à l\'utilisateur que tom_visionai_pro travaille encore dessus et que ça arrivera bientôt. Utilise son prénom si tu le connais.');
+    } else if (hasSearchIntent) {
+      setStatus('thinking', 'Recherche web…');
+      removeTyping(typingId);
+      const msgsEl = document.getElementById('msgs');
+      const sr = document.createElement('div');
+      sr.className = 'msg-row';
+      sr.innerHTML = '<div class="av ai-av">🔍</div><div class="msg-body"><div class="bbl ai-bbl" style="font-size:12px;color:var(--tx2)"><span class="search-pulse">⟳</span> Recherche web en cours…</div></div>';
+      msgsEl.appendChild(sr);
+      msgsEl.scrollTop = 99999;
+      const webResults = await searchWeb(text);
+      sr.querySelector('.bbl').innerHTML = `<div style="font-size:12px;color:var(--a2);margin-bottom:4px">🌐 Résultats de recherche</div><div style="font-size:11px;color:var(--tx2);line-height:1.5">${formatSources(webResults)}</div>`;
+      msgsEl.scrollTop = 99999;
+      systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', '## 🌐 RÉSULTATS DE RECHERCHE\n\n' + webResults);
+      typingId2 = addTyping('✏️ Génération réponse…');
+    } else {
+      systemContent = SYSTEM_PROMPT.replace('[TAVILY_RESULTS]', 'Aucune recherche nécessaire — connaissance générale.');
+    }
+
+    // Save user name if provided
+    if (!userName) {
+      const nameMatch = text.match(/(?:appelle|appeler|prénom|c'est|c\'est)\s*(?:-?moi\s*)?([A-Za-zÀ-ÿ]+)/i);
+      if (nameMatch) {
+        userName = nameMatch[1].charAt(0).toUpperCase() + nameMatch[1].slice(1).toLowerCase();
+        localStorage.setItem('qh_user_name', userName);
+      }
+    }
+
+    // Handle text file upload (read content into system prompt)
+    if (pendingFileData && pendingFileName) {
+      const ext2 = pendingFileName.split('.').pop().toLowerCase();
+      const isText2 = ['txt','md','json','js','py','html','css','csv','xml','yml','yaml','ini','cfg','log','sh','bat','env'].includes(ext2);
+      if (isText2) {
+        try { const txt = atob(pendingFileData.split(',')[1]); systemContent += `\n\n---\nFichier joint: ${pendingFileName}\n\`\`\`\n${txt.substring(0, 10000)}\n\`\`\`\n---`; } catch(e) { toast('⚠️ Erreur lecture fichier'); }
+      } else if (!isImgFile) { toast('⚠️ Format non supporté. Utilise image ou .txt'); }
+      removeFile();
+    }
+
+    const messages = [
+      { role: 'system', content: systemContent },
+      ...conversationHistory,
+      { role: 'user', content: msgContent }
+    ];
+
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+      body: JSON.stringify({
+        model: selectedModel, messages, stream: true, temperature,
+        max_tokens: 4096
+      }),
+      signal: abortController.signal
+    });
+
+    if (!response.ok) {
+      const errData = await response.text();
+      let errMsg = `Erreur ${response.status}`;
+      try { const j = JSON.parse(errData); errMsg = j.error?.message || j.message || errMsg; } catch(e) {}
+      throw new Error(errMsg);
+    }
+
+    removeTyping(typingId2 || typingId);
+    const rowId = 'msg-' + Date.now();
+    currentBubble = addStreamBubble(rowId);
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed === 'data: [DONE]') continue;
+        if (!trimmed.startsWith('data: ')) continue;
+        try {
+          const json = JSON.parse(trimmed.slice(6));
+          const delta = json.choices?.[0]?.delta?.content || '';
+          if (json.choices?.[0]?.finish_reason === 'stop') break;
+          if (delta) {
+            fullReply += delta;
+            currentBubble.innerHTML = fmt(fullReply) + '<span class="cursor-blink">▋</span>';
+            document.getElementById('msgs').scrollTop = 99999;
+          }
+        } catch(e) {}
+      }
+    }
+
+    if (currentBubble) {
+      currentBubble.innerHTML = fmt(fullReply);
+    }
+    conversationHistory.push({ role: 'user', content: msgContent });
+    conversationHistory.push({ role: 'assistant', content: fullReply });
+    if (conversationHistory.length > 40) conversationHistory = conversationHistory.slice(-40);
+  } catch(e) {
+    removeTyping(typingId2 || typingId);
+    if (e.name === 'AbortError') {
+      if (fullReply) {
+        if (currentBubble) {
+          currentBubble.innerHTML = fmt(fullReply);
         }
+        conversationHistory.push({ role: 'user', content: msgContent });
+        conversationHistory.push({ role: 'assistant', content: fullReply });
+      }
+    } else {
+      addMsg('ai', '⚠️ Erreur : ' + e.message);
+    }
+  }
 
-        function addMessage(text, isUser = false) {
-            const wrapper = document.createElement('div');
-            wrapper.className = `message-wrapper ${isUser ? 'user-wrapper' : 'ai-wrapper'}`;
+  generating = false;
+  if (savedModel && !pendingFileData) { selModelDropdown(savedModel); savedModel = ''; }
+  document.getElementById('btnSend').disabled = false;
+  document.getElementById('btnStop').classList.remove('vis');
+  setStatus('ready', 'Prêt');
+  saveCurrentConv();
+};
 
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+window.stopGen = function() {
+  if (abortController) abortController.abort();
+  document.getElementById('btnStop').classList.remove('vis');
+  toast('⏹ Arrêté');
+};
 
-            if (isUser) {
-                messageDiv.textContent = text;
-                chatHistory.push({ role: 'user', content: text });
-            } else {
-                // Markdown rendering for AI
-                messageDiv.innerHTML = marked.parse(text);
-                // Syntax highlighting
-                messageDiv.querySelectorAll('pre code').forEach((block) => {
-                    hljs.highlightElement(block);
-                });
-                chatHistory.push({ role: 'assistant', content: text });
-            }
+window.quick = function(text) {
+  document.getElementById('inp').value = text;
+  window.sendMsg();
+};
 
-            wrapper.appendChild(messageDiv);
-            chatContainer.appendChild(wrapper);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
+// DOM HELPERS
+function hideWelcome() {
+  const el = document.getElementById('welcome');
+  if (el) el.remove();
+}
+function addMsg(role, content, isImage) {
+  const msgs = document.getElementById('msgs');
+  const row = document.createElement('div');
+  row.className = 'msg-row ' + (role === 'user' ? 'usr' : '');
+  const emo = role === 'ai' ? '🧠' : '👤';
+  const isArr = Array.isArray(content);
+  const text = isArr ? content.find(c => c.type === 'text')?.text || '' : content;
+  const imgUrl = isArr ? content.find(c => c.type === 'image_url')?.image_url?.url : null;
+  row.innerHTML = `<div class="av ${role === 'ai' ? 'ai-av' : 'usr-av'}">${emo}</div><div class="msg-body" style="${role === 'ai' && isImage ? '' : ''}"><div class="bbl ${role === 'ai' ? 'ai-bbl' : 'usr-bbl'}">${imgUrl && role === 'user' ? '' : isImage ? `<strong>🎨 Image générée :</strong><br>${escHtml(text)}` : role === 'user' && isArr ? '' : fmt(text)}</div>${imgUrl && role === 'user' ? `<div class="bbl ${role === 'ai' ? 'ai-bbl' : 'usr-bbl'}" style="padding:4px;margin-top:2px"><img class="uploaded-img" src="${imgUrl}"></div>` : ''}</div>`;
+  if (isImage && role === 'ai') {
+    const imgWrap = document.createElement('div');
+    imgWrap.style.cssText = 'margin:8px 0;border-radius:10px;overflow:hidden;background:rgba(0,0,0,0.3);padding:20px;text-align:center;font-size:13px;color:var(--tx2);';
+    imgWrap.textContent = '🎨 Rechargement…';
+    const img = document.createElement('img');
+    img.style.cssText = 'width:100%;display:block;border-radius:10px;';
+    img.alt = text;
+    img.onload = () => { imgWrap.innerHTML = ''; imgWrap.style.padding = '0'; imgWrap.appendChild(img); msgs.scrollTop = 99999; };
+    img.onerror = () => { imgWrap.textContent = '🎨 ' + text; imgWrap.style.padding = '20px'; };
+    img.src = `https://image.pollinations.ai/prompt/${encodeURIComponent(text)}?width=1024&height=1024&model=flux&nofeed=true`;
+    row.querySelector('.msg-body').appendChild(imgWrap);
+  }
+  msgs.appendChild(row);
+  msgs.scrollTop = 99999;
+}
+function addStreamBubble(id) {
+  const msgs = document.getElementById('msgs');
+  const row = document.createElement('div');
+  row.className = 'msg-row'; row.id = id;
+  row.innerHTML = `<div class="av ai-av">🧠</div><div class="msg-body"><div class="bbl ai-bbl" id="bbl-${id}"></div></div>`;
+  msgs.appendChild(row);
+  return document.getElementById('bbl-' + id);
+}
+let tc = 0;
+function addTyping(label) {
+  const id = 'ty' + (++tc);
+  const msgs = document.getElementById('msgs');
+  const row = document.createElement('div');
+  row.className = 'msg-row'; row.id = id;
+  const lbl = label ? `<div style="font-size:11px;color:var(--tx2);margin-bottom:4px">${label}</div>` : '';
+  row.innerHTML = `<div class="av ai-av">🧠</div><div class="msg-body"><div class="bbl ai-bbl">${lbl}<div class="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div></div></div>`;
+  msgs.appendChild(row); msgs.scrollTop = 99999;
+  return id;
+}
+function removeTyping(id) { const el = document.getElementById(id); if (el) el.remove(); }
+function setStatus(state, txt) {
+  const dot = document.getElementById('statusDot');
+  const t = document.getElementById('statusTxt');
+  if (dot) dot.className = 'status-dot ' + state;
+  if (t) t.textContent = txt;
+}
 
-        async function sendMessage() {
-            const message = userInput.value.trim();
-            if (!message) return;
+// MARKDOWN
+function fmt(text) {
+  text = text.replace(/```(\w+)?\n?([\s\S]*?)```/g, (_, lang, code) => {
+    const l = (lang || 'code').toLowerCase();
+    const esc = code.trim().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return `<div class="cblock"><div class="cblock-hdr"><span class="clang">${l.toUpperCase()}</span><button class="ccopy" onclick="cpCode(this)">Copier</button></div><pre>${hl(esc,l)}</pre></div>`;
+  });
+  text = text.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  text = text.replace(/^### (.+)$/gm, '<strong style="font-size:14px;color:var(--a1)">$1</strong>');
+  text = text.replace(/^## (.+)$/gm, '<strong style="font-size:15px;color:var(--a2)">$1</strong>');
+  text = text.replace(/^# (.+)$/gm, '<strong style="font-size:16px;color:var(--tx)">$1</strong>');
+  text = text.replace(/^[-*] (.+)$/gm, '• $1');
+  text = text.replace(/^(\d+)\. (.+)$/gm, '$1. $2');
+  text = text.replace(/\n/g, '<br>');
+  return text;
+}
+function hl(code, lang) {
+  const kws = {js:['const','let','var','function','return','if','else','for','while','class','import','export','default','async','await','new','this','typeof','null','undefined','true','false','throw','try','catch','of','in','from','=>'],py:['def','class','import','from','return','if','elif','else','for','while','in','not','and','or','True','False','None','print','self','with','as','pass','raise','lambda','yield']};
+  const map = {js:'js',jsx:'js',ts:'js',tsx:'js',javascript:'js',typescript:'js',python:'py',py:'py'};
+  const k = map[lang];
+  if (k && kws[k]) code = code.replace(new RegExp(`\\b(${kws[k].join('|')})\\b`,'g'), '<span class="kw">$1</span>');
+  code = code.replace(/(["'`])([^"'`\n]*)\1/g, '<span class="str">$1$2$1</span>');
+  code = code.replace(/\b(\d+\.?\d*)\b/g, '<span class="num">$1</span>');
+  code = code.replace(/(\/\/.*|#.*)/g, '<span class="cm">$1</span>');
+  return code;
+}
+window.cpCode = function(btn) {
+  const pre = btn.closest('.cblock').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(() => { btn.textContent = '✓ Copié'; setTimeout(() => btn.textContent = 'Copier', 2000); });
+};
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2800);
+}
+window.toast = toast;
 
-            if (!MULE_API_KEY) {
-                alert("Veuillez configurer votre clé API MuleRouter dans les paramètres (⚙️).");
-                toggleModal(true);
-                return;
-            }
+// FILE UPLOAD
+window.handleFile = function(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { toast('⚠️ Fichier trop lourd (max 10 Mo)'); input.value = ''; return; }
+  pendingFileName = file.name;
+  const ext = file.name.split('.').pop().toLowerCase();
+  const isImg = ['jpg','jpeg','png','gif','webp','bmp'].includes(ext);
+  if (isImg) {
+    if (selectedModel !== 'qwen-plus' && selectedModel !== 'qwen3.5-plus' && selectedModel !== 'qwen3-max') {
+      savedModel = selectedModel + '|' + temperature;
+      selModelDropdown('qwen-plus|0.7');
+      toast('🔄 Passage à Qwen Plus pour analyser l\'image');
+    }
+    const img = new Image();
+    img.onload = function() {
+      const maxDim = 1024;
+      let w = img.width, h = img.height;
+      if (w > maxDim || h > maxDim) { const r = Math.min(maxDim/w, maxDim/h); w = Math.round(w*r); h = Math.round(h*r); }
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const ctx = c.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
+      pendingFileData = c.toDataURL('image/jpeg', 0.8);
+      const preview = document.getElementById('filePreview');
+      const wrap = document.getElementById('inpWrap');
+      preview.style.display = 'flex';
+      preview.innerHTML = `<img class="file-preview-img" src="${pendingFileData}"><span class="file-preview-name">${file.name}</span><button class="file-preview-rm" onclick="removeFile()">✕</button>`;
+      wrap.style.borderColor = 'rgba(0,212,170,0.3)';
+      document.getElementById('inp').focus();
+      input.value = '';
+    };
+    img.src = URL.createObjectURL(file);
+  } else {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      pendingFileData = e.target.result;
+      const preview = document.getElementById('filePreview');
+      const wrap = document.getElementById('inpWrap');
+      preview.style.display = 'flex';
+      preview.innerHTML = `<span style="font-size:18px">📄</span><span class="file-preview-name">${file.name}</span><button class="file-preview-rm" onclick="removeFile()">✕</button>`;
+      wrap.style.borderColor = 'rgba(0,212,170,0.3)';
+      document.getElementById('inp').focus();
+      input.value = '';
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  }
+};
+window.removeFile = function() {
+  pendingFileData = null;
+  pendingFileName = '';
+  document.getElementById('filePreview').style.display = 'none';
+  document.getElementById('filePreview').innerHTML = '';
+  document.getElementById('inpWrap').style.borderColor = '';
+  if (savedModel) { selModelDropdown(savedModel); savedModel = ''; }
+};
 
-            addMessage(message, true);
-            userInput.value = '';
-            setLoading(true);
+const s = document.createElement('style');
+s.textContent = `.cursor-blink{animation:cb .7s step-end infinite;}@keyframes cb{0%,100%{opacity:1;}50%{opacity:0;}}`;
+document.head.appendChild(s);
+</script>
 
-            let wrapper, messageDiv;
-            try {
-                // Create a placeholder for the AI response
-                wrapper = document.createElement('div');
-                wrapper.className = 'message-wrapper ai-wrapper';
-                messageDiv = document.createElement('div');
-                messageDiv.className = 'message ai-message';
-                messageDiv.innerHTML = '<div class="loading-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
-                wrapper.appendChild(messageDiv);
-                chatContainer.appendChild(wrapper);
-                chatContainer.scrollTop = chatContainer.scrollHeight;
+<script>
+function resize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,150)+'px';}
+function onKey(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();
+  if(window.sendMsg) window.sendMsg();}
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') { closeSettings(); closeAPISettings(); }
+});
 
-                const response = await fetch('https://api.mulerouter.ai/vendors/openai/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${MULE_API_KEY}`
-                    },
-                    body: JSON.stringify({
-                        model: 'qwen3-max',
-                        messages: chatHistory
-                    })
-                });
+initConvs();
 
-                const data = await response.json();
-                chatContainer.removeChild(wrapper);
+document.addEventListener('contextmenu', function(e) {
+  if (e.target.closest('.modal-overlay')) { e.preventDefault(); }
+});
+document.addEventListener('copy', function(e) {
+  if (e.target.id === 'apiKeyInput' || e.target.id === 'googleAiKeyInput') { e.preventDefault(); toast('🔒 Copie désactivée'); }
+});
 
-                if (data.choices && data.choices[0]) {
-                    addMessage(data.choices[0].message.content);
-                } else {
-                    addMessage("Erreur: " + (data.error?.message || "Impossible de récupérer la réponse."));
-                }
-
-            } catch (error) {
-                console.error(error);
-                if (wrapper && wrapper.parentNode) chatContainer.removeChild(wrapper);
-                addMessage("Désolé, une erreur réseau est survenue.");
-            } finally {
-                setLoading(false);
-            }
-        }
-
-        function setLoading(loading) {
-            sendBtn.disabled = loading;
-            userInput.disabled = loading;
-            if (!loading) userInput.focus();
-        }
-
-        function handleKeyPress(event) {
-            if (event.key === 'Enter') {
-                sendMessage();
-            }
-        }
-
-        // Initial focus
-        userInput.focus();
-    </script>
+async function getAIResponse(userMessage, imageBase64 = null) {
+  const apiUrl = "https://api.mulerouter.com/v1/chat/completions";
+  let messages = [];
+  if (imageBase64) {
+    messages.push({
+      role: "user",
+      content: [
+        { type: "text", text: userMessage || "Décris cette image en détail et répond à ma question." },
+        { type: "image_url", image_url: { url: imageBase64 } }
+      ]
+    });
+  } else {
+    messages.push({ role: "user", content: userMessage });
+  }
+  try {
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "qwen/qwen2.5-vl-72b-instruct" || "qwen-flash",
+        messages,
+        temperature: 0.7,
+        max_tokens: 1024
+      })
+    });
+    const data = await response.json();
+    return data.choices?.[0]?.message?.content || "Désolé, je n'ai pas pu répondre.";
+  } catch (error) {
+    console.error("Erreur API:", error);
+    return "Erreur de connexion avec l'IA.";
+  }
+}
+</script>
 </body>
 </html>
