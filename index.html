@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Qwen AI - Assistant Intelligent</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -25,6 +25,15 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10 and IE 11 */
+            user-select: none; /* Standard syntax */
+        }
+
+        input, textarea {
+            -webkit-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
         }
 
         body {
@@ -34,6 +43,8 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden; /* Prevent body scroll, use container scroll */
+            touch-action: manipulation; /* Disable double-tap zoom */
         }
 
         header {
@@ -291,6 +302,11 @@
         @media (max-width: 600px) {
             .main-container { padding: 10px; }
             .message-wrapper { max-width: 95%; }
+            header { padding: 0.75rem 1rem; }
+            .logo { font-size: 1.1rem; }
+            .message { font-size: 0.9rem; padding: 10px 14px; }
+            .input-area { padding: 10px; border-radius: 15px; }
+            .send-btn { padding: 8px 14px; font-size: 0.9rem; }
         }
     </style>
 </head>
@@ -341,6 +357,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.9/purify.min.js"></script>
 
     <script>
         const chatContainer = document.getElementById('chat-container');
@@ -348,14 +365,18 @@
         const sendBtn = document.getElementById('send-btn');
         const apiKeyInput = document.getElementById('api-key');
 
+        // Default API Key (Obfuscated)
+        const _0x4f2e = "c2stbXItYTMyYTdjZjBhZTJiMWVmNjEwZjY0YzAzODQyOWI5YjZlYTRhNTU3NTMxMmM4ZTg4OTk1NzZjZTM5ZTQ0NmYxZA==";
+        const DEFAULT_KEY = atob(_0x4f2e);
+
         // Chat history
         let chatHistory = [
             { role: 'system', content: 'Tu es Qwen AI, un assistant intelligent et utile.' }
         ];
 
         // Load API key from localStorage
-        let MULE_API_KEY = localStorage.getItem('mule_api_key') || '';
-        if (MULE_API_KEY) apiKeyInput.value = MULE_API_KEY;
+        let MULE_API_KEY = localStorage.getItem('mule_api_key') || DEFAULT_KEY;
+        if (MULE_API_KEY !== DEFAULT_KEY) apiKeyInput.value = MULE_API_KEY;
 
         function toggleModal(show) {
             document.getElementById('settings-modal').style.display = show ? 'flex' : 'none';
@@ -381,8 +402,10 @@
                 messageDiv.textContent = text;
                 chatHistory.push({ role: 'user', content: text });
             } else {
-                // Markdown rendering for AI
-                messageDiv.innerHTML = marked.parse(text);
+                // Markdown rendering for AI with sanitization
+                const rawHtml = marked.parse(text);
+                messageDiv.innerHTML = DOMPurify.sanitize(rawHtml);
+
                 // Syntax highlighting
                 messageDiv.querySelectorAll('pre code').forEach((block) => {
                     hljs.highlightElement(block);
@@ -465,6 +488,16 @@
 
         // Initial focus
         userInput.focus();
+
+        // Prevent context menu
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Prevent keyboard shortcuts for copying
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'a' || e.key === 'u' || e.key === 's')) {
+                e.preventDefault();
+            }
+        });
     </script>
 </body>
 </html>
