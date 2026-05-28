@@ -100,7 +100,7 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
 
 /* MAIN */
 .main{flex:1;display:flex;flex-direction:column;min-width:0;width:100%;overflow-x:hidden;position:relative;background:linear-gradient(-45deg,#f8fafc,#e2e8f0,#f1f5f9,#dbeafe);background-size:400% 400%;animation:bgShift 12s ease infinite;}
-.main::before,.main::after{content:'';position:absolute;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;opacity:.5;}
+.main::before,.main::after{content:'';position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0;opacity:.5;}
 .main::before{width:500px;height:500px;background:rgba(147,197,253,0.3);top:-100px;right:-100px;animation:floatA 20s ease-in-out infinite;}
 .main::after{width:400px;height:400px;background:rgba(196,181,253,0.25);bottom:-80px;left:-80px;animation:floatB 25s ease-in-out infinite;}
 @keyframes bgShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
