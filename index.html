@@ -1196,11 +1196,26 @@ window.sendMsg = async function() {
       { role: 'user', content: msgContent }
     ];
 
+    let finalModel = selectedModel;
+    if (isImgFile) {
+      const candidates = ['qwen2.5-vl-72b-instruct', 'qwen-vl-plus'];
+      for (const m of candidates) {
+        try {
+          const probe = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+            body: JSON.stringify({ model: m, messages: [{ role: 'user', content: 'test' }], max_tokens: 1 }),
+            signal: AbortSignal.timeout(3000)
+          });
+          if (probe.ok) { finalModel = m; break; }
+        } catch(e) {}
+      }
+    }
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
       body: JSON.stringify({
-        model: isImgFile ? 'qwen2.5-vl-72b-instruct' : selectedModel, messages, stream: true, temperature,
+        model: finalModel, messages, stream: true, temperature,
         max_tokens: 4096
       }),
       signal: abortController.signal
