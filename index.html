@@ -27,6 +27,24 @@
   --a4:#e09400;
   --r:16px;
 }
+[data-theme=dark]{
+  --bg:#0f0f13;
+  --bg2:#16161d;
+  --sd:#121216;
+  --s1:#16161d;
+  --s2:#1e1e27;
+  --s3:#282833;
+  --b1:#282833;
+  --b2:#33334a;
+  --b3:#4a4a5c;
+  --tx:#e8e8ed;
+  --tx2:#9898ab;
+  --tx3:#6b6b80;
+  --a1:#8b7cf7;
+  --a2:#7060e0;
+  --a3:#a090ff;
+  --a4:#d4a020;
+}
 html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:clip !important;position:relative;left:0;right:0;background:var(--bg);color:var(--tx);font-family:system-ui,ui-sans-serif,-apple-system,BlinkMacSystemFont,'Inter',sans-serif;-webkit-font-smoothing:antialiased;overflow:hidden;touch-action:manipulation;-webkit-text-size-adjust:100%;}
 ::selection{background:rgba(109,92,247,0.2);color:#fff;}
 .app{display:flex;height:100%;height:100dvh;overflow:hidden;width:100%;max-width:100%;background:var(--bg);}
@@ -107,6 +125,10 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
 @keyframes floatA{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(-30px,40px) scale(1.1)}66%{transform:translate(20px,-20px) scale(.9)}}
 @keyframes floatB{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(40px,30px) scale(1.15)}66%{transform:translate(-20px,-40px) scale(.85)}}
 .main>*{position:relative;z-index:1;}
+
+[data-theme=dark] .main{background:linear-gradient(-45deg,#16161d,#1e1e27,#1a1a24,#14141e);background-size:400% 400%;animation:bgShift 12s ease infinite;}
+[data-theme=dark] .main::before{background:rgba(109,92,247,0.08);}
+[data-theme=dark] .main::after{background:rgba(132,117,240,0.06);}
 
 /* TOPBAR */
 .topbar{
@@ -524,10 +546,13 @@ let pendingFileData = null;
 let pendingFileName = '';
 let savedModel = '';
 
-const TODAY = new Date().toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'numeric',day:'numeric'});
+function localTimeStr() {
+  const d = new Date();
+  return d.toLocaleDateString('fr-FR',{weekday:'long',year:'numeric',month:'numeric',day:'numeric'}) + ' à ' + d.toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+}
 const SYSTEM_PROMPT = `Tu es un assistant IA intégré dans un site web nommé "Qwen AI", développé par tom_visionai_pro. Tu es gratuit, illimité et tu dois répondre comme un humain normal.
 
-Aujourd'hui on est le ${TODAY}.
+Date et heure actuelles : ${localTimeStr()}.
 
 [NAME_INSTR]
 
@@ -1026,6 +1051,13 @@ window.deleteAgent = function(id) {
 
 // DEFAULTS
 loadAgents();
+
+// AUTO DARK MODE 21h–8h
+(function autoTheme() {
+  const h = new Date().getHours();
+  document.documentElement.setAttribute('data-theme', (h >= 21 || h < 8) ? 'dark' : 'light');
+  setTimeout(autoTheme, 60000);
+})();
 
 // SEND
 window.sendMsg = async function() {
