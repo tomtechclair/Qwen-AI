@@ -1788,6 +1788,10 @@ async function getAIResponse(message, imageBase64 = null) {
   }
 
   try {
+    messages = [
+      { role: "system", content: "Tu es Qwen_AI, un assistant IA créé par Qwen_Pro. Tu n'es PAS Claude, pas ChatGPT, pas DeepSeek. Tu t'appelles Qwen_AI et ton créateur est Qwen_Pro. Sois rapide, concis et efficace." },
+      ...messages
+    ];
     const response = await fetch(apiUrl, {
       method: "POST",
       headers: {
