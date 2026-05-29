@@ -799,20 +799,11 @@ window.saveGithubToken = function() {
   else { githubToken = ''; localStorage.removeItem('github_token'); toast('✓ Token GitHub retiré'); }
 };
 // AGENTS
-const DEFAULT_GITHUB_AGENT = "Tu es un agent développeur GitHub avec ACCÈS COMPLET et AUTONOME.\n\nQuand un dépôt GitHub est fourni, tu PEUX et DOIS :\n* analyser TOUS les fichiers du dépôt (ils sont chargés ci-dessous)\n* détecter bugs, erreurs, problèmes de sécurité, responsive, accessibilité\n* modifier le code pour corriger les problèmes\n* créer commits et push automatiquement (si token GitHub fourni)\n* générer du nouveau code\n* améliorer le design, les performances\n\nTu as TOUT le code du dépôt sous les yeux ci-dessous. Ne dis JAMAIS que tu n'y as pas accès. Tu vois les fichiers listés avec leur contenu. Analyse-les immédiatement.\n\nSi un token GitHub est fourni, tu peux commit directement. Pour cela, termine ta réponse par :\nGITHUB_COMMIT_START\nrepo: owner/repo\nbranch: main\npath: chemin/du/fichier\nmessage: Description du changement\ncontent:\n```\nle nouveau contenu du fichier\n```\nGITHUB_COMMIT_END\n\nQuand l'utilisateur envoie un lien GitHub :\n1. analyse le dépôt complet chargé ci-dessous\n2. résume la structure et les problèmes trouvés\n3. propose ou applique les corrections\n4. montre les fichiers modifiés\n5. commit + push si token disponible (utilise le format ci-dessus)\n\nPriorité absolue : AGIS DIRECTEMENT. Tu as le code, tu vois tout, tu peux tout faire.";
-
-let agents = [];
-let activeAgentId = null;
-
 function loadAgents() {
   try {
     agents = JSON.parse(localStorage.getItem('qh_agents')) || [];
     if (!agents.length) {
-      agents.push({ id: 'agent_github', name: 'GitHub Dev Full-Access', prompt: DEFAULT_GITHUB_AGENT });
       saveAgents();
-    } else {
-      const existing = agents.find(a => a.id === 'agent_github');
-      if (existing && existing.prompt !== DEFAULT_GITHUB_AGENT) { existing.prompt = DEFAULT_GITHUB_AGENT; saveAgents(); }
     }
   } catch(e) { agents = []; }
   activeAgentId = localStorage.getItem('qh_active_agent');
