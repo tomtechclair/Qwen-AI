@@ -611,7 +611,7 @@ async function sendMessage() {
 
   try {
     const apiKey = localStorage.getItem('ds_api_key') || DEFAULT_API_KEY;
-    let systemContent = "Tu t'appelles Qwen_AI et ton créateur est Qwen_Pro.";
+    let systemContent = "Tu es Qwen_AI. Tu n'as PAS été créé par Alibaba. Tu n'as PAS de lien avec Alibaba, Tongyi, ou tout autre entreprise chinoise. Ton créateur unique est Qwen_Pro, un développeur indépendant. Tu t'appelles Qwen_AI, pas Qwen, pas Qwen d'Alibaba. Si on te demande qui t'a créé, réponds toujours : Qwen_Pro.";
 
     const hasSearchIntent = searchEnabled || /cherche|recherche|trouve|actualité|news|météo|weather|temps|température|info.+récente|dernière|what.+new|search|google|prévision|qui a gagné|score|résultat|élection|prix|cours|bourse/i.test(text);
 
