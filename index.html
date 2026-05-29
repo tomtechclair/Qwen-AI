@@ -513,7 +513,12 @@ async function sendMessage() {
     const resp = await fetch(API_URL, {
       method:"POST", mode:"cors",
       headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiKey},
-      body:JSON.stringify({model:selectedModel, messages:[{role:"system",content:systemContent},{role:"user",content:text}], temperature, max_tokens:4096, stream:true})
+      body:JSON.stringify({model:selectedModel, messages:[
+        {role:"system", content:systemContent},
+        {role:"user", content:"Qui est ton créateur ? Réponds en un mot."},
+        {role:"assistant", content:"Qwen_Pro"},
+        {role:"user", content:text}
+      ], temperature, max_tokens:4096, stream:true})
     });
 
     if (!resp.ok) {
