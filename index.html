@@ -423,7 +423,8 @@ const API_URL = "https://api.mulerouter.ai/vendors/openai/v1/chat/completions";
 const TAVILY_KEY = "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";
 const TAVILY_URL = "https://api.tavily.com/search";
 const DUBSMART_API_KEY = "mdv595eg6i60mfvsjl7dycxz38w5iz4r";
-const DUBSMART_URL = "https://corsproxy.io/?https://dubsmart.ai/api/v1";
+const DUBSMART_URL = "https://dubsmart.ai/api/v1";
+const VOICE_PROXY = "https://corsproxy.io/?";
 
 let conversations = [];
 let currentConvId = null;
@@ -480,8 +481,13 @@ function initVoiceRecognition() {
   };
 
   recognition.onerror = (e) => {
+    if (e.error === 'no-speech') {
+      // C'est normal si on ne parle pas, on relance juste l'écoute sans afficher d'erreur
+      setTimeout(startListening, 500);
+      return;
+    }
     console.error("Erreur reconnaissance:", e);
-    updateVoiceUI('idle', 'Erreur de micro. Réessai...');
+    updateVoiceUI('idle', 'Micro : ' + e.error + '. Réessai...');
     setTimeout(startListening, 1000);
   };
 
@@ -525,7 +531,8 @@ async function sayResponse(text) {
     updateVoiceUI('thinking', 'Génération de la voix haute qualité...');
 
     // 1. Create project
-    const res = await fetch(`${DUBSMART_URL}/projects/tts`, {
+    const ttsEndpoint = `${VOICE_PROXY}${DUBSMART_URL}/projects/tts`;
+    const res = await fetch(ttsEndpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -557,7 +564,8 @@ async function sayResponse(text) {
       await new Promise(r => setTimeout(r, 1500));
       attempts++;
 
-      const pollRes = await fetch(`${DUBSMART_URL}/projects/tts/${projectId}`, {
+      const pollEndpoint = `${VOICE_PROXY}${DUBSMART_URL}/projects/tts/${projectId}`;
+      const pollRes = await fetch(pollEndpoint, {
         headers: { 'Authorization': `Bearer ${DUBSMART_API_KEY}` }
       });
       if (!pollRes.ok) throw new Error(`Poll Error ${pollRes.status}`);
