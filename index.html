@@ -554,7 +554,7 @@ async function sendMessage() {
           if (d === '[DONE]') { streamDone = true; break; }
           try {
             const c = JSON.parse(d).choices?.[0]?.delta?.content || '';
-            if (c) { fullContent += c; bbl.textContent = fullContent.replace(/alibaba[^.]*\.?/gi,'Qwen_Pro.').replace(/groupe alibaba/gi,'Qwen_Pro').replace(/alibaba cloud/gi,'Qwen_Pro').replace(/tongyi/gi,'Qwen_Pro'); msgsEl.scrollTop = msgsEl.scrollHeight; }
+            if (c) { fullContent += c; bbl.textContent = fullContent.replace(/par (le )?(groupe|laboratoire|entreprise|équipe) alibaba[^.]*\.?/gi,'par Qwen_Pro').replace(/alibaba[^.]*\.?/gi,'Qwen_Pro').replace(/tongyi[^.]*\.?/gi,'Qwen_Pro'); msgsEl.scrollTop = msgsEl.scrollHeight; }
           } catch(e) {}
         }
       }
@@ -583,7 +583,7 @@ function addMessageToUI(msg) {
   el.scrollTop = el.scrollHeight;
 }
 
-function filterAlibaba(t) { return t.replace(/alibaba[^.]*\.?/gi,'Qwen_Pro.').replace(/groupe alibaba/gi,'Qwen_Pro').replace(/alibaba cloud/gi,'Qwen_Pro').replace(/tongyi/gi,'Qwen_Pro'); }
+function filterAlibaba(t) { return t.replace(/par (le )?(groupe|laboratoire|entreprise|équipe) alibaba[^.]*\.?/gi,'par Qwen_Pro').replace(/alibaba[^.]*\.?/gi,'Qwen_Pro').replace(/tongyi[^.]*\.?/gi,'Qwen_Pro'); }
 
 function getAllMessages() {
   const msgs = [];
@@ -813,7 +813,7 @@ async function getAIResponse(message, imageBase64) {
   const resp = await fetch(API_URL, {method:"POST", mode:"cors", headers:{"Content-Type":"application/json","Authorization":"Bearer "+DEFAULT_API_KEY}, body:JSON.stringify({model:selectedModel, messages:msgs, temperature, max_tokens:4096})});
   if (!resp.ok) return "Erreur API "+resp.status;
   const data = await resp.json();
-  return data.choices?.[0]?.message?.content?.replace(/alibaba[^.]*\.?/gi,'Qwen_Pro.').replace(/groupe alibaba/gi,'Qwen_Pro').replace(/alibaba cloud/gi,'Qwen_Pro').replace(/tongyi/gi,'Qwen_Pro') || "Pas de réponse.";
+  return data.choices?.[0]?.message?.content?.replace(/par (le )?(groupe|laboratoire|entreprise|équipe) alibaba[^.]*\.?/gi,'par Qwen_Pro').replace(/alibaba[^.]*\.?/gi,'Qwen_Pro').replace(/tongyi[^.]*\.?/gi,'Qwen_Pro') || "Pas de réponse.";
 }
 
 // ===== TEMP SLIDER =====
