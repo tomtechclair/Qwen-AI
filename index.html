@@ -302,6 +302,8 @@ body{height:calc(var(--vh,1vh)*100)}
           <option value="qwen-vision">👁️ Vision</option>
           <option value="qwen35-plus">3.5 Plus</option>
           <option value="qwen3-max">3 Max</option>
+          <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+          <option value="claude-3-opus">Claude 3 Opus</option>
         </select>
       </div>
       <div class="topbar-right">
@@ -500,7 +502,9 @@ async function sendMessage() {
 
   try {
     const apiKey = localStorage.getItem('ds_api_key') || DEFAULT_API_KEY;
-    let systemContent = "Tu es Qwen AI, un assistant IA gratuit créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Tu réponds toujours de manière utile et concise.";
+    let systemContent = selectedModel.includes('claude')
+      ? "Tu es Claude AI, un assistant IA performant. Tu réponds toujours de manière utile et concise."
+      : "Tu es Qwen AI, un assistant IA gratuit créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Tu réponds toujours de manière utile et concise.";
 
     const hasSearch = /cherche|recherche|trouve|actualité|news|météo|weather|temps|température|info.+récente|dernière|what.+new|search|google|prévision|qui a gagné|score|résultat|élection|prix|cours|bourse/i.test(text);
 
