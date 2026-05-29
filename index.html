@@ -541,9 +541,14 @@ async function sayResponse(text) {
       })
     });
 
-    if (!res.ok) throw new Error(`DubSmart API Error: ${res.status}`);
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`API Error ${res.status}: ${errText}`);
+    }
     const data = await res.json();
     const projectId = data.projectId;
+
+    if (!projectId) throw new Error('No Project ID returned from API');
 
     // 2. Poll for completion
     let audioUrl = null;
@@ -555,16 +560,17 @@ async function sayResponse(text) {
       const pollRes = await fetch(`${DUBSMART_URL}/projects/tts/${projectId}`, {
         headers: { 'Authorization': `Bearer ${DUBSMART_API_KEY}` }
       });
+      if (!pollRes.ok) throw new Error(`Poll Error ${pollRes.status}`);
       const pollData = await pollRes.json();
 
       if (pollData.status === 'completed') {
         audioUrl = pollData.audioUrl;
       } else if (pollData.status === 'failed') {
-        throw new Error('TTS generation failed');
+        throw new Error('TTS generation failed on server');
       }
     }
 
-    if (!audioUrl) throw new Error('TTS timeout');
+    if (!audioUrl) throw new Error('TTS timeout: Audio not ready in time');
 
     // 3. Play audio
     const audio = new Audio(audioUrl);
@@ -579,7 +585,10 @@ async function sayResponse(text) {
     };
   } catch (e) {
     console.error("DubSmart Error:", e);
-    browserSayResponse(text);
+    updateVoiceUI('idle', 'Erreur DubSmart: ' + e.message);
+    setTimeout(() => {
+      browserSayResponse(text);
+    }, 2000);
   }
 }
 
