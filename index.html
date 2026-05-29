@@ -544,29 +544,84 @@ async function sendMessage() {
   document.getElementById('welcomeScreen').style.display = 'none';
   messagesEl.classList.add('active');
 
-  // Add user message
   const userMsg = { role: 'user', content: text, hasImage: !!pendingFileData };
   addMessageToUI(userMsg);
   input.value = '';
   autoResize(input);
 
-  // Show typing indicator
   const typingId = showTyping();
   isGenerating = true;
   setStatus('warning', 'Génération en cours…');
 
   try {
-    const response = await getAIResponse(text, pendingFileData);
+    const apiKey = localStorage.getItem('ds_api_key') || DEFAULT_API_KEY;
+    const msgs = [
+      { role: "system", content: "Tu es Qwen_AI, un assistant IA créé par Qwen_Pro. Tu parles de manière naturelle et fluide, comme un humain. Réponds directement, simplement, sans énumérations ni formules de politesse. Sois chaleureux et conversationnel." },
+      { role: "user", content: text }
+    ];
+
+    const response = await fetch(API_URL, {
+      method: "POST",
+      mode: "cors",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
+      body: JSON.stringify({
+        model: selectedModel, messages: msgs, temperature, max_tokens: 4096, stream: true
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      removeTyping(typingId);
+      addMessageToUI({ role: 'assistant', content: "Erreur API " + response.status + ": " + errText });
+      isGenerating = false;
+      setStatus('', 'Propulsé par Qwen Flash');
+      return;
+    }
+
     removeTyping(typingId);
-    
-    const aiMsg = { role: 'assistant', content: response };
-    addMessageToUI(aiMsg);
-    
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let fullContent = '';
+    let buffer = '';
+    const msgId = 'ai-' + Date.now();
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'msg assistant';
+    msgDiv.id = msgId;
+    msgDiv.innerHTML = '<div class="msg-av">🧠</div><div class="msg-bubble ai-bbl" id="bbl-' + msgId + '"></div>';
+    messagesEl.appendChild(msgDiv);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+
+    const bbl = document.getElementById('bbl-' + msgId);
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          const data = line.slice(6);
+          if (data === '[DONE]') break;
+          try {
+            const parsed = JSON.parse(data);
+            const content = parsed.choices?.[0]?.delta?.content || '';
+            if (content) {
+              fullContent += content;
+              bbl.textContent = fullContent;
+              messagesEl.scrollTop = messagesEl.scrollHeight;
+            }
+          } catch (e) {}
+        }
+      }
+    }
+
     // Save conversation
     const allMessages = getAllMessages();
     saveCurrentConv(allMessages);
   } catch (e) {
-    removeTyping(typingId);
+    const typing = document.getElementById(typingId);
+    if (typing) typing.remove();
     addMessageToUI({ role: 'assistant', content: '❌ Erreur: ' + e.message });
   }
 
@@ -581,10 +636,10 @@ async function sendMessage() {
 function addMessageToUI(msg) {
   const messagesEl = document.getElementById('messages');
   const div = document.createElement('div');
-  div.className = `message ${msg.role}`;
+  div.className = `msg ${msg.role}`;
   div.innerHTML = `
-    <div class="message-avatar">${msg.role === 'user' ? '👤' : '🧠'}</div>
-    <div class="message-content">${formatContent(msg.content)}</div>
+    <div class="msg-av">${msg.role === 'user' ? '👤' : '🧠'}</div>
+    <div class="msg-bubble">${formatContent(msg.content)}</div>
   `;
   messagesEl.appendChild(div);
   messagesEl.scrollTop = messagesEl.scrollHeight;
