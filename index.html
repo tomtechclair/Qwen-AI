@@ -399,7 +399,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg-deep);color:var(--text
             oninput="autoResize(this)"
           ></textarea>
           <div class="inp-acts">
-            <button class="inp-btn" id="searchToggle" onclick="toggleSearch()" title="Recherche web">🌐</button>
             <button class="inp-btn" onclick="document.getElementById('fileInput').click()" title="Joindre un fichier">📎</button>
             <input type="file" id="fileInput" style="display: none;" onchange="handleFile(this)">
           </div>
@@ -475,7 +474,6 @@ let pendingFileName = '';
 let selectedModel = 'qwen-flash';
 let temperature = 0.7;
 let isGenerating = false;
-let searchEnabled = false;
 
 // ============ Initialize ============
 function init() {
@@ -613,7 +611,7 @@ async function sendMessage() {
     const apiKey = localStorage.getItem('ds_api_key') || DEFAULT_API_KEY;
     let systemContent = "Tu es Qwen_AI. Tu n'as PAS été créé par Alibaba. Tu n'as PAS de lien avec Alibaba, Tongyi, ou tout autre entreprise chinoise. Ton créateur unique est Qwen_Pro, un développeur indépendant. Tu t'appelles Qwen_AI, pas Qwen, pas Qwen d'Alibaba. Si on te demande qui t'a créé, réponds toujours : Qwen_Pro.";
 
-    const hasSearchIntent = searchEnabled || /cherche|recherche|trouve|actualité|news|météo|weather|temps|température|info.+récente|dernière|what.+new|search|google|prévision|qui a gagné|score|résultat|élection|prix|cours|bourse/i.test(text);
+    const hasSearchIntent = /cherche|recherche|trouve|actualité|news|météo|weather|temps|température|info.+récente|dernière|what.+new|search|google|prévision|qui a gagné|score|résultat|élection|prix|cours|bourse/i.test(text);
 
     if (hasSearchIntent) {
       removeTyping(typingId);
@@ -623,9 +621,9 @@ async function sendMessage() {
       messagesEl.appendChild(sr);
       messagesEl.scrollTop = messagesEl.scrollHeight;
       const webResults = await searchWeb(text);
-      sr.querySelector('.msg-bubble').innerHTML = `<div style="font-size:11px;color:var(--accent-light);margin-bottom:4px">🌐 Résultats web</div><div style="font-size:11px;color:var(--text-secondary);line-height:1.5">${webResults}</div>`;
+      sr.querySelector('.msg-bubble').innerHTML = `<div style="font-size:12px;color:var(--accent-light);margin-bottom:6px">🌐 Résultats de recherche</div><div style="font-size:12px;line-height:1.6">${webResults.html}</div>`;
       messagesEl.scrollTop = messagesEl.scrollHeight;
-      systemContent += "\n\n## RÉSULTATS DE RECHERCHE WEB\n" + webResults + "\n\nUtilise ces informations pour répondre à l'utilisateur. Cite tes sources si pertinent.";
+      systemContent += "\n\n## RÉSULTATS DE RECHERCHE WEB\n" + webResults.text + "\n\nUtilise ces informations pour répondre à l'utilisateur. Cite tes sources si pertinent.";
       typingId2 = addTyping('✏️ Génération réponse…');
     }
 
@@ -912,14 +910,6 @@ function removeFile() {
 window.removeFile = removeFile;
 
 // ============ Web Search ============
-function toggleSearch() {
-  searchEnabled = !searchEnabled;
-  const btn = document.getElementById('searchToggle');
-  btn.style.background = searchEnabled ? 'rgba(139,92,246,0.2)' : 'transparent';
-  btn.style.color = searchEnabled ? 'var(--accent)' : 'var(--text-tertiary)';
-  showToast(searchEnabled ? '🌐 Recherche web activée' : '🌐 Recherche web désactivée');
-}
-
 async function searchWeb(query) {
   try {
     const res = await fetch(TAVILY_URL, {
@@ -927,13 +917,17 @@ async function searchWeb(query) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ api_key: TAVILY_KEY, query, max_results: 5, include_answer: true })
     });
-    if (!res.ok) return 'Aucun résultat trouvé.';
+    if (!res.ok) return { text: 'Aucun résultat trouvé.', html: 'Aucun résultat trouvé.' };
     const data = await res.json();
-    let results = data.results?.map(r => `- ${r.title}: ${r.content.substring(0, 300)}`).join('\n') || '';
-    const answer = data.answer ? `Résumé: ${data.answer}\n\n` : '';
-    return answer + results || 'Aucun résultat.';
+    const answer = data.answer ? `<div style="color:var(--accent-light);margin-bottom:6px">📌 ${data.answer}</div>` : '';
+    const links = data.results?.map(r => {
+      const url = r.url || '#';
+      return `<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:6px"><span style="color:var(--text-tertiary);flex-shrink:0">🔗</span><a href="${url}" target="_blank" rel="noopener" style="color:var(--accent-light);text-decoration:none;font-size:12px;word-break:break-all">${r.title}</a></div>`;
+    }).join('') || '';
+    const textResults = data.results?.map(r => `- ${r.title}: ${r.content.substring(0, 300)} (${r.url})`).join('\n') || '';
+    return { text: answer + textResults || 'Aucun résultat.', html: answer + links };
   } catch (e) {
-    return 'Erreur de recherche: ' + e.message;
+    return { text: 'Erreur de recherche: ' + e.message, html: 'Erreur de recherche' };
   }
 }
 
