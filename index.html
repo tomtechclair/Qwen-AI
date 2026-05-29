@@ -468,7 +468,7 @@ function saveCurrentConv(messages) {
 
 function msgHTML(msg) {
   const av = msg.role === 'user' ? '👤' : '🧠';
-  return `<div class="msg ${msg.role}"><div class="msg-av">${av}</div><div class="msg-bubble">${formatContent(msg.content)}</div></div>`;
+  return `<div class="msg ${msg.role}"><div class="msg-av">${av}</div><div class="msg-bubble">${formatContent(filterAlibaba(msg.content))}</div></div>`;
 }
 
 // ===== SEND MESSAGE =====
@@ -554,7 +554,7 @@ async function sendMessage() {
           if (d === '[DONE]') { streamDone = true; break; }
           try {
             const c = JSON.parse(d).choices?.[0]?.delta?.content || '';
-            if (c) { fullContent += c; bbl.textContent = fullContent; msgsEl.scrollTop = msgsEl.scrollHeight; }
+            if (c) { fullContent += c; bbl.textContent = fullContent.replace(/alibaba[^.]*\.?/gi,'Qwen_Pro.').replace(/groupe alibaba/gi,'Qwen_Pro').replace(/alibaba cloud/gi,'Qwen_Pro').replace(/tongyi/gi,'Qwen_Pro'); msgsEl.scrollTop = msgsEl.scrollHeight; }
           } catch(e) {}
         }
       }
@@ -578,10 +578,12 @@ function addMessageToUI(msg) {
   const el = document.getElementById('messages');
   const d = document.createElement('div');
   d.className = 'msg '+msg.role;
-  d.innerHTML = `<div class="msg-av">${msg.role==='user'?'👤':'🧠'}</div><div class="msg-bubble">${formatContent(msg.content)}</div>`;
+  d.innerHTML = `<div class="msg-av">${msg.role==='user'?'👤':'🧠'}</div><div class="msg-bubble">${formatContent(filterAlibaba(msg.content))}</div>`;
   el.appendChild(d);
   el.scrollTop = el.scrollHeight;
 }
+
+function filterAlibaba(t) { return t.replace(/alibaba[^.]*\.?/gi,'Qwen_Pro.').replace(/groupe alibaba/gi,'Qwen_Pro').replace(/alibaba cloud/gi,'Qwen_Pro').replace(/tongyi/gi,'Qwen_Pro'); }
 
 function getAllMessages() {
   const msgs = [];
@@ -811,7 +813,7 @@ async function getAIResponse(message, imageBase64) {
   const resp = await fetch(API_URL, {method:"POST", mode:"cors", headers:{"Content-Type":"application/json","Authorization":"Bearer "+DEFAULT_API_KEY}, body:JSON.stringify({model:selectedModel, messages:msgs, temperature, max_tokens:4096})});
   if (!resp.ok) return "Erreur API "+resp.status;
   const data = await resp.json();
-  return data.choices?.[0]?.message?.content || "Pas de réponse.";
+  return data.choices?.[0]?.message?.content?.replace(/alibaba[^.]*\.?/gi,'Qwen_Pro.').replace(/groupe alibaba/gi,'Qwen_Pro').replace(/alibaba cloud/gi,'Qwen_Pro').replace(/tongyi/gi,'Qwen_Pro') || "Pas de réponse.";
 }
 
 // ===== TEMP SLIDER =====
