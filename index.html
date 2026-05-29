@@ -806,7 +806,7 @@ function showWelcome() {
   if (document.getElementById('welcome')) return;
   const w = document.createElement('div');
   w.className = 'welcome'; w.id = 'welcome';
-  w.innerHTML = '<h1>Qwen AI</h1><p>Assistant gratuit et illimité. Posez votre question.</p><div class="q-suggest"><button class="q-card" onclick="quick(\'Écris du code en Python pour\')"><span class="q-card-ico">💻</span> Code</button><button class="q-card" onclick="quick(\'Explique-moi\')"><span class="q-card-ico">🧠</span> Expliquer</button><button class="q-card" onclick="quick(\'Traduis en anglais:\')"><span class="q-card-ico">🌍</span> Traduire</button><button class="q-card" onclick="quick(\'Rédige un email pour\')"><span class="q-card-ico">✉️</span> Email</button></div>';
+  w.innerHTML = '<h1>Qwen AI</h1><p>Assistant gratuit et illimité — propulsé par Qwen Flash</p><div class="q-suggest"><button class="q-card" onclick="quick(\'Écris du code en Python pour\')"><span class="q-card-ico">💻</span> Code</button><button class="q-card" onclick="quick(\'Explique-moi\')"><span class="q-card-ico">🧠</span> Expliquer</button><button class="q-card" onclick="quick(\'Traduis en anglais:\')"><span class="q-card-ico">🌍</span> Traduire</button><button class="q-card" onclick="quick(\'Rédige un email pour\')"><span class="q-card-ico">✉️</span> Email</button><button class="q-card" onclick="quick(\'Donne-moi des idées de\')"><span class="q-card-ico">💡</span> Idées</button><button class="q-card" onclick="quick(\'Résous ce problème:\')"><span class="q-card-ico">🧮</span> Maths</button></div>';
   document.getElementById('msgs').appendChild(w);
 }
 
