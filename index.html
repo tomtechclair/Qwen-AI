@@ -730,6 +730,18 @@ function getAllMessages() {
   return msgs;
 }
 
+function addTyping(label) {
+  const id = 'typing-' + Date.now();
+  const messagesEl = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg assistant';
+  div.id = id;
+  div.innerHTML = `<div class="msg-av">🤖</div><div class="msg-bubble" style="color:var(--text-tertiary);font-size:13px">${label}</div>`;
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  return id;
+}
+
 function showTyping() {
   const id = 'typing-' + Date.now();
   const messagesEl = document.getElementById('messages');
