@@ -1192,8 +1192,8 @@ html, body {
       <div class="model-selector">
         <span class="model-icon">⚡</span>
         <select class="model-select" id="modelSelect" onchange="changeModel(this.value)">
-          <option value="qwen-flash">Flash (rapide)</option>
-          <option value="qwen-plus">Qwen Plus</option>
+          <option value="qwen-flash">Qwen 2.5 72B (rapide)</option>
+          <option value="qwen-plus">Qwen 2.5 32B (équilibré)</option>
           <option value="qwen-vision">👁️ Vision</option>
           <option value="qwen35-plus">3.5 Plus (précis)</option>
           <option value="qwen3-max">3 Max (raisonnement)</option>
@@ -1360,7 +1360,7 @@ html, body {
 <div class="toast" id="toast"></div>
 
 <script>
-const _DK = "c2stbXItYTMyYTdjZjBhZTJiMWVmNjEwZjY0YzAzODQyOWI5YjZlYTRhNTU3NTMxMmM4ZTg4OTk1NzZjZTM5ZTQ0NmYxZA==";
+const _DK = "c2stb3ItdjEtZTU0NGM1NjM2ODhhZTE2YjhjZjZlN2RkM2EyNjc3NWJkOTBkNzFlMjI0Yjc4ZmZjY2U5YTAzY2NlNTdjN2JkNg==";
 const DEFAULT_API_KEY = atob(_DK);
 
 let conversations = [];
@@ -1825,7 +1825,7 @@ function changeModel(model) {
 // ============ AI Response ============
 async function getAIResponse(message, imageBase64 = null) {
   const apiKey = localStorage.getItem('ds_api_key') || DEFAULT_API_KEY;
-  const apiUrl = "https://api.mulerouter.com/v1/chat/completions";
+  const apiUrl = "https://openrouter.ai/api/v1/chat/completions";
   let messages = [];
 
   if (imageBase64) {
@@ -1843,9 +1843,14 @@ async function getAIResponse(message, imageBase64 = null) {
   try {
     const response = await fetch(apiUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + apiKey,
+        "HTTP-Referer": "https://qwen-ai.app",
+        "X-Title": "Qwen AI"
+      },
       body: JSON.stringify({
-        model: selectedModel,
+        model: selectedModel === 'qwen-flash' ? 'qwen/qwen-2.5-72b-instruct' : selectedModel === 'qwen-plus' ? 'qwen/qwen-2.5-32b-instruct' : selectedModel === 'qwen3-max' ? 'qwen/qwen-2.5-72b-instruct' : 'qwen/qwen-2.5-72b-instruct',
         messages,
         temperature,
         max_tokens: 4096
