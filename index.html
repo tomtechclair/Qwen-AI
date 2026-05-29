@@ -1177,10 +1177,6 @@ html, body {
         <span>🔑</span>
         <span>API</span>
       </div>
-      <div class="sidebar-footer-item" onclick="openAgents()">
-        <span>🤖</span>
-        <span>Agents</span>
-      </div>
     </div>
   </aside>
 
@@ -1318,41 +1314,10 @@ html, body {
     <div class="modal-content">
       <div class="info-box">
         🔒 <strong>Clé intégrée active</strong><br>
-        Votre propre clé (optionnel)
-      </div>
-      <div class="form-group">
-        <label class="form-label">Votre clé API</label>
-        <input type="password" class="form-input" id="apiKeyInput" placeholder="sk-...">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Token GitHub (lecture/écriture)</label>
-        <input type="password" class="form-input" id="githubTokenInput" placeholder="ghp_...">
+        Aucune configuration nécessaire
       </div>
     </div>
-    <button class="submit-btn" onclick="saveAPI()">💾 Enregistrer</button>
-  </div>
-</div>
-
-<!-- Agents Modal -->
-<div class="modal-overlay" id="agentsModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title">🤖 Mes agents</div>
-      <button class="modal-close-btn" onclick="closeAgents()">✕</button>
-    </div>
-    <div class="modal-content">
-      <div class="info-box">
-        Crée des agents IA personnalisés. L'agent actif définit le comportement du chat.
-      </div>
-      <div id="agentsList">
-        <div class="conv-item" style="background: var(--bg-card); margin: 8px 0; border: 1px solid var(--border-subtle);">
-          <span>🤖</span>
-          <span style="flex: 1;">Assistant par défaut</span>
-          <span style="font-size: 11px; color: var(--accent-tertiary);">✓ Actif</span>
-        </div>
-      </div>
-    </div>
-    <button class="submit-btn" onclick="closeAgents()">➕ Nouvel agent</button>
+    <button class="submit-btn" onclick="closeAPI()">✅ OK</button>
   </div>
 </div>
 
@@ -1736,29 +1701,12 @@ function openSettings() { document.getElementById('settingsModal').classList.add
 function closeSettings() { document.getElementById('settingsModal').classList.remove('show'); }
 
 function openAPI() {
-  const savedKey = localStorage.getItem('ds_api_key') || '';
-  const savedGh = localStorage.getItem('github_token') || '';
-  document.getElementById('apiKeyInput').value = savedKey;
-  document.getElementById('githubTokenInput').value = savedGh;
   document.getElementById('apiModal').classList.add('show');
 }
 function closeAPI() { document.getElementById('apiModal').classList.remove('show'); }
 
-function openAgents() { document.getElementById('agentsModal').classList.add('show'); }
-function closeAgents() { document.getElementById('agentsModal').classList.remove('show'); }
-
 function saveAPI() {
-  const key = document.getElementById('apiKeyInput').value.trim();
-  if (key) {
-    localStorage.setItem('ds_api_key', key);
-    showToast('🔑 Clé API enregistrée');
-  } else {
-    localStorage.removeItem('ds_api_key');
-    showToast('🔑 Clé intégrée active');
-  }
-  const gh = document.getElementById('githubTokenInput').value.trim();
-  if (gh) localStorage.setItem('github_token', gh);
-  else localStorage.removeItem('github_token');
+  showToast('🔑 Clé intégrée active');
   closeAPI();
 }
 
@@ -1812,7 +1760,6 @@ document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
     closeSettings();
     closeAPI();
-    closeAgents();
   }
 });
 
