@@ -1325,8 +1325,9 @@ html, body {
 <div class="toast" id="toast"></div>
 
 <script>
-const _DK = "c2stb3ItdjEtZTU0NGM1NjM2ODhhZTE2YjhjZjZlN2RkM2EyNjc3NWJkOTBkNzFlMjI0Yjc4ZmZjY2U5YTAzY2NlNTdjN2JkNg==";
+const _DK = "c2stbXItYTMyYTdjZjBhZTJiMWVmNjEwZjY0YzAzODQyOWI5YjZlYTRhNTU3NTMxMmM4ZTg4OTk1NzZjZTM5ZTQ0NmYxZA==";
 const DEFAULT_API_KEY = atob(_DK);
+const API_URL = "https://api.mulerouter.com/v1/chat/completions";
 
 let conversations = [];
 let currentConvId = null;
@@ -1772,7 +1773,6 @@ function changeModel(model) {
 // ============ AI Response ============
 async function getAIResponse(message, imageBase64 = null) {
   const apiKey = localStorage.getItem('ds_api_key') || DEFAULT_API_KEY;
-  const apiUrl = "https://openrouter.ai/api/v1/chat/completions";
   let messages = [];
 
   if (imageBase64) {
@@ -1792,19 +1792,11 @@ async function getAIResponse(message, imageBase64 = null) {
       { role: "system", content: "Tu es Qwen_AI, un assistant IA créé par Qwen_Pro. Tu n'es PAS Claude, pas ChatGPT, pas DeepSeek. Tu t'appelles Qwen_AI et ton créateur est Qwen_Pro. Sois rapide, concis et efficace." },
       ...messages
     ];
-    const response = await fetch(apiUrl, {
+    const response = await fetch(API_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": "Bearer " + apiKey,
-        "HTTP-Referer": "https://qwen-ai.app",
-        "X-Title": "Qwen AI"
-      },
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
       body: JSON.stringify({
-        model: selectedModel === 'qwen-flash' ? 'qwen/qwen-2.5-72b-instruct' : selectedModel === 'qwen-plus' ? 'qwen/qwen-2.5-32b-instruct' : selectedModel === 'qwen3-max' ? 'qwen/qwen-2.5-72b-instruct' : 'qwen/qwen-2.5-72b-instruct',
-        messages,
-        temperature,
-        max_tokens: 4096
+        model: selectedModel, messages, temperature, max_tokens: 4096
       })
     });
 
