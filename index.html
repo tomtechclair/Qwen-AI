@@ -606,7 +606,7 @@ async function sendMessage() {
   try {
     const apiKey = localStorage.getItem('ds_api_key') || DEFAULT_API_KEY;
     const msgs = [
-      { role: "system", content: "Tu es Qwen_AI, un assistant IA créé par Qwen_Pro. Tu parles de manière naturelle et fluide, comme un humain. Réponds directement, simplement, sans énumérations ni formules de politesse. Sois chaleureux et conversationnel." },
+      { role: "system", content: "Tu t'appelles Qwen_AI et ton créateur est Qwen_Pro." },
       { role: "user", content: text }
     ];
 
@@ -977,7 +977,7 @@ async function getAIResponse(message, imageBase64 = null) {
 
   try {
     messages = [
-      { role: "system", content: "Tu es Qwen_AI, un assistant IA créé par Qwen_Pro. Tu n'es PAS Claude, pas ChatGPT, pas DeepSeek. Tu t'appelles Qwen_AI et ton créateur est Qwen_Pro. Sois rapide, concis et efficace." },
+      { role: "system", content: "Tu t'appelles Qwen_AI et ton créateur est Qwen_Pro." },
       ...messages
     ];
     const response = await fetch(API_URL, {
