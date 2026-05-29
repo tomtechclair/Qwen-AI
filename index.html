@@ -422,6 +422,8 @@ const DEFAULT_API_KEY = atob(_DK);
 const API_URL = "https://api.mulerouter.ai/vendors/openai/v1/chat/completions";
 const TAVILY_KEY = "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";
 const TAVILY_URL = "https://api.tavily.com/search";
+const DUBSMART_API_KEY = "mdv595eg6i60mfvsjl7dycxz38w5iz4r";
+const DUBSMART_URL = "https://dubsmart.ai/api/v1";
 
 let conversations = [];
 let currentConvId = null;
@@ -513,13 +515,79 @@ function updateVoiceUI(state, text) {
   status.textContent = text;
 }
 
-function sayResponse(text) {
+async function sayResponse(text) {
+  if (!DUBSMART_API_KEY) {
+    browserSayResponse(text);
+    return;
+  }
+
+  try {
+    updateVoiceUI('thinking', 'Génération de la voix haute qualité...');
+
+    // 1. Create project
+    const res = await fetch(`${DUBSMART_URL}/projects/tts`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${DUBSMART_API_KEY}`
+      },
+      body: JSON.stringify({
+        title: 'QwenAI_Voice',
+        segments: [{
+          text: text,
+          voice: 'fr_female_standard',
+          language: 'fr'
+        }]
+      })
+    });
+
+    if (!res.ok) throw new Error(`DubSmart API Error: ${res.status}`);
+    const data = await res.json();
+    const projectId = data.projectId;
+
+    // 2. Poll for completion
+    let audioUrl = null;
+    let attempts = 0;
+    while (!audioUrl && attempts < 30) {
+      await new Promise(r => setTimeout(r, 1500));
+      attempts++;
+
+      const pollRes = await fetch(`${DUBSMART_URL}/projects/tts/${projectId}`, {
+        headers: { 'Authorization': `Bearer ${DUBSMART_API_KEY}` }
+      });
+      const pollData = await pollRes.json();
+
+      if (pollData.status === 'completed') {
+        audioUrl = pollData.audioUrl;
+      } else if (pollData.status === 'failed') {
+        throw new Error('TTS generation failed');
+      }
+    }
+
+    if (!audioUrl) throw new Error('TTS timeout');
+
+    // 3. Play audio
+    const audio = new Audio(audioUrl);
+    updateVoiceUI('speaking', 'L\'IA vous répond...');
+    audio.play();
+
+    audio.onended = () => {
+      if (isVoiceMode) {
+        updateVoiceUI('idle', 'Prêt à vous écouter...');
+        startListening();
+      }
+    };
+  } catch (e) {
+    console.error("DubSmart Error:", e);
+    browserSayResponse(text);
+  }
+}
+
+function browserSayResponse(text) {
   if (!synth) return;
   synth.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = 'fr-FR';
-
-  // Trouver la meilleure voix (Google ou Microsoft Natural)
   const voices = synth.getVoices();
   const bestVoice = voices.find(v => v.name.includes('Google') && v.lang.includes('fr')) ||
                     voices.find(v => v.name.includes('Microsoft') && v.lang.includes('fr')) ||
@@ -527,7 +595,7 @@ function sayResponse(text) {
   if (bestVoice) utterance.voice = bestVoice;
 
   utterance.onstart = () => {
-    updateVoiceUI('speaking', 'L\'IA vous répond...');
+    updateVoiceUI('speaking', 'L\'IA vous répond (voix système)...');
   };
   utterance.onend = () => {
     if (isVoiceMode) {
