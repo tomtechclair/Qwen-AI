@@ -1203,9 +1203,13 @@ window.sendMsg = async function() {
     }
 
     const apiMsgContent = Array.isArray(msgContent) ? msgContent.find(c => c.type === 'text')?.text || '' : msgContent;
+    const safeHistory = conversationHistory.map(m => ({
+      role: m.role,
+      content: Array.isArray(m.content) ? (m.content.find(c => c.type === 'text')?.text || '') : m.content
+    }));
     const messages = [
       { role: 'system', content: systemContent },
-      ...conversationHistory,
+      ...safeHistory,
       { role: 'user', content: apiMsgContent }
     ];
 
