@@ -139,12 +139,12 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
 
 /* === INPUT === */
 .input-zone{padding:4px 24px 20px;padding-bottom:max(20px,env(safe-area-inset-bottom,0px));flex-shrink:0;}
-.inp-wrap{display:flex;align-items:flex-end;gap:8px;background:rgba(20,20,42,0.8);border:1px solid rgba(139,92,246,0.08);border-radius:14px;padding:8px 8px 8px 18px;max-width:740px;margin:0 auto;transition:border-color .2s,box-shadow .2s;}
+.inp-wrap{display:flex;align-items:flex-end;gap:10px;background:rgba(20,20,42,0.8);border:1px solid rgba(139,92,246,0.08);border-radius:16px;padding:12px 12px 12px 22px;max-width:800px;margin:0 auto;transition:border-color .2s,box-shadow .2s;}
 .inp-wrap:focus-within{border-color:rgba(139,92,246,0.2);background:rgba(20,20,42,0.95);box-shadow:0 0 0 3px rgba(139,92,246,0.04),0 8px 30px rgba(0,0,0,0.2);}
-#inp{flex:1;background:none;border:none;outline:none;color:var(--tx);font-family:inherit;font-size:15px;resize:none;min-height:26px;max-height:150px;line-height:1.5;padding:2px 0;}
+#inp{flex:1;background:none;border:none;outline:none;color:var(--tx);font-family:inherit;font-size:17px;resize:none;min-height:32px;max-height:180px;line-height:1.5;padding:2px 0;}
 #inp::placeholder{color:var(--tx3);}
 #inp::-webkit-scrollbar{width:0;}
-.btn-send{width:36px;height:36px;border-radius:10px;flex-shrink:0;border:none;cursor:pointer;background:linear-gradient(135deg,var(--g2),var(--g1));display:flex;align-items:center;justify-content:center;font-size:15px;color:#fff;transition:all .2s;touch-action:manipulation;box-shadow:0 2px 12px rgba(59,130,246,0.2);}
+.btn-send{width:44px;height:44px;border-radius:12px;flex-shrink:0;border:none;cursor:pointer;background:linear-gradient(135deg,var(--g2),var(--g1));display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;transition:all .2s;touch-action:manipulation;box-shadow:0 2px 12px rgba(59,130,246,0.2);}
 .btn-send:hover{transform:scale(1.05);box-shadow:0 4px 20px rgba(59,130,246,0.3);}
 .btn-send:active{transform:scale(.95);}
 .inp-actions{display:flex;align-items:center;gap:4px;flex-shrink:0;}
@@ -190,7 +190,7 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
   .msgs{padding:28px 14px 12px;gap:20px;}
   .input-zone{padding:4px 14px 16px;}
   .inp-wrap{max-width:100%;}
-  #inp{font-size:14px;}
+  #inp{font-size:16px;}
   .msg-body{max-width:88%;}
   .msg-row{max-width:100%;gap:12px;}
   .bbl{font-size:14px;}
@@ -203,9 +203,9 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
   .topbar{padding:0 10px;height:48px;gap:4px;}
   .msgs{padding:20px 10px 8px;gap:16px;}
   .input-zone{padding:4px 10px 14px;}
-  .inp-wrap{padding:6px 6px 6px 14px;border-radius:12px;}
-  #inp{font-size:13px;min-height:22px;}
-  .btn-send{width:34px;height:34px;font-size:14px;border-radius:8px;}
+  .inp-wrap{padding:10px 10px 10px 16px;border-radius:14px;}
+  #inp{font-size:15px;min-height:28px;}
+  .btn-send{width:40px;height:40px;font-size:16px;border-radius:10px;}
   .msg-body{max-width:92%;}
   .msg-row{max-width:100%;gap:10px;}
   .av{width:28px;height:28px;font-size:12px;}
