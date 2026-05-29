@@ -412,7 +412,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg-deep);color:var(--text
 <script>
 const _DK = "c2stbXItYTMyYTdjZjBhZTJiMWVmNjEwZjY0YzAzODQyOWI5YjZlYTRhNTU3NTMxMmM4ZTg4OTk1NzZjZTM5ZTQ0NmYxZA==";
 const DEFAULT_API_KEY = atob(_DK);
-const API_URL = "https://api.mulerouter.com/v1/chat/completions";
+const API_URL = "https://api.mulerouter.ai/vendors/openai/v1/chat/completions";
 
 let conversations = [];
 let currentConvId = null;
@@ -877,6 +877,7 @@ async function getAIResponse(message, imageBase64 = null) {
     ];
     const response = await fetch(API_URL, {
       method: "POST",
+      mode: "cors",
       headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
       body: JSON.stringify({
         model: selectedModel, messages, temperature, max_tokens: 4096
@@ -892,7 +893,7 @@ async function getAIResponse(message, imageBase64 = null) {
     return data.choices?.[0]?.message?.content || "Désolé, je n'ai pas pu répondre.";
   } catch (error) {
     console.error("Erreur API:", error);
-    return "Erreur de connexion avec l'IA.";
+    return "Erreur de connexion avec l'IA. Détail: " + error.message;
   }
 }
 
