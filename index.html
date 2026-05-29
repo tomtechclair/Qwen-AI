@@ -185,15 +185,15 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
 .welcome h1{font-size:28px;font-weight:700;letter-spacing:-.5px;color:var(--tx);}
 .welcome p{font-size:14px;color:var(--tx2);line-height:1.6;max-width:420px;}
 .q-suggest{
-  display:flex;gap:10px;margin-top:28px;flex-wrap:wrap;justify-content:center;
+  display:flex;gap:10px;margin-top:28px;flex-wrap:wrap;justify-content:center;max-width:640px;
 }
 .q-card{
-  padding:10px 16px;border-radius:8px;cursor:pointer;
+  padding:12px 20px;border-radius:10px;cursor:pointer;
   border:1px solid var(--b1);background:var(--bg);
-  transition:all .15s;font-size:13px;color:var(--tx2);display:flex;align-items:center;gap:8px;
+  transition:all .15s;font-size:14px;color:var(--tx2);display:flex;align-items:center;gap:10px;flex:0 0 auto;
 }
 .q-card:hover{border-color:var(--tx3);background:var(--s1);color:var(--tx);}
-.q-card-ico{font-size:16px;}
+.q-card-ico{font-size:18px;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 @keyframes spin{to{transform:rotate(360deg);}}
 
@@ -366,7 +366,7 @@ html,body{height:100%;width:100%;max-width:100%;margin:0;padding:0;overflow-x:cl
   .welcome{padding:40px 12px 24px;}
   .welcome h1{font-size:21px;}
   .welcome p{font-size:12px;}
-  .q-card{padding:8px 12px;font-size:12px;}
+  .q-card{padding:10px 16px;font-size:13px;}
   .q-suggest{gap:6px;margin-top:20px;}
   .tb-model{font-size:12px;padding:4px 8px;}
   .tb-model-sel{font-size:12px;}
@@ -806,7 +806,7 @@ function showWelcome() {
   if (document.getElementById('welcome')) return;
   const w = document.createElement('div');
   w.className = 'welcome'; w.id = 'welcome';
-  w.innerHTML = '<h1>Qwen AI</h1><p>Assistant gratuit et illimité — propulsé par Qwen Flash</p><div class="q-suggest"><button class="q-card" onclick="quick(\'Écris du code en Python pour\')"><span class="q-card-ico">💻</span> Code</button><button class="q-card" onclick="quick(\'Explique-moi\')"><span class="q-card-ico">🧠</span> Expliquer</button><button class="q-card" onclick="quick(\'Traduis en anglais:\')"><span class="q-card-ico">🌍</span> Traduire</button><button class="q-card" onclick="quick(\'Rédige un email pour\')"><span class="q-card-ico">✉️</span> Email</button><button class="q-card" onclick="quick(\'Donne-moi des idées de\')"><span class="q-card-ico">💡</span> Idées</button><button class="q-card" onclick="quick(\'Résous ce problème:\')"><span class="q-card-ico">🧮</span> Maths</button></div>';
+  w.innerHTML = '<h1>Qwen AI</h1><p>Assistant gratuit et illimité — propulsé par Qwen Flash</p><div class="q-suggest"><button class="q-card" onclick="quick(\'Écris du code en Python pour\')"><span class="q-card-ico">💻</span> Code</button><button class="q-card" onclick="quick(\'Explique-moi\')"><span class="q-card-ico">🧠</span> Expliquer</button><button class="q-card" onclick="quick(\'Traduis en anglais:\')"><span class="q-card-ico">🌍</span> Traduire</button><button class="q-card" onclick="quick(\'Rédige un email pour\')"><span class="q-card-ico">✉️</span> Email</button><button class="q-card" onclick="quick(\'Donne-moi des idées de\')"><span class="q-card-ico">💡</span> Idées</button><button class="q-card" onclick="quick(\'Résous ce problème:\')"><span class="q-card-ico">🧮</span> Maths</button><button class="q-card" onclick="quick(\'Résume ce texte:\')"><span class="q-card-ico">📝</span> Résumer</button><button class="q-card" onclick="quick(\'Écris un poème sur\')"><span class="q-card-ico">📜</span> Poème</button><button class="q-card" onclick="quick(\'Compare\')"><span class="q-card-ico">⚖️</span> Comparer</button><button class="q-card" onclick="quick(\'Corrige ma phrase:\')"><span class="q-card-ico">✏️</span> Corriger</button><button class="q-card" onclick="quick(\'Donne-moi une recette de\')"><span class="q-card-ico">🍳</span> Recette</button><button class="q-card" onclick="quick(\'Écris une blague sur\')"><span class="q-card-ico">😂</span> Blague</button><button class="q-card" onclick="quick(\'Conseils pour\')"><span class="q-card-ico">💪</span> Conseil</button><button class="q-card" onclick="quick(\'Planifie un voyage à\')"><span class="q-card-ico">✈️</span> Voyage</button><button class="q-card" onclick="quick(\'Analyse ce texte:\')"><span class="q-card-ico">🔍</span> Analyse</button><button class="q-card" onclick="quick(\'Crée un titre pour\')"><span class="q-card-ico">🏷️</span> Titre</button></div>';
   document.getElementById('msgs').appendChild(w);
 }
 
