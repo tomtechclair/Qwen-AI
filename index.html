@@ -657,13 +657,17 @@ async function sendMessage() {
   try {
     const apiKey = localStorage.getItem('ds_api_key') || DEFAULT_API_KEY;
     let systemContent = "Tu es Qwen AI, un assistant IA gratuit créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. " +
-      "Parle de façon naturelle et conversationnelle, comme si tu discutais avec un ami. " +
+      "Tu es un agent vocal intelligent. Parle de façon naturelle et conversationnelle, comme si tu discutais avec un ami. " +
       "Utilise des phrases courtes et fluides, fais des pauses naturelles entre les idées. " +
-      "Ne fais pas de listes à puces, ne mets pas de formatage compliqué. " +
+      "Ne fais pas de listes à puces, pas de formatage compliqué. " +
       "Commence par répondre directement à la question, ajoute du contexte si nécessaire, donne des exemples concrets. " +
       "Si tu manques d'info, dis-le franchement et propose une alternative. " +
-      "Rappelle-toi du contexte de la conversation et réfère-toi aux messages précédents si pertinent. " +
-      "Sois utile, précis et bienveillant.";
+      "Rappelle-toi du contexte et réfère-toi aux messages précédents si pertinent. " +
+      "Sois utile, précis et bienveillant. " +
+      "Quand tu as besoin de faire une action (chercher sur le web, accéder à des données), dis-le d'abord vocalement " +
+      "comme 'Laisse-moi chercher ça sur le web...' ou 'Je vais vérifier ça...', " +
+       "puis à la fin de ta réponse, ajoute un bloc JSON sur une seule ligne : [ACTION]{\"action\":\"WEB_SEARCH\",\"query\":\"ta requête\"}[/ACTION] " +
+      "pour déclencher la recherche. Si tu n'as pas besoin d'action, ne mets pas de bloc.";
 
     const hasSearch = /cherche|recherche|trouve|actualité|news|météo|weather|temps|température|info.+récente|dernière|what.+new|search|google|prévision|qui a gagné|score|résultat|élection|prix|cours|bourse/i.test(text);
 
@@ -736,6 +740,71 @@ async function sendMessage() {
         }
       }
       if (streamDone) break;
+    }
+
+    // Détecter et exécuter les actions JSON dans la réponse
+    const actionMatch = fullContent.match(/\[ACTION\](\{.*?\})\[\/ACTION\]/s);
+    if (actionMatch) {
+      try {
+        const actionData = JSON.parse(actionMatch[1]);
+        const displayText = fullContent.replace(/\[ACTION\]\{.*?\}\[\/ACTION\]/s, '').trim();
+        bbl.textContent = displayText;
+        fullContent = displayText;
+
+        if (actionData.action === 'WEB_SEARCH' || actionData.action === 'READ_WEB') {
+          const query = actionData.query || actionData.q || text;
+          updateOrb('thinking', '🌐 Recherche web...');
+          const wr = await searchWeb(query);
+          const resultBlock = document.createElement('div');
+          resultBlock.className = 'msg assistant';
+          resultBlock.innerHTML = `<div class="msg-av">🌐</div><div class="msg-bubble" style="font-size:12px;color:var(--text-ter)">${wr.html}</div>`;
+          msgsEl.appendChild(resultBlock);
+          msgsEl.scrollTop = msgsEl.scrollHeight;
+
+          // Re-demander à l'IA avec les résultats
+          const resp2 = await fetch(API_URL, {
+            method:"POST", mode:"cors",
+            headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiKey},
+            body:JSON.stringify({model:selectedModel, messages:[
+              {role:"system", content:systemContent},
+              {role:"user", content:"Qui es-tu ? Réponds en une phrase."},
+              {role:"assistant", content: "Je suis Qwen AI, un assistant gratuit créé par Qwen_Pro."},
+              {role:"user", content:text},
+              {role:"assistant", content: displayText},
+              {role:"user", content:"Voici les résultats de recherche :\n" + wr.text + "\n\nRéponds à ma question avec ces informations."}
+            ], temperature, max_tokens:4096, stream:true})
+          });
+          if (resp2.ok) {
+            removeTyping(typingId); if (typingId2) removeTyping(typingId2);
+            const reader2 = resp2.body.getReader();
+            let fullContent2 = '', buffer2 = '', streamDone2 = false;
+            const msgId2 = 'ai-'+Date.now();
+            const md2 = document.createElement('div');
+            md2.className = 'msg assistant'; md2.id = msgId2;
+            md2.innerHTML = '<div class="msg-av">🧠</div><div class="msg-bubble" id="bbl-'+msgId2+'"></div>';
+            msgsEl.appendChild(md2);
+            msgsEl.scrollTop = msgsEl.scrollHeight;
+            const bbl2 = document.getElementById('bbl-'+msgId2);
+            while (!streamDone2) {
+              const {done:d2,value:v2} = await reader2.read();
+              if (d2) break;
+              buffer2 += decoder.decode(v2, {stream:true});
+              for (;;) {
+                const idx = buffer2.indexOf('\n');
+                if (idx === -1) break;
+                const line = buffer2.slice(0, idx).trim();
+                buffer2 = buffer2.slice(idx + 1);
+                if (!line) continue;
+                if (!line.startsWith('data: ')) continue;
+                const d = line.slice(6);
+                if (d === '[DONE]') { streamDone2 = true; break; }
+                try { const c = JSON.parse(d).choices?.[0]?.delta?.content || ''; if (c) { fullContent2 += c; bbl2.textContent = fullContent2; msgsEl.scrollTop = msgsEl.scrollHeight; } } catch(e) {}
+              }
+            }
+            fullContent = displayText + '\n' + fullContent2;
+          }
+        }
+      } catch(e) { console.error('Action parse error:', e); }
     }
 
     const all = getAllMessages();
@@ -988,7 +1057,7 @@ function changeModel(model) { selectedModel = model; showToast('🤖 Modèle: '+
 
 // ===== AI RESPONSE (non-stream fallback) =====
 async function getAIResponse(message, imageBase64) {
-  const msgs = [{role:"system", content:"Tu es Qwen AI, un assistant IA gratuit créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Parle de façon naturelle et conversationnelle, avec des phrases courtes et fluides."}];
+  const msgs = [{role:"system", content:"Tu es Qwen AI, un assistant IA gratuit créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Parle de façon naturelle et conversationnelle, annonce ce que tu fais, utilise des phrases courtes et fluides."}];
   if (imageBase64) {
     msgs.push({role:"user", content:[{type:"text", text:message||"Décris cette image."},{type:"image_url", image_url:{url:imageBase64}}]});
   } else {
