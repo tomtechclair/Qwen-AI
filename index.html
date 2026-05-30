@@ -482,8 +482,13 @@ function initVoiceRecognition() {
 
   recognition.onerror = (e) => {
     if (e.error === 'no-speech') {
-      // C'est normal si on ne parle pas, on relance juste l'écoute sans afficher d'erreur
       setTimeout(startListening, 500);
+      return;
+    }
+    if (e.error === 'network') {
+      console.warn("Erreur réseau SpeechRecognition: Vérifiez votre connexion ou vos permissions micro.");
+      updateVoiceUI('idle', 'Erreur réseau micro...');
+      setTimeout(startListening, 2000);
       return;
     }
     console.error("Erreur reconnaissance:", e);
