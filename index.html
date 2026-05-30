@@ -400,7 +400,7 @@ body{height:calc(var(--vh,1vh)*100)}
   <div class="voice-orb-container">
     <div class="voice-orb" id="voiceOrb"></div>
   </div>
-  <div class="voice-status" id="voiceStatus">Prêt à vous écouter...</div>
+  <div class="voice-status" id="voiceStatus"></div>
 </div>
 
 <div class="email-overlay" id="emailOverlay">
@@ -683,12 +683,12 @@ function startVoice() {
     voiceSynth.speak(unlock);
   }
 
-  voiceRec.onstart = () => updateOrb('listening', '🎤 Je vous écoute...');
+  voiceRec.onstart = () => updateOrb('listening', '');
   voiceRec.onresult = (e) => {
     const text = e.results[e.results.length-1][0].transcript;
     voiceProcessing = true;
     document.getElementById('msgInput').value = text;
-    updateOrb('thinking', '🧠 Analyse...');
+    updateOrb('thinking', '');
     if (voiceRec) { try { voiceRec.stop(); } catch(e) {} }
     setTimeout(() => sendMessage(), 200);
   };
@@ -771,7 +771,7 @@ function sayResponse(text) {
     if (i >= parts.length || !isVoiceMode) {
       voiceProcessing = false;
       if (isVoiceMode) {
-        updateOrb('listening', '🎤 Je vous écoute...');
+        updateOrb('listening', '');
         setTimeout(() => { try { voiceRec?.start(); } catch(e) { startVoice(); } }, 200);
       }
       return;
@@ -783,7 +783,7 @@ function sayResponse(text) {
     u.volume = 1;
     const best = pickBestFrVoice();
     if (best) u.voice = best;
-    if (i === 0) u.onstart = () => updateOrb('speaking', '🔊 L\'IA vous répond...');
+    if (i === 0) u.onstart = () => updateOrb('speaking', '');
     u.onend = () => setTimeout(() => speakChunk(i + 1), 80);
     u.onerror = () => setTimeout(() => speakChunk(i + 1), 80);
     voiceSynth.speak(u);
