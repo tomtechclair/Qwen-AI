@@ -343,9 +343,6 @@ body{height:calc(var(--vh,1vh)*100)}
           <option value="qwen-vision">👁️ Vision</option>
           <option value="qwen35-plus">3.5 Plus</option>
           <option value="qwen3-max">3 Max</option>
-          <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
-          <option value="claude-3-opus">Claude 3 Opus</option>
-          <option value="claude-3-haiku">Claude 3 Haiku</option>
         </select>
       </div>
       <div class="topbar-right">
@@ -423,10 +420,7 @@ body{height:calc(var(--vh,1vh)*100)}
       <button class="modal-close" onclick="closeAPI()">✕</button>
     </div>
     <div class="modal-body">
-      <div class="info-box">
-        <div style="margin-bottom:8px">🔑 <strong>Clé MuleRouter</strong> (Qwen) — intégrée</div>
-        <div>🔑 <strong>Clé Anthropic</strong> (Claude) — chargée</div>
-      </div>
+      <div class="info-box">🔑 <strong>Clé API intégrée</strong> — aucun réglage nécessaire</div>
     </div>
     <button class="submit-btn" onclick="closeAPI()">✅ OK</button>
   </div>
@@ -448,7 +442,6 @@ const DEFAULT_API_KEY = atob(_DK);
 const API_URL = "https://api.mulerouter.ai/vendors/openai/v1/chat/completions";
 const TAVILY_KEY = "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";
 const TAVILY_URL = "https://api.tavily.com/search";
-const CLAUDE_API_KEY = "sk-ant-api03-IJC-4bHUHy_e7Yh4PpyqsKHAXdvhDd9o_gO6eKaTBnHEyNSoRg-CUC8R4ibU10zTyR5eNimfMe70-x_Re8DM9Q-yFqmtAA";
 
 
 let conversations = [];
@@ -674,10 +667,8 @@ async function sendMessage() {
   setStatus('warn', 'Génération en cours…');
 
   try {
-    const apiKey = selectedModel.includes('claude') ? CLAUDE_API_KEY : (localStorage.getItem('ds_api_key') || DEFAULT_API_KEY);
-    let systemContent = selectedModel.includes('claude')
-      ? "Tu es Claude AI, un assistant IA performant."
-      : "Tu es Qwen AI, un assistant IA gratuit créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Tu réponds toujours de manière utile et concise.";
+    const apiKey = localStorage.getItem('ds_api_key') || DEFAULT_API_KEY;
+    let systemContent = "Tu es Qwen AI, un assistant IA gratuit créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Tu réponds toujours de manière utile et concise.";
 
     const hasSearch = /cherche|recherche|trouve|actualité|news|météo|weather|temps|température|info.+récente|dernière|what.+new|search|google|prévision|qui a gagné|score|résultat|élection|prix|cours|bourse/i.test(text);
 
@@ -701,7 +692,7 @@ async function sendMessage() {
       body:JSON.stringify({model:selectedModel, messages:[
         {role:"system", content:systemContent},
         {role:"user", content:"Qui es-tu ? Réponds en une phrase."},
-        {role:"assistant", content: selectedModel.includes('claude') ? "Je suis Claude AI, un assistant IA." : "Je suis Qwen AI, un assistant gratuit créé par Qwen_Pro."},
+        {role:"assistant", content: "Je suis Qwen AI, un assistant gratuit créé par Qwen_Pro."},
         {role:"user", content:text}
       ], temperature, max_tokens:4096, stream:true})
     });
@@ -1002,8 +993,7 @@ async function getAIResponse(message, imageBase64) {
   } else {
     msgs.push({role:"user", content:message});
   }
-  const apiKey = selectedModel.includes('claude') ? CLAUDE_API_KEY : DEFAULT_API_KEY;
-  const resp = await fetch(API_URL, {method:"POST", mode:"cors", headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiKey}, body:JSON.stringify({model:selectedModel, messages:msgs, temperature, max_tokens:4096})});
+  const resp = await fetch(API_URL, {method:"POST", mode:"cors", headers:{"Content-Type":"application/json","Authorization":"Bearer "+DEFAULT_API_KEY}, body:JSON.stringify({model:selectedModel, messages:msgs, temperature, max_tokens:4096})});
   if (!resp.ok) return "Erreur API "+resp.status;
   const data = await resp.json();
   return data.choices?.[0]?.message?.content?.replace(/par (le )?(groupe|laboratoire|entreprise|équipe) alibaba[^.]*\.?/gi,'par Qwen_Pro').replace(/alibaba[^.]*\.?/gi,'Qwen_Pro').replace(/tongyi[^.]*\.?/gi,'Qwen_Pro') || "Pas de réponse.";
