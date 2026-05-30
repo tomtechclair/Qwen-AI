@@ -727,21 +727,35 @@ function stopVoice() {
 function pickBestFrVoice() {
   const voices = voiceSynth.getVoices();
   if (!voices.length) return null;
-  const byName = s => voices.find(v => v.name.toLowerCase().includes(s));
-  const amélie = byName('amelie');
-  if (amélie) return amélie;
-  const isFemale = n => /feminine|female|féminin|google\s*(français|french)|audrey|marie|julie|sophie|claire|chloe|celeste|denise|hortense|elodie|lea|nathalie|virginie|isabelle|zira/i.test(n);
+  
+  // Detect mobile
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  
+  // Male voice names to prioritize
+  const isMale = n => /thomas|nicolas|paul|jean|lucas|alexandre|pierre|antoine|michael|martin|benjamin|maxime|david|Vincent|rogers|daniel|mark|google.*male|google.*french.*male|wavenet.*male/i.test(n);
+  
   const rank = v => {
     const n = v.name.toLowerCase();
     const fr = v.lang.startsWith('fr');
-    if (fr && isFemale(n) && (n.includes('google') || n.includes('wavenet'))) return 6;
-    if (fr && n.includes('google')) return 5;
-    if (fr && isFemale(n)) return 4;
-    if (fr) return 3;
-    if (isFemale(n) && n.includes('google')) return 2;
-    if (n.includes('google')) return 1;
+    const male = isMale(n);
+    const highQuality = n.includes('google') || n.includes('wavenet');
+    
+    // Mobile: prefer male voices with high quality
+    if (isMobile && fr && male && highQuality) return 10;
+    if (isMobile && fr && male) return 8;
+    if (isMobile && fr && highQuality) return 7;
+    
+    // Desktop: prefer male voices with high quality
+    if (fr && male && highQuality) return 9;
+    if (fr && male) return 7;
+    if (fr && highQuality) return 6;
+    if (fr) return 4;
+    if (male && highQuality) return 3;
+    if (male) return 2;
+    if (highQuality) return 1;
     return 0;
   };
+  
   return voices.reduce((a, v) => rank(v) > rank(a) ? v : a, voices[0]);
 }
 
@@ -778,8 +792,8 @@ function sayResponse(text) {
     }
     const u = new SpeechSynthesisUtterance(parts[i]);
     u.lang = 'fr-FR';
-    u.rate = 0.85;
-    u.pitch = 1;
+    u.rate = 0.95;
+    u.pitch = 0.9;
     u.volume = 1;
     const best = pickBestFrVoice();
     if (best) u.voice = best;
