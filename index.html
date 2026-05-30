@@ -486,12 +486,11 @@ function initVoiceRecognition() {
       return;
     }
     if (e.error === 'network') {
-      updateVoiceUI('idle', 'Problème de connexion micro...');
-      // On arrête la boucle automatique pour éviter le spam d'erreurs 404/network
+      updateVoiceUI('idle', 'Prêt à vous écouter...');
       voiceLoopActive = false;
       setTimeout(() => {
         if (isVoiceMode) {
-          updateVoiceUI('idle', 'Prêt à vous écouter...');
+          updateVoiceUI('listening', 'Je vous écoute...');
           startListening();
           voiceLoopActive = true;
         }
