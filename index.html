@@ -560,7 +560,9 @@ function startVoice() {
   voiceRec.onerror = (e) => {
     if (e.error === 'no-speech' && voiceLoopActive) { setTimeout(() => { try { voiceRec?.start(); } catch(e) {} }, 200); return; }
     if (e.error === 'aborted') return;
-    setVoiceStatus('❌ ' + e.error);
+    if (e.error === 'network') { setTimeout(() => { if (isVoiceMode) startVoice(); }, 500); return; }
+    if (e.error === 'not-allowed') { setVoiceStatus('❌ Microphone bloqué — autorisez-le dans les paramètres'); return; }
+    if (e.error === 'service-not-allowed') { setVoiceStatus('❌ Service vocal non disponible'); return; }
     setTimeout(() => { if (isVoiceMode) startVoice(); }, 1500);
   };
   voiceRec.onend = () => {
