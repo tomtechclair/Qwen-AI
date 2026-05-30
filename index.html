@@ -286,29 +286,6 @@ body{height:calc(var(--vh,1vh)*100)}
   .conv:hover{background:initial;color:var(--text-sec)}
   .conv.active{background:var(--bg-card);color:var(--text)}
 }
-
-/* ===== VOICE MODE ===== */
-.voice-overlay{display:none;position:fixed;inset:0;background:rgba(5,5,10,.95);z-index:2000;flex-direction:column;align-items:center;justify-content:center;animation:overlayIn .25s ease;font-family:inherit}
-@keyframes overlayIn{from{opacity:0}to{opacity:1}}
-.voice-close{position:absolute;top:max(20px,env(safe-area-inset-top,20px));right:20px;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:rgba(255,255,255,.08);color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:2001}
-.voice-close:active{transform:scale(.9);background:rgba(255,255,255,.15)}
-.voice-orb-container{position:relative;width:180px;height:180px;display:flex;align-items:center;justify-content:center}
-.voice-orb{width:100px;height:100px;border-radius:50%;background:var(--grad);box-shadow:0 0 40px var(--accent);transition:all .4s cubic-bezier(.4,0,.2,1);position:relative;z-index:2}
-.voice-orb::after{content:'';position:absolute;inset:0;border-radius:50%;background:var(--grad);opacity:.4;filter:blur(20px);transition:all .4s}
-.voice-orb.listening{animation:orbListen 1.5s infinite ease-in-out}
-.voice-orb.thinking{animation:orbThink .8s infinite ease-in-out}
-.voice-orb.speaking{animation:orbSpeak 1.2s infinite ease-in-out}
-@keyframes orbListen{0%,100%{transform:scale(1);box-shadow:0 0 40px var(--accent)}50%{transform:scale(1.15);box-shadow:0 0 70px var(--green)}}
-@keyframes orbThink{0%,100%{transform:scale(1);box-shadow:0 0 40px var(--accent)}50%{transform:scale(.85);box-shadow:0 0 60px var(--blue)}}
-@keyframes orbSpeak{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-.voice-status{margin-top:36px;font-size:17px;color:var(--text-sec);font-weight:500;text-align:center;padding:0 20px;transition:all .3s}
-.voice-sub{font-size:13px;color:var(--text-ter);margin-top:8px}
-
-@media(max-width:768px){
-  .voice-orb-container{width:150px;height:150px}
-  .voice-orb{width:85px;height:85px}
-  .voice-status{font-size:15px;margin-top:28px}
-}
 </style>
 </head>
 <body>
@@ -652,7 +629,7 @@ function sayResponse(text) {
     }
     const u = new SpeechSynthesisUtterance(parts[i]);
     u.lang = 'fr-FR';
-    u.rate = 1.0;
+    u.rate = 0.95;
     u.pitch = 1;
     u.volume = 1;
     const best = pickBestFrVoice();
