@@ -522,16 +522,116 @@ function openEmailForm() {
 function closeEmail() {
   document.getElementById('emailOverlay').style.display = 'none';
 }
-function submitEmail() {
+async function submitEmail() {
   const email = document.getElementById('emailInput').value.trim();
   const pass = document.getElementById('passInput').value;
   if (!email) { showToast('✉️ Entre ton adresse email'); return; }
   if (!pass) { showToast('🔑 Entre ton mot de passe'); return; }
   localStorage.setItem('qwen-email', email);
   closeEmail();
-  showToast('📧 Connexion…');
+  showToast('📧 Récupération des emails…');
+
+  const msgsEl = document.getElementById('messages');
+  const sr = document.createElement('div');
+  sr.className = 'msg assistant';
+  sr.innerHTML = '<div class="msg-av">📧</div><div class="msg-bubble" style="font-size:12px;color:var(--text-ter)">⟳ Connexion à Gmail…</div>';
+  msgsEl.appendChild(sr);
+  msgsEl.scrollTop = msgsEl.scrollHeight;
+
+  const emailsXML = await fetchGmailAtom(email, pass);
+  if (emailsXML) {
+    const entries = parseAtomEntries(emailsXML);
+    const fullCount = entries.length;
+    const top = entries.slice(0, 5);
+    const html = top.map(e => `<div style="margin-bottom:6px"><b>${e.from}</b> — ${e.subject}${e.snippet ? '<br><span style="font-size:11px;color:var(--text-sec)">'+e.snippet+'</span>' : ''}</div>`).join('');
+    const text = top.map(e => `De: ${e.from} — Sujet: ${e.subject}${e.snippet ? ' — '+e.snippet : ''}`).join('\n');
+    sr.querySelector('.msg-bubble').innerHTML = `<div style="font-size:12px;color:var(--accent-light);margin-bottom:4px">📬 ${fullCount} email${fullCount>1?'s':''} non lu${fullCount>1?'s':''}</div>${html}`;
+
+    if (fullCount > 0) {
+      const aiMsg = document.createElement('div');
+      aiMsg.className = 'msg assistant';
+      aiMsg.id = 'email-ai-'+Date.now();
+      aiMsg.innerHTML = '<div class="msg-av">🧠</div><div class="msg-bubble" id="email-ai-bbl"></div>';
+      msgsEl.appendChild(aiMsg);
+      msgsEl.scrollTop = msgsEl.scrollHeight;
+
+      const systemContent = "Tu es Qwen AI, un assistant IA gratuit créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. " +
+        "Parle de façon naturelle et conversationnelle, annonce ce que tu fais, utilise des phrases courtes et fluides. " +
+        "Résume les emails ci-dessous de façon naturelle et parle des expéditeurs et sujets.";
+      const resp = await fetch(API_URL, {
+        method:"POST", mode:"cors",
+        headers:{"Content-Type":"application/json","Authorization":"Bearer "+(localStorage.getItem('ds_api_key')||DEFAULT_API_KEY)},
+        body:JSON.stringify({model:selectedModel, messages:[
+          {role:"system", content:systemContent},
+          {role:"user", content:"Qui es-tu ? Réponds en une phrase."},
+          {role:"assistant", content:"Je suis Qwen AI, un assistant gratuit créé par Qwen_Pro."},
+          {role:"user", content:"Voici mes emails non lus :\n" + text + "\n\nRésume-les moi de façon naturelle."}
+        ], temperature, max_tokens:1024, stream:true})
+      });
+      if (resp.ok) {
+        const reader = resp.body.getReader();
+        const decoder = new TextDecoder();
+        let full = '', buf = '', done2 = false;
+        const bbl = document.getElementById('email-ai-bbl');
+        while (!done2) {
+          const {done:d2,value:v2} = await reader.read();
+          if (d2) break;
+          buf += decoder.decode(v2, {stream:true});
+          for (;;) {
+            const idx = buf.indexOf('\n');
+            if (idx === -1) break;
+            const line = buf.slice(0, idx).trim();
+            buf = buf.slice(idx + 1);
+            if (!line || !line.startsWith('data: ')) continue;
+            const d = line.slice(6);
+            if (d === '[DONE]') { done2 = true; break; }
+            try { const c = JSON.parse(d).choices?.[0]?.delta?.content || ''; if (c) { full += c; bbl.textContent = full; msgsEl.scrollTop = msgsEl.scrollHeight; } } catch(e) {}
+          }
+        }
+        saveCurrentConv(getAllMessages());
+        if (isVoiceMode && voiceSynth) sayResponse(full);
+        return;
+      }
+    }
+  }
+
+  // Fallback: ouvrir Gmail
   window.open('https://mail.google.com/mail/u/1/#inbox', '_blank');
-  if (isVoiceMode && voiceSynth) sayResponse('J\'ai ouvert Gmail dans un nouvel onglet. Dis moi quand c\'est bon.');
+  showToast('📧 Gmail ouvert dans un nouvel onglet');
+  if (isVoiceMode && voiceSynth) sayResponse('Je n\'ai pas pu récupérer les emails directement à cause des restrictions navigateur. J\'ai ouvert Gmail dans un nouvel onglet.');
+}
+
+async function fetchGmailAtom(email, pass) {
+  const basic = btoa(email + ':' + pass);
+  const url = 'https://mail.google.com/mail/feed/atom';
+  const proxies = ['https://api.allorigins.win/raw?url=', 'https://corsproxy.io/?', ''];
+  for (const p of proxies) {
+    try {
+      const resp = await fetch(p + encodeURIComponent(url), {
+        headers: { 'Authorization': 'Basic ' + basic },
+        ...(p ? {} : { mode: 'cors' })
+      });
+      if (resp.ok) {
+        const xml = await resp.text();
+        if (xml.includes('<entry>')) return xml;
+      }
+    } catch(e) { /* try next */ }
+  }
+  return null;
+}
+
+function parseAtomEntries(xml) {
+  const entries = [];
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(xml, 'text/xml');
+  doc.querySelectorAll('entry').forEach(el => {
+    entries.push({
+      subject: el.querySelector('title')?.textContent || '(sans objet)',
+      from: el.querySelector('author name')?.textContent || el.querySelector('email')?.textContent || '(inconnu)',
+      snippet: el.querySelector('summary')?.textContent || ''
+    });
+  });
+  return entries;
 }
 
 // ===== VOICE MODE =====
@@ -727,7 +827,7 @@ async function sendMessage() {
       "puis à la fin de ta réponse, ajoute un bloc JSON sur une seule ligne : [ACTION]{\"action\":\"WEB_SEARCH\",\"query\":\"ta requête\"}[/ACTION] " +
       "pour déclencher la recherche. Si l'utilisateur parle de ses emails, messages, boîte mail, " +
       "ou dit 'vérifie mes mails'/'regarde mes emails', utilise [ACTION]{\"action\":\"READ_EMAILS\"}[/ACTION] " +
-      "pour ouvrir Gmail. Si on te demande l'heure dans un autre pays ou fuseau horaire, " +
+      "pour lire ses emails. Si on te demande l'heure dans un autre pays ou fuseau horaire, " +
       "utilise [ACTION]{\"action\":\"GET_TIME\",\"timezone\":\"Europe/Paris\"}[/ACTION] avec le bon fuseau IANA. " +
       "Si tu n'as pas besoin d'action, ne mets pas de bloc.";
 
