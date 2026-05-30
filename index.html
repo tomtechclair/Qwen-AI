@@ -157,6 +157,22 @@ body{height:calc(var(--vh,1vh)*100)}
 .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg-elevated);border:1px solid var(--border);padding:8px 18px;border-radius:var(--r-md);font-size:12.5px;color:var(--text);opacity:0;transition:all .3s cubic-bezier(.4,0,.2,1);z-index:2000;box-shadow:var(--shadow-lg);pointer-events:none;white-space:nowrap}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* ===== EMAIL CREDENTIAL OVERLAY ===== */
+.email-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2500;flex-direction:column;align-items:center;justify-content:center;padding:20px;animation:overlayIn .3s ease}
+.email-box{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl);padding:28px 24px;width:100%;max-width:380px;box-shadow:var(--shadow-lg)}
+.email-box h2{font-size:18px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.email-box p{font-size:13px;color:var(--text-sec);margin-bottom:20px;line-height:1.4}
+.email-field{width:100%;padding:12px 14px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--bg-surface);color:var(--text);font-size:14px;font-family:inherit;margin-bottom:12px;outline:none;transition:border .2s}
+.email-field:focus{border-color:var(--accent)}
+.email-field::placeholder{color:var(--text-muted)}
+.email-hint{font-size:11px;color:var(--text-muted);margin:-8px 0 16px;line-height:1.3}
+.email-btns{display:flex;gap:8px}
+.email-btns button{flex:1;padding:11px;border-radius:var(--r-md);border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
+.email-btn-ok{background:var(--grad);color:#fff}
+.email-btn-ok:hover{opacity:.9}
+.email-btn-skip{background:var(--bg-hover);color:var(--text-sec)}
+.email-btn-skip:hover{background:var(--bg-elevated);color:var(--text)}
+
 /* ===== MODAL ===== */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);z-index:1000;align-items:center;justify-content:center;padding:16px}
 .modal-overlay.show{display:flex}
@@ -386,6 +402,20 @@ body{height:calc(var(--vh,1vh)*100)}
   <div class="voice-status" id="voiceStatus">Prêt à vous écouter...</div>
 </div>
 
+<div class="email-overlay" id="emailOverlay">
+  <div class="email-box">
+    <h2>📧 Connexion Gmail</h2>
+    <p>Entre ton adresse email et ton mot de passe pour que je puisse consulter tes messages.</p>
+    <input class="email-field" id="emailInput" type="email" placeholder="Adresse Gmail" autocomplete="email" inputmode="email">
+    <input class="email-field" id="passInput" type="password" placeholder="Mot de passe" autocomplete="current-password">
+    <div class="email-hint">💡 Utilise un <strong>mot de passe d'application</strong> Gmail si tu as 2FA activé.</div>
+    <div class="email-btns">
+      <button class="email-btn-ok" onclick="submitEmail()">✅ Connexion</button>
+      <button class="email-btn-skip" onclick="closeEmail()">Passer</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const _DK = "c2stbXItYTMyYTdjZjBhZTJiMWVmNjEwZjY0YzAzODQyOWI5YjZlYTRhNTU3NTMxMmM4ZTg4OTk1NzZjZTM5ZTQ0NmYxZA==";
 const DEFAULT_API_KEY = atob(_DK);
@@ -480,6 +510,41 @@ function msgHTML(msg) {
   const av = msg.role === 'user' ? '👤' : '🧠';
   const copyBtn = msg.role === 'assistant' ? `<button class="msg-copy" onclick="copyMessage(this)">📋</button>` : '';
   return `<div class="msg ${msg.role}"><div class="msg-av">${av}</div><div class="msg-bubble">${formatContent(filterAlibaba(msg.content))}${copyBtn}</div></div>`;
+}
+
+// ===== EMAIL CREDENTIALS =====
+function openEmailForm() {
+  document.getElementById('emailOverlay').style.display = 'flex';
+  document.getElementById('emailInput').value = localStorage.getItem('qwen-email') || '';
+  document.getElementById('passInput').value = '';
+  setTimeout(() => document.getElementById('emailInput').focus(), 300);
+  if (isVoiceMode && voiceSynth) {
+    const u = new SpeechSynthesisUtterance('Donne moi ton adresse email et ton mot de passe pour accéder à Gmail.');
+    u.lang = 'fr-FR'; u.rate = 0.85;
+    const best = pickBestFrVoice();
+    if (best) u.voice = best;
+    voiceSynth.speak(u);
+  }
+}
+function closeEmail() {
+  document.getElementById('emailOverlay').style.display = 'none';
+}
+function submitEmail() {
+  const email = document.getElementById('emailInput').value.trim();
+  const pass = document.getElementById('passInput').value;
+  if (!email) { showToast('✉️ Entre ton adresse email'); return; }
+  if (!pass) { showToast('🔑 Entre ton mot de passe'); return; }
+  localStorage.setItem('qwen-email', email);
+  closeEmail();
+  showToast('📧 Connexion…');
+  window.open('https://mail.google.com/mail/u/1/#inbox', '_blank');
+  if (isVoiceMode && voiceSynth) {
+    const u = new SpeechSynthesisUtterance('J\'ai ouvert Gmail dans un nouvel onglet. Connecte toi et dis moi quand c\'est bon.');
+    u.lang = 'fr-FR'; u.rate = 0.85;
+    const best = pickBestFrVoice();
+    if (best) u.voice = best;
+    voiceSynth.speak(u);
+  }
 }
 
 // ===== VOICE MODE =====
@@ -672,10 +737,23 @@ async function sendMessage() {
       "Sois utile, précis et bienveillant. " +
       "Quand tu as besoin de faire une action (chercher sur le web, accéder à des données), dis-le d'abord vocalement " +
       "comme 'Laisse-moi chercher ça sur le web...' ou 'Je vais vérifier ça...', " +
-       "puis à la fin de ta réponse, ajoute un bloc JSON sur une seule ligne : [ACTION]{\"action\":\"WEB_SEARCH\",\"query\":\"ta requête\"}[/ACTION] " +
-      "pour déclencher la recherche. Si tu n'as pas besoin d'action, ne mets pas de bloc.";
+      "puis à la fin de ta réponse, ajoute un bloc JSON sur une seule ligne : [ACTION]{\"action\":\"WEB_SEARCH\",\"query\":\"ta requête\"}[/ACTION] " +
+      "pour déclencher la recherche. Si l'utilisateur parle de ses emails, messages, boîte mail, " +
+      "ou dit 'vérifie mes mails'/'regarde mes emails', utilise [ACTION]{\"action\":\"READ_EMAILS\"}[/ACTION] " +
+      "pour ouvrir Gmail. Si tu n'as pas besoin d'action, ne mets pas de bloc.";
 
     const hasSearch = /cherche|recherche|trouve|actualité|news|météo|weather|temps|température|info.+récente|dernière|what.+new|search|google|prévision|qui a gagné|score|résultat|élection|prix|cours|bourse/i.test(text);
+    const hasEmail = /mail|email|e-mail|bo.tes? (de )?réception|messages?|courrier|收件箱|inbox|gmail|outlook/i.test(text) && /(vérifie|regarde|consulte|ouvre|affiche|mes|mon|m(a|es)ils)/i.test(text);
+
+    if (hasEmail) {
+      removeTyping(typingId);
+      addMessageToUI({role:'assistant', content:'📧 Je vais ouvrir Gmail pour toi. Donne-moi ton adresse et mot de passe dans le formulaire.'});
+      setTimeout(() => openEmailForm(), 300);
+      const all = getAllMessages();
+      saveCurrentConv(all);
+      isGenerating = false; setStatus('', 'Propulsé par Qwen Flash');
+      return;
+    }
 
     if (hasSearch) {
       removeTyping(typingId);
@@ -809,6 +887,8 @@ async function sendMessage() {
             }
             fullContent = displayText + '\n' + fullContent2;
           }
+        } else if (actionData.action === 'READ_EMAILS') {
+          openEmailForm();
         }
       } catch(e) { console.error('Action parse error:', e); }
     }
