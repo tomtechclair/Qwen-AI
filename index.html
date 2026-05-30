@@ -358,6 +358,15 @@ body{height:calc(var(--vh,1vh)*100)}
           <span>Créatif</span>
         </div>
       </div>
+      <div class="form-group">
+        <label class="form-label">Voix IA <span style="float:right;color:var(--accent-light);font-size:11px;font-weight:400">mode vocal</span></label>
+        <select class="form-input" id="voiceSelect" onchange="changeVoice(this.value)" style="padding:8px 10px;font-size:13px">
+          <option value="auto">Automatique (meilleure dispo)</option>
+          <option value="amelie">Amélie (iOS, féminine)</option>
+          <option value="google-fr">Google Français (Chrome, Wavenet)</option>
+          <option value="microsoft-fr">Microsoft FR (Edge, féminine)</option>
+        </select>
+      </div>
     </div>
     <button class="submit-btn" onclick="closeSettings()">Fermer</button>
   </div>
@@ -409,6 +418,7 @@ let voiceLoopActive = false;
 let voiceUtterance = null;
 let voiceProcessing = false;
 let voiceRetries = 0;
+let voiceName = localStorage.getItem('qwen-voice') || 'auto';
 
 // ===== CONVERSATIONS =====
 function loadConversations() {
@@ -557,7 +567,14 @@ function stopVoice() {
 function pickBestFrVoice() {
   const voices = voiceSynth.getVoices();
   if (!voices.length) return null;
-  const byName = name => voices.find(v => v.name.toLowerCase().includes(name));
+  const byName = (s => voices.find(v => v.name.toLowerCase().includes(s)));
+  const byLang = (l => voices.filter(v => v.lang.startsWith(l)));
+
+  const selected = voiceName;
+  if (selected === 'amelie') { const v = byName('amelie'); if (v) return v; }
+  if (selected === 'google-fr') { const v = voices.find(v => v.name.toLowerCase().includes('google') && v.lang.startsWith('fr')); if (v) return v; }
+  if (selected === 'microsoft-fr') { const v = voices.find(v => v.name.toLowerCase().includes('microsoft') && v.lang.startsWith('fr')); if (v) return v; }
+
   const amélie = byName('amelie');
   if (amélie) return amélie;
   const isFemale = n => /feminine|female|féminin|google\s*(français|french)|audrey|marie|julie|sophie|claire|chloe|celeste|denise|hortense|elodie|lea|nathalie|virginie|isabelle|zira/i.test(n);
@@ -656,7 +673,14 @@ async function sendMessage() {
 
   try {
     const apiKey = localStorage.getItem('ds_api_key') || DEFAULT_API_KEY;
-    let systemContent = "Tu es Qwen AI, un assistant IA gratuit créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Tu réponds toujours de manière utile et concise.";
+    let systemContent = "Tu es Qwen AI, un assistant IA gratuit créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. " +
+      "Parle de façon naturelle et conversationnelle, comme si tu discutais avec un ami. " +
+      "Utilise des phrases courtes et fluides, fais des pauses naturelles entre les idées. " +
+      "Ne fais pas de listes à puces, ne mets pas de formatage compliqué. " +
+      "Commence par répondre directement à la question, ajoute du contexte si nécessaire, donne des exemples concrets. " +
+      "Si tu manques d'info, dis-le franchement et propose une alternative. " +
+      "Rappelle-toi du contexte de la conversation et réfère-toi aux messages précédents si pertinent. " +
+      "Sois utile, précis et bienveillant.";
 
     const hasSearch = /cherche|recherche|trouve|actualité|news|météo|weather|temps|température|info.+récente|dernière|what.+new|search|google|prévision|qui a gagné|score|résultat|élection|prix|cours|bourse/i.test(text);
 
@@ -885,7 +909,11 @@ async function searchWeb(query) {
 }
 
 // ===== MODALS =====
-function openSettings() { document.getElementById('settingsModal').classList.add('show'); }
+function openSettings() {
+  document.getElementById('settingsModal').classList.add('show');
+  const vs = document.getElementById('voiceSelect');
+  if (vs) vs.value = voiceName;
+}
 function closeSettings() { document.getElementById('settingsModal').classList.remove('show'); }
 function openAPI() { document.getElementById('apiModal').classList.add('show'); }
 function closeAPI() { document.getElementById('apiModal').classList.remove('show'); }
@@ -979,9 +1007,17 @@ document.addEventListener('keydown', function(e) {
 // ===== MODEL =====
 function changeModel(model) { selectedModel = model; showToast('🤖 Modèle: '+model); }
 
+// ===== VOICE SELECTION =====
+function changeVoice(v) {
+  voiceName = v;
+  localStorage.setItem('qwen-voice', v);
+  const labels = { auto: 'Automatique', amelie: 'Amélie', 'google-fr': 'Google Français', 'microsoft-fr': 'Microsoft FR' };
+  showToast('🔊 Voix: ' + (labels[v] || v));
+}
+
 // ===== AI RESPONSE (non-stream fallback) =====
 async function getAIResponse(message, imageBase64) {
-  const msgs = [{role:"system", content:"Tu es Qwen AI, un assistant IA gratuit créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen."}];
+  const msgs = [{role:"system", content:"Tu es Qwen AI, un assistant IA gratuit créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Parle de façon naturelle et conversationnelle, avec des phrases courtes et fluides."}];
   if (imageBase64) {
     msgs.push({role:"user", content:[{type:"text", text:message||"Décris cette image."},{type:"image_url", image_url:{url:imageBase64}}]});
   } else {
