@@ -551,6 +551,16 @@ function startVoice() {
   voiceRec.interimResults = false;
   voiceRec.continuous = true;
 
+  // Déverrouille SpeechSynthesis sur mobile (iOS nécessite un geste)
+  if (voiceSynth) {
+    voiceSynth.cancel();
+    const unlock = new SpeechSynthesisUtterance(' ');
+    unlock.volume = 0;
+    unlock.rate = 1;
+    unlock.lang = 'fr-FR';
+    voiceSynth.speak(unlock);
+  }
+
   voiceRec.onstart = () => updateOrb('listening', '🎤 Je vous écoute...');
   voiceRec.onresult = (e) => {
     const text = e.results[e.results.length-1][0].transcript;
@@ -607,35 +617,38 @@ function sayResponse(text) {
   if (!clean) return;
 
   voiceSynth.cancel();
+  voiceProcessing = false;
 
-  const utterance = new SpeechSynthesisUtterance(clean);
-  utterance.lang = 'fr-FR';
-  utterance.rate = 1.0;
-  utterance.pitch = 1;
-  utterance.volume = 1;
+  // Split en chunks de 150 chars max (iOS Safari plante sur les longs textes)
+  const parts = [];
+  for (let i = 0; i < clean.length; i += 150) {
+    parts.push(clean.slice(i, i + 150));
+  }
 
-  const best = pickBestFrVoice();
-  if (best) utterance.voice = best;
-
-  voiceUtterance = utterance;
-  utterance.onstart = () => updateOrb('speaking', '🔊 L\'IA vous répond...');
-  utterance.onend = () => {
-    voiceUtterance = null;
-    voiceProcessing = false;
-    if (isVoiceMode) {
-      updateOrb('listening', '🎤 Je vous écoute...');
-      setTimeout(() => { try { voiceRec?.start(); } catch(e) { startVoice(); } }, 200);
+  function speakChunk(i) {
+    if (i >= parts.length || !isVoiceMode) {
+      voiceProcessing = false;
+      if (isVoiceMode) {
+        updateOrb('listening', '🎤 Je vous écoute...');
+        setTimeout(() => { try { voiceRec?.start(); } catch(e) { startVoice(); } }, 200);
+      }
+      return;
     }
-  };
-  utterance.onerror = () => {
-    voiceUtterance = null;
-    voiceProcessing = false;
-    if (isVoiceMode) {
-      updateOrb('listening', '🎤 Je vous écoute...');
-      setTimeout(() => { try { voiceRec?.start(); } catch(e) { startVoice(); } }, 500);
-    }
-  };
-  voiceSynth.speak(utterance);
+    const u = new SpeechSynthesisUtterance(parts[i]);
+    u.lang = 'fr-FR';
+    u.rate = 1.0;
+    u.pitch = 1;
+    u.volume = 1;
+    const best = pickBestFrVoice();
+    if (best) u.voice = best;
+    if (i === 0) u.onstart = () => updateOrb('speaking', '🔊 L\'IA vous répond...');
+    u.onend = () => speakChunk(i + 1);
+    u.onerror = () => speakChunk(i + 1);
+    voiceSynth.speak(u);
+  }
+
+  // Délai nécessaire sur mobile (iOS Safari)
+  setTimeout(() => speakChunk(0), 50);
 }
 
 function updateOrb(state, text) {
