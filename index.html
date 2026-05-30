@@ -457,6 +457,7 @@ let voiceSynth = window.speechSynthesis;
 let isVoiceMode = false;
 let voiceLoopActive = false;
 let voiceUtterance = null;
+let voiceProcessing = false;
 
 // ===== CONVERSATIONS =====
 function loadConversations() {
@@ -548,31 +549,35 @@ function startVoice() {
   voiceRec = new SR();
   voiceRec.lang = 'fr-FR';
   voiceRec.interimResults = false;
-  voiceRec.continuous = false;
+  voiceRec.continuous = true;
 
   voiceRec.onstart = () => updateOrb('listening', '🎤 Je vous écoute...');
   voiceRec.onresult = (e) => {
-    const text = e.results[0][0].transcript;
+    const text = e.results[e.results.length-1][0].transcript;
+    voiceProcessing = true;
     document.getElementById('msgInput').value = text;
     updateOrb('thinking', '🧠 Analyse...');
-    setTimeout(() => sendMessage(), 300);
+    if (voiceRec) { try { voiceRec.stop(); } catch(e) {} }
+    setTimeout(() => sendMessage(), 200);
   };
   voiceRec.onerror = (e) => {
-    if (e.error === 'no-speech' && voiceLoopActive) { setTimeout(() => { try { voiceRec?.start(); } catch(e) {} }, 200); return; }
     if (e.error === 'aborted') return;
-    if (e.error === 'network') { setTimeout(() => { if (isVoiceMode) startVoice(); }, 500); return; }
+    if (e.error === 'no-speech' || e.error === 'network') {
+      setTimeout(() => { if (isVoiceMode) { try { voiceRec?.start(); } catch(e) { startVoice(); } } }, 300);
+      return;
+    }
     if (e.error === 'not-allowed') { setVoiceStatus('❌ Microphone bloqué — autorisez-le dans les paramètres'); return; }
     if (e.error === 'service-not-allowed') { setVoiceStatus('❌ Service vocal non disponible'); return; }
     setTimeout(() => { if (isVoiceMode) startVoice(); }, 1500);
   };
   voiceRec.onend = () => {
-    if (voiceLoopActive && !voiceSynth.speaking) {
-      setTimeout(() => { try { voiceRec?.start(); } catch(e) {} }, 300);
+    if (voiceLoopActive && !voiceSynth.speaking && !voiceProcessing) {
+      setTimeout(() => { try { voiceRec?.start(); } catch(e) { startVoice(); } }, 300);
     }
   };
 
   voiceLoopActive = true;
-  try { voiceRec.start(); } catch(e) {}
+  try { voiceRec.start(); } catch(e) { setVoiceStatus('❌ Erreur démarrage micro'); }
 }
 
 function stopVoice() {
@@ -616,16 +621,18 @@ function sayResponse(text) {
   utterance.onstart = () => updateOrb('speaking', '🔊 L\'IA vous répond...');
   utterance.onend = () => {
     voiceUtterance = null;
+    voiceProcessing = false;
     if (isVoiceMode) {
       updateOrb('listening', '🎤 Je vous écoute...');
-      setTimeout(() => { try { voiceRec?.start(); } catch(e) {} }, 200);
+      setTimeout(() => { try { voiceRec?.start(); } catch(e) { startVoice(); } }, 200);
     }
   };
   utterance.onerror = () => {
     voiceUtterance = null;
+    voiceProcessing = false;
     if (isVoiceMode) {
       updateOrb('listening', '🎤 Je vous écoute...');
-      setTimeout(() => { try { voiceRec?.start(); } catch(e) {} }, 500);
+      setTimeout(() => { try { voiceRec?.start(); } catch(e) { startVoice(); } }, 500);
     }
   };
   voiceSynth.speak(utterance);
