@@ -6,6 +6,7 @@
 <title>Qwen AI – Assistant Gratuit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root{
   --bg:#05050a;
@@ -367,6 +368,13 @@ body{height:calc(var(--vh,1vh)*100)}
         🔓 Propulsé par <strong>Qwen Flash</strong> via MuleRouter — gratuit.
       </div>
       <div class="form-group">
+        <label class="form-label">🍩 Google Client ID (pour les emails)</label>
+        <input class="form-input" id="googleClientId" type="text" placeholder="xxx.apps.googleusercontent.com" style="font-size:11px">
+        <div style="font-size:10px;color:var(--text-muted);margin-top:4px">
+          Va dans <strong>Google Cloud → APIs → Gmail API → OAuth</strong> et crée un ID client Web.
+        </div>
+      </div>
+      <div class="form-group">
         <label class="form-label">Température <span id="tempVal" style="float:right;color:var(--accent-light)">0.7</span></label>
         <input type="range" class="form-input" id="tempSlider" min="0" max="100" value="70" style="padding:0;cursor:pointer">
         <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:6px">
@@ -405,13 +413,12 @@ body{height:calc(var(--vh,1vh)*100)}
 <div class="email-overlay" id="emailOverlay">
   <div class="email-box">
     <h2>📧 Connexion Gmail</h2>
-    <p>Entre ton adresse email et ton mot de passe pour que je puisse consulter tes messages.</p>
-    <input class="email-field" id="emailInput" type="email" placeholder="Adresse Gmail" autocomplete="email" inputmode="email">
-    <input class="email-field" id="passInput" type="password" placeholder="Mot de passe" autocomplete="current-password">
-    <div class="email-hint">⚠️ Le mot de passe normal Gmail ne marche pas si tu as 2FA. Utilise un <strong>mot de passe d'application</strong> (Google → Sécurité → Mots de passe d'application).</div>
+    <p id="emailDesc">Connecte-toi avec Google pour que je lise tes emails.</p>
+    <div id="googleButtonContainer" style="display:flex;justify-content:center;margin:16px 0"></div>
+    <div id="emailLoading" style="display:none;text-align:center;padding:16px;color:var(--text-sec);font-size:13px">⟳ Récupération des emails…</div>
+    <div class="email-hint">💡 Tu dois d'abord configurer ton <strong>Google Client ID</strong> dans les paramètres (⚙️).</div>
     <div class="email-btns">
-      <button class="email-btn-ok" onclick="submitEmail()">✅ Connexion</button>
-      <button class="email-btn-skip" onclick="closeEmail()">Passer</button>
+      <button class="email-btn-skip" onclick="closeEmail()" style="flex:1">Fermer</button>
     </div>
   </div>
 </div>
@@ -512,132 +519,144 @@ function msgHTML(msg) {
   return `<div class="msg ${msg.role}"><div class="msg-av">${av}</div><div class="msg-bubble">${formatContent(filterAlibaba(msg.content))}${copyBtn}</div></div>`;
 }
 
-// ===== EMAIL CREDENTIALS =====
+// ===== EMAIL with Google OAuth =====
+let googleToken = null;
+let googleTokenClient = null;
+
 function openEmailForm() {
-  document.getElementById('emailOverlay').style.display = 'flex';
-  document.getElementById('emailInput').value = localStorage.getItem('qwen-email') || '';
-  document.getElementById('passInput').value = '';
-  setTimeout(() => document.getElementById('emailInput').focus(), 300);
+  const overlay = document.getElementById('emailOverlay');
+  const loading = document.getElementById('emailLoading');
+  const desc = document.getElementById('emailDesc');
+  const container = document.getElementById('googleButtonContainer');
+  loading.style.display = 'none';
+  desc.textContent = 'Connecte-toi avec Google pour que je lise tes emails.';
+
+  const cid = localStorage.getItem('google_client_id');
+  if (!cid) {
+    container.innerHTML = '<div style="color:var(--amber);font-size:13px;text-align:center">⚠️ Configure ton <strong>Google Client ID</strong> dans ⚙️ Paramètres</div>';
+    overlay.style.display = 'flex';
+    return;
+  }
+
+  if (!googleTokenClient) {
+    googleTokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: cid,
+      scope: 'https://www.googleapis.com/auth/gmail.readonly',
+      callback: async (resp) => {
+        if (resp.access_token) {
+          googleToken = resp.access_token;
+          document.getElementById('emailLoading').style.display = 'block';
+          container.innerHTML = '';
+          desc.textContent = 'Connexion réussie, je récupère tes emails…';
+          const emails = await fetchGmailViaAPI(googleToken);
+          document.getElementById('emailLoading').style.display = 'none';
+          if (emails) {
+            closeEmail();
+            displayEmails(emails);
+          } else {
+            desc.textContent = '❌ Erreur lors de la récupération des emails.';
+          }
+        } else {
+          desc.textContent = '❌ Connexion annulée ou refusée.';
+        }
+      },
+    });
+  }
+
+  container.innerHTML = '<div id="gSignInBtn" style="cursor:pointer;display:inline-flex;align-items:center;gap:10px;background:#fff;color:#444;padding:10px 22px;border-radius:24px;font-size:14px;font-weight:500;box-shadow:0 2px 8px rgba(0,0,0,.2)"><svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 11.8 2 2 11.8 2 24s9.8 22 22 22c11 0 21-8 21-22 0-1.3-.2-2.7-.5-4z"/><path fill="#34A853" d="M5.4 14.7l7.4 5.4C14.1 17.2 18.7 14 24 14c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 4.1 29.6 2 24 2 16.3 2 9.6 6.5 5.4 14.7z"/><path fill="#FBBC05" d="M24 44c5.5 0 10.5-1.9 14.3-5.1l-6.6-5.3c-2 1.4-4.5 2.2-7.7 2.2-5.4 0-10-3.6-11.6-8.5l-7.2 5.5C8.4 37.3 15.5 44 24 44z"/><path fill="#EA4335" d="M44.5 20H24v8.5h11.8c-.6 2.5-2 4.7-4.1 6.2l6.6 5.3C41.5 36.5 44 30.8 44 24c0-1.3-.2-2.7-.5-4z"/></svg>Se connecter avec Google</div>';
+  document.getElementById('gSignInBtn').onclick = () => googleTokenClient.requestAccessToken();
+  overlay.style.display = 'flex';
 }
+
 function closeEmail() {
   document.getElementById('emailOverlay').style.display = 'none';
 }
-async function submitEmail() {
-  const email = document.getElementById('emailInput').value.trim();
-  const pass = document.getElementById('passInput').value;
-  if (!email) { showToast('✉️ Entre ton adresse email'); return; }
-  if (!pass) { showToast('🔑 Entre ton mot de passe'); return; }
-  localStorage.setItem('qwen-email', email);
-  closeEmail();
-  showToast('📧 Récupération des emails…');
+
+async function fetchGmailViaAPI(token) {
+  try {
+    const listResp = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages?maxResults=8', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!listResp.ok) return null;
+    const list = await listResp.json();
+    if (!list.messages || !list.messages.length) return [];
+
+    const emails = [];
+    for (const m of list.messages.slice(0, 5)) {
+      const detail = await fetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${m.id}`, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!detail.ok) continue;
+      const d = await detail.json();
+      const hdrs = {};
+      (d.payload?.headers || []).forEach(h => { hdrs[h.name] = h.value; });
+      const snippet = d.snippetPreview || d.snippet || '';
+      emails.push({ from: hdrs['From'] || '(inconnu)', subject: hdrs['Subject'] || '(sans objet)', snippet });
+    }
+    return emails;
+  } catch(e) {
+    console.error('Gmail API error:', e);
+    return null;
+  }
+}
+
+function displayEmails(emails) {
+  if (!emails || !emails.length) {
+    addMessageToUI({role:'assistant', content:'📬 Aucun email récent trouvé.'});
+    if (isVoiceMode && voiceSynth) sayResponse('Aucun email récent trouvé.');
+    return;
+  }
 
   const msgsEl = document.getElementById('messages');
   const sr = document.createElement('div');
   sr.className = 'msg assistant';
-  sr.innerHTML = '<div class="msg-av">📧</div><div class="msg-bubble" style="font-size:12px;color:var(--text-ter)">⟳ Connexion à Gmail…</div>';
+  const html = emails.map(e => `<div style="margin-bottom:6px"><b>${e.from}</b> — ${e.subject}${e.snippet ? '<br><span style="font-size:11px;color:var(--text-sec)">'+e.snippet.slice(0,120)+'</span>' : ''}</div>`).join('');
+  sr.innerHTML = `<div class="msg-av">📬</div><div class="msg-bubble"><div style="font-size:12px;color:var(--accent-light);margin-bottom:4px">📬 ${emails.length} email${emails.length>1?'s':''} récent${emails.length>1?'s':''}</div>${html}</div>`;
   msgsEl.appendChild(sr);
+
+  const text = emails.map(e => `De: ${e.from} — Sujet: ${e.subject}`).join('\n');
+  const aiMsg = document.createElement('div');
+  aiMsg.className = 'msg assistant';
+  aiMsg.id = 'gmail-ai-'+Date.now();
+  aiMsg.innerHTML = '<div class="msg-av">🧠</div><div class="msg-bubble" id="gmail-ai-bbl"></div>';
+  msgsEl.appendChild(aiMsg);
   msgsEl.scrollTop = msgsEl.scrollHeight;
 
-  const emailsXML = await fetchGmailAtom(email, pass);
-  if (emailsXML) {
-    const entries = parseAtomEntries(emailsXML);
-    const fullCount = entries.length;
-    const top = entries.slice(0, 5);
-    const html = top.map(e => `<div style="margin-bottom:6px"><b>${e.from}</b> — ${e.subject}${e.snippet ? '<br><span style="font-size:11px;color:var(--text-sec)">'+e.snippet+'</span>' : ''}</div>`).join('');
-    const text = top.map(e => `De: ${e.from} — Sujet: ${e.subject}${e.snippet ? ' — '+e.snippet : ''}`).join('\n');
-    sr.querySelector('.msg-bubble').innerHTML = `<div style="font-size:12px;color:var(--accent-light);margin-bottom:4px">📬 ${fullCount} email${fullCount>1?'s':''} non lu${fullCount>1?'s':''}</div>${html}`;
-
-    if (fullCount > 0) {
-      const aiMsg = document.createElement('div');
-      aiMsg.className = 'msg assistant';
-      aiMsg.id = 'email-ai-'+Date.now();
-      aiMsg.innerHTML = '<div class="msg-av">🧠</div><div class="msg-bubble" id="email-ai-bbl"></div>';
-      msgsEl.appendChild(aiMsg);
-      msgsEl.scrollTop = msgsEl.scrollHeight;
-
-      const systemContent = "Tu es Qwen AI, un assistant IA gratuit créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. " +
-        "Parle de façon naturelle et conversationnelle, annonce ce que tu fais, utilise des phrases courtes et fluides. " +
-        "Résume les emails ci-dessous de façon naturelle et parle des expéditeurs et sujets.";
-      const resp = await fetch(API_URL, {
-        method:"POST", mode:"cors",
-        headers:{"Content-Type":"application/json","Authorization":"Bearer "+(localStorage.getItem('ds_api_key')||DEFAULT_API_KEY)},
-        body:JSON.stringify({model:selectedModel, messages:[
-          {role:"system", content:systemContent},
-          {role:"user", content:"Qui es-tu ? Réponds en une phrase."},
-          {role:"assistant", content:"Je suis Qwen AI, un assistant gratuit créé par Qwen_Pro."},
-          {role:"user", content:"Voici mes emails non lus :\n" + text + "\n\nRésume-les moi de façon naturelle."}
-        ], temperature, max_tokens:1024, stream:true})
-      });
-      if (resp.ok) {
-        const reader = resp.body.getReader();
-        const decoder = new TextDecoder();
-        let full = '', buf = '', done2 = false;
-        const bbl = document.getElementById('email-ai-bbl');
-        while (!done2) {
-          const {done:d2,value:v2} = await reader.read();
-          if (d2) break;
-          buf += decoder.decode(v2, {stream:true});
-          for (;;) {
-            const idx = buf.indexOf('\n');
-            if (idx === -1) break;
-            const line = buf.slice(0, idx).trim();
-            buf = buf.slice(idx + 1);
-            if (!line || !line.startsWith('data: ')) continue;
-            const d = line.slice(6);
-            if (d === '[DONE]') { done2 = true; break; }
-            try { const c = JSON.parse(d).choices?.[0]?.delta?.content || ''; if (c) { full += c; bbl.textContent = full; msgsEl.scrollTop = msgsEl.scrollHeight; } } catch(e) {}
-          }
-        }
-        saveCurrentConv(getAllMessages());
-        if (isVoiceMode && voiceSynth) sayResponse(full);
-        return;
-      }
-    }
-  }
-
-  // Fallback: ouvrir Gmail
-  sr.querySelector('.msg-bubble').textContent = '📧 Impossible de récupérer les emails via le navigateur. Gmail ouvert dans un nouvel onglet.';
-  window.open('https://mail.google.com/mail/u/1/#inbox', '_blank');
-  showToast('📧 Gmail ouvert dans un nouvel onglet');
-  saveCurrentConv(getAllMessages());
-  if (isVoiceMode && voiceSynth) sayResponse('Je n\'ai pas pu récupérer les emails directement. J\'ai ouvert Gmail dans un nouvel onglet.');
-}
-
-async function fetchGmailAtom(email, pass) {
-  const basic = btoa(email + ':' + pass);
-  const url = 'https://mail.google.com/mail/feed/atom';
-  const encoded = encodeURIComponent(url);
-  const proxies = [
-    `https://api.allorigins.win/raw?url=${encoded}`,
-    `https://corsproxy.io/?url=${encoded}`,
-    `https://api.codetabs.com/v1/proxy?quest=${encoded}`,
-    url
-  ];
-  for (const p of proxies) {
-    try {
-      const resp = await fetch(p, { headers: { 'Authorization': 'Basic ' + basic } });
-      if (resp.ok) {
-        const xml = await resp.text();
-        if (xml.includes('<entry>')) return xml;
-      }
-    } catch(e) { /* try next */ }
-  }
-  return null;
-}
-
-function parseAtomEntries(xml) {
-  const entries = [];
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(xml, 'text/xml');
-  const decode = s => { const t = document.createElement('div'); t.innerHTML = s; return t.textContent || ''; };
-  doc.querySelectorAll('entry').forEach(el => {
-    entries.push({
-      subject: decode(el.querySelector('title')?.textContent || '(sans objet)'),
-      from: decode(el.querySelector('author name')?.textContent || el.querySelector('email')?.textContent || '(inconnu)'),
-      snippet: decode(el.querySelector('summary')?.textContent || '')
+  (async () => {
+    const resp = await fetch(API_URL, {
+      method:"POST", mode:"cors",
+      headers:{"Content-Type":"application/json","Authorization":"Bearer "+(localStorage.getItem('ds_api_key')||DEFAULT_API_KEY)},
+      body:JSON.stringify({model:selectedModel, messages:[
+        {role:"system", content:"Tu es Qwen AI. Parle de façon naturelle et conversationnelle. Résume les emails ci-dessous."},
+        {role:"user", content:"Qui es-tu ? Réponds en une phrase."},
+        {role:"assistant", content:"Je suis Qwen AI, un assistant gratuit créé par Qwen_Pro."},
+        {role:"user", content:"Voici mes emails récents :\n" + text + "\n\nRésume-les de façon naturelle et parle des expéditeurs et sujets."}
+      ], temperature, max_tokens:1024, stream:true})
     });
-  });
-  return entries;
+    if (resp.ok) {
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let full = '', buf = '', done2 = false;
+      const bbl = document.getElementById('gmail-ai-bbl');
+      while (!done2) {
+        const {done:d2,value:v2} = await reader.read();
+        if (d2) break;
+        buf += decoder.decode(v2, {stream:true});
+        for (;;) {
+          const idx = buf.indexOf('\n');
+          if (idx === -1) break;
+          const line = buf.slice(0, idx).trim();
+          buf = buf.slice(idx + 1);
+          if (!line || !line.startsWith('data: ')) continue;
+          const d = line.slice(6);
+          if (d === '[DONE]') { done2 = true; break; }
+          try { const c = JSON.parse(d).choices?.[0]?.delta?.content || ''; if (c) { full += c; bbl.textContent = full; msgsEl.scrollTop = msgsEl.scrollHeight; } } catch(e) {}
+        }
+      }
+      saveCurrentConv(getAllMessages());
+      if (isVoiceMode && voiceSynth) sayResponse(full);
+    }
+  })();
 }
 
 // ===== VOICE MODE =====
@@ -833,7 +852,7 @@ async function sendMessage() {
       "puis à la fin de ta réponse, ajoute un bloc JSON sur une seule ligne : [ACTION]{\"action\":\"WEB_SEARCH\",\"query\":\"ta requête\"}[/ACTION] " +
       "pour déclencher la recherche. Si l'utilisateur parle de ses emails, messages, boîte mail, " +
       "ou dit 'vérifie mes mails'/'regarde mes emails', utilise [ACTION]{\"action\":\"READ_EMAILS\"}[/ACTION] " +
-      "pour lire ses emails. Si on te demande l'heure dans un autre pays ou fuseau horaire, " +
+      "pour lire ses emails via Google OAuth. Si on te demande l'heure dans un autre pays ou fuseau horaire, " +
       "utilise [ACTION]{\"action\":\"GET_TIME\",\"timezone\":\"Europe/Paris\"}[/ACTION] avec le bon fuseau IANA. " +
       "Si tu n'as pas besoin d'action, ne mets pas de bloc.";
 
@@ -1282,6 +1301,11 @@ document.addEventListener('DOMContentLoaded', function() {
       temperature = this.value / 100;
       if (v) v.textContent = temperature.toFixed(1);
     });
+  }
+  const gid = document.getElementById('googleClientId');
+  if (gid) {
+    gid.value = localStorage.getItem('google_client_id') || '';
+    gid.addEventListener('input', () => localStorage.setItem('google_client_id', gid.value));
   }
 });
 </script>
