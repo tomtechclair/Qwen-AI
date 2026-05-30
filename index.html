@@ -738,7 +738,13 @@ async function sendMessage() {
     if (!resp.ok) {
       const err = await resp.text();
       removeTyping(typingId); if (typingId2) removeTyping(typingId2);
-      addMessageToUI({role:'assistant', content:"Erreur API "+resp.status+": "+err});
+      const msg = resp.status === 429 ? "❌ Limite de requêtes atteinte (429). Réessaie dans quelques secondes."
+                : resp.status === 402 ? "❌ Quota API épuisé — contacte le fournisseur."
+                : resp.status === 401 ? "❌ Clé API invalide."
+                : resp.status === 403 ? "❌ Accès refusé à ce modèle."
+                : "Erreur API "+resp.status+": "+err.slice(0,200);
+      addMessageToUI({role:'assistant', content: msg});
+      if (isVoiceMode) sayResponse(msg.replace(/<[^>]*>/g, '').replace(/\p{Extended_Pictographic}/gu, ''));
       isGenerating = false; setStatus('','Propulsé par Qwen Flash');
       return;
     }
