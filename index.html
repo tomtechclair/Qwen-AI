@@ -486,9 +486,16 @@ function initVoiceRecognition() {
       return;
     }
     if (e.error === 'network') {
-      console.warn("Erreur réseau SpeechRecognition.");
-      updateVoiceUI('idle', 'Erreur réseau micro...');
-      setTimeout(startListening, 5000);
+      updateVoiceUI('idle', 'Problème de connexion micro...');
+      // On arrête la boucle automatique pour éviter le spam d'erreurs 404/network
+      voiceLoopActive = false;
+      setTimeout(() => {
+        if (isVoiceMode) {
+          updateVoiceUI('idle', 'Prêt à vous écouter...');
+          startListening();
+          voiceLoopActive = true;
+        }
+      }, 10000);
       return;
     }
     console.error("Erreur reconnaissance:", e);
