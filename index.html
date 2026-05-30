@@ -585,10 +585,16 @@ function sayResponse(text) {
   voiceSynth.cancel();
   voiceProcessing = false;
 
-  // Split en chunks de 150 chars max (iOS Safari plante sur les longs textes)
+  // Split aux limites des mots (~180 chars max) pour éviter les coupures en milieu de mot
   const parts = [];
-  for (let i = 0; i < clean.length; i += 150) {
-    parts.push(clean.slice(i, i + 150));
+  let start = 0;
+  while (start < clean.length) {
+    if (start + 180 >= clean.length) { parts.push(clean.slice(start)); break; }
+    let end = start + 170;
+    while (end > start && !/\s|\.|,|!|\?|;|:/.test(clean[end])) end--;
+    if (end === start) end = start + 180;
+    parts.push(clean.slice(start, end + 1));
+    start = end + 1;
   }
 
   function speakChunk(i) {
@@ -602,14 +608,14 @@ function sayResponse(text) {
     }
     const u = new SpeechSynthesisUtterance(parts[i]);
     u.lang = 'fr-FR';
-    u.rate = 0.95;
+    u.rate = 0.85;
     u.pitch = 1;
     u.volume = 1;
     const best = pickBestFrVoice();
     if (best) u.voice = best;
     if (i === 0) u.onstart = () => updateOrb('speaking', '🔊 L\'IA vous répond...');
-    u.onend = () => speakChunk(i + 1);
-    u.onerror = () => speakChunk(i + 1);
+    u.onend = () => setTimeout(() => speakChunk(i + 1), 80);
+    u.onerror = () => setTimeout(() => speakChunk(i + 1), 80);
     voiceSynth.speak(u);
   }
 
