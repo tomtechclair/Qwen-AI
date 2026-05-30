@@ -518,13 +518,6 @@ function openEmailForm() {
   document.getElementById('emailInput').value = localStorage.getItem('qwen-email') || '';
   document.getElementById('passInput').value = '';
   setTimeout(() => document.getElementById('emailInput').focus(), 300);
-  if (isVoiceMode && voiceSynth) {
-    const u = new SpeechSynthesisUtterance('Donne moi ton adresse email et ton mot de passe pour accéder à Gmail.');
-    u.lang = 'fr-FR'; u.rate = 0.85;
-    const best = pickBestFrVoice();
-    if (best) u.voice = best;
-    voiceSynth.speak(u);
-  }
 }
 function closeEmail() {
   document.getElementById('emailOverlay').style.display = 'none';
@@ -538,13 +531,7 @@ function submitEmail() {
   closeEmail();
   showToast('📧 Connexion…');
   window.open('https://mail.google.com/mail/u/1/#inbox', '_blank');
-  if (isVoiceMode && voiceSynth) {
-    const u = new SpeechSynthesisUtterance('J\'ai ouvert Gmail dans un nouvel onglet. Connecte toi et dis moi quand c\'est bon.');
-    u.lang = 'fr-FR'; u.rate = 0.85;
-    const best = pickBestFrVoice();
-    if (best) u.voice = best;
-    voiceSynth.speak(u);
-  }
+  if (isVoiceMode && voiceSynth) sayResponse('J\'ai ouvert Gmail dans un nouvel onglet. Dis moi quand c\'est bon.');
 }
 
 // ===== VOICE MODE =====
@@ -758,10 +745,12 @@ async function sendMessage() {
 
     if (hasEmail) {
       removeTyping(typingId);
-      addMessageToUI({role:'assistant', content:'📧 Je vais ouvrir Gmail pour toi. Donne-moi ton adresse et mot de passe dans le formulaire.'});
+      const emailMsg = '📧 Je vais ouvrir Gmail pour toi. Donne-moi ton adresse et mot de passe dans le formulaire.';
+      addMessageToUI({role:'assistant', content: emailMsg});
       setTimeout(() => openEmailForm(), 300);
       const all = getAllMessages();
       saveCurrentConv(all);
+      if (isVoiceMode && voiceSynth) sayResponse(emailMsg);
       isGenerating = false; setStatus('', 'Propulsé par Qwen Flash');
       return;
     }
