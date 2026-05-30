@@ -458,6 +458,7 @@ let isVoiceMode = false;
 let voiceLoopActive = false;
 let voiceUtterance = null;
 let voiceProcessing = false;
+let voiceRetries = 0;
 
 // ===== CONVERSATIONS =====
 function loadConversations() {
@@ -546,6 +547,7 @@ function toggleVoiceMode() {
 function startVoice() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) { setVoiceStatus('❌ Reconnaissance vocale non supportée'); return; }
+  voiceRetries = 0;
   voiceRec = new SR();
   voiceRec.lang = 'fr-FR';
   voiceRec.interimResults = false;
@@ -577,7 +579,13 @@ function startVoice() {
       return;
     }
     if (e.error === 'not-allowed') { setVoiceStatus('❌ Microphone bloqué — autorisez-le dans les paramètres'); return; }
-    if (e.error === 'service-not-allowed') { setVoiceStatus('❌ Service vocal non disponible'); return; }
+    if (e.error === 'service-not-allowed') {
+      voiceRetries++;
+      if (voiceRetries < 3) { setTimeout(() => { if (isVoiceMode) startVoice(); }, 1000); return; }
+      setVoiceStatus('❌ Service vocal indisponible sur cet appareil');
+      setTimeout(() => { if (isVoiceMode) toggleVoiceMode(); }, 2500);
+      return;
+    }
     setTimeout(() => { if (isVoiceMode) startVoice(); }, 1500);
   };
   voiceRec.onend = () => {
