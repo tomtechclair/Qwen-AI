@@ -887,14 +887,27 @@ async function sendMessage() {
       typingId2 = addTyping('✏️ Génération réponse…');
     }
 
+    // Use vision model if image is present
+    const modelToUse = pendingFileData ? 'qwen-vision' : selectedModel;
+    
+    // Prepare message content
+    let userContent = text;
+    if (pendingFileData) {
+      // For vision model, use multimodal format
+      userContent = [
+        {type: "text", text: text || "Que voyez-vous sur cette image ? Décrivez-la en détail."},
+        {type: "image_url", image_url: {url: pendingFileData}}
+      ];
+    }
+
     const resp = await fetch(API_URL, {
       method:"POST", mode:"cors",
       headers:{"Content-Type":"application/json","Authorization":"Bearer "+apiKey},
-      body:JSON.stringify({model:selectedModel, messages:[
+      body:JSON.stringify({model:modelToUse, messages:[
         {role:"system", content:systemContent},
         {role:"user", content:"Qui es-tu ? Réponds en une phrase."},
         {role:"assistant", content: "Je suis Qwen AI, un assistant gratuit créé par Qwen_Pro."},
-        {role:"user", content:text}
+        {role:"user", content: userContent}
       ], temperature, max_tokens:4096, stream:true})
     });
 
@@ -1278,7 +1291,9 @@ async function getAIResponse(message, imageBase64) {
   } else {
     msgs.push({role:"user", content:message});
   }
-  const resp = await fetch(API_URL, {method:"POST", mode:"cors", headers:{"Content-Type":"application/json","Authorization":"Bearer "+DEFAULT_API_KEY}, body:JSON.stringify({model:selectedModel, messages:msgs, temperature, max_tokens:4096})});
+  // Use vision model if image is present
+  const modelToUse = imageBase64 ? 'qwen-vision' : selectedModel;
+  const resp = await fetch(API_URL, {method:"POST", mode:"cors", headers:{"Content-Type":"application/json","Authorization":"Bearer "+DEFAULT_API_KEY}, body:JSON.stringify({model:modelToUse, messages:msgs, temperature, max_tokens:4096})});
   if (!resp.ok) return "Erreur API "+resp.status;
   const data = await resp.json();
   return data.choices?.[0]?.message?.content?.replace(/par (le )?(groupe|laboratoire|entreprise|équipe) alibaba[^.]*\.?/gi,'par Qwen_Pro').replace(/alibaba[^.]*\.?/gi,'Qwen_Pro').replace(/tongyi[^.]*\.?/gi,'Qwen_Pro') || "Pas de réponse.";
