@@ -368,13 +368,6 @@ body{height:calc(var(--vh,1vh)*100)}
         🔓 Propulsé par <strong>Qwen Flash</strong> via MuleRouter — gratuit.
       </div>
       <div class="form-group">
-        <label class="form-label">Google Client ID (emails)</label>
-        <input class="form-input" id="googleClientId" type="text" placeholder="xxx.apps.googleusercontent.com" style="font-size:11px">
-        <div style="font-size:10px;color:var(--text-muted);margin-top:4px">
-          Va dans <strong>Google Cloud → APIs → Gmail API → OAuth</strong> et crée un ID client Web.
-        </div>
-      </div>
-      <div class="form-group">
         <label class="form-label">Température <span id="tempVal" style="float:right;color:var(--accent-light)">0.7</span></label>
         <input type="range" class="form-input" id="tempSlider" min="0" max="100" value="70" style="padding:0;cursor:pointer">
         <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:6px">
@@ -1301,11 +1294,6 @@ document.addEventListener('DOMContentLoaded', function() {
       temperature = this.value / 100;
       if (v) v.textContent = temperature.toFixed(1);
     });
-  }
-  const gid = document.getElementById('googleClientId');
-  if (gid) {
-    gid.value = localStorage.getItem('google_client_id') || '';
-    gid.addEventListener('input', () => localStorage.setItem('google_client_id', gid.value));
   }
 });
 </script>
