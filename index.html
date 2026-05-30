@@ -445,9 +445,7 @@ const DEFAULT_API_KEY = atob(_DK);
 const API_URL = "https://api.mulerouter.ai/vendors/openai/v1/chat/completions";
 const TAVILY_KEY = "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";
 const TAVILY_URL = "https://api.tavily.com/search";
-const DUBSMART_API_KEY = "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";
-const DUBSMART_URL = "https://dubsmart.ai/api/v1";
-const VOICE_PROXY = "https://corsproxy.io/?";
+
 
 let conversations = [];
 let currentConvId = null;
@@ -462,205 +460,6 @@ let voiceSynth = window.speechSynthesis;
 let isVoiceMode = false;
 let voiceLoopActive = false;
 let voiceUtterance = null;
-
-// ===== INIT =====
-function init() { loadConversations(); renderConversations(); }
-init();
-
-// ===== VOICE MODE LOGIC =====
-let recognition = null;
-let synth = window.speechSynthesis;
-let isVoiceMode = false;
-let voiceLoopActive = false;
-
-function toggleVoiceMode() {
-  isVoiceMode = !isVoiceMode;
-  const overlay = document.getElementById('voiceOverlay');
-  overlay.style.display = isVoiceMode ? 'flex' : 'none';
-  if (isVoiceMode) {
-    initVoiceRecognition();
-    startVoiceLoop();
-  } else {
-    stopVoiceLoop();
-  }
-}
-
-function initVoiceRecognition() {
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    alert("Votre navigateur ne supporte pas la reconnaissance vocale.");
-    toggleVoiceMode();
-    return;
-  }
-  recognition = new SpeechRecognition();
-  recognition.lang = 'fr-FR';
-  recognition.interimResults = false;
-  recognition.continuous = false;
-
-  recognition.onstart = () => {
-    updateVoiceUI('listening', 'Je vous écoute...');
-  };
-
-  recognition.onresult = (event) => {
-    const text = event.results[0][0].transcript;
-    document.getElementById('msgInput').value = text;
-    updateVoiceUI('thinking', 'Analyse en cours...');
-    sendMessage();
-  };
-
-  recognition.onerror = (e) => {
-    if (e.error === 'no-speech') {
-      setTimeout(startListening, 500);
-      return;
-    }
-    if (e.error === 'network') {
-      updateVoiceUI('idle', 'Prêt à vous écouter...');
-      voiceLoopActive = false;
-      setTimeout(() => {
-        if (isVoiceMode) {
-          updateVoiceUI('listening', 'Je vous écoute...');
-          startListening();
-          voiceLoopActive = true;
-        }
-      }, 10000);
-      return;
-    }
-    console.error("Erreur reconnaissance:", e);
-    updateVoiceUI('idle', 'Micro : ' + e.error + '. Réessai...');
-    setTimeout(startListening, 1000);
-  };
-
-  recognition.onend = () => {
-    if (voiceLoopActive && !synth.speaking) {
-      setTimeout(startListening, 300);
-    }
-  };
-}
-
-function startListening() {
-  if (!recognition) return;
-  try { recognition.start(); } catch(e) {}
-}
-
-function startVoiceLoop() {
-  voiceLoopActive = true;
-  startListening();
-}
-
-function stopVoiceLoop() {
-  voiceLoopActive = false;
-  if (recognition) recognition.stop();
-  synth.cancel();
-}
-
-function updateVoiceUI(state, text) {
-  const orb = document.getElementById('voiceOrb');
-  const status = document.getElementById('voiceStatus');
-  orb.className = 'voice-orb ' + state;
-  status.textContent = text;
-}
-
-async function sayResponse(text) {
-  if (!DUBSMART_API_KEY) {
-    browserSayResponse(text);
-    return;
-  }
-
-  try {
-    updateVoiceUI('thinking', 'Génération de la voix haute qualité...');
-
-    // 1. Create project
-    const ttsEndpoint = `${VOICE_PROXY}${DUBSMART_URL}/projects/tts`;
-    const res = await fetch(ttsEndpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${DUBSMART_API_KEY}`
-      },
-      body: JSON.stringify({
-        title: 'QwenAI_Voice',
-        segments: [{
-          text: text,
-          voice: 'fr_female_standard',
-          language: 'fr'
-        }]
-      })
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`API Error ${res.status}: ${errText}`);
-    }
-    const data = await res.json();
-    const projectId = data.projectId;
-
-    if (!projectId) throw new Error('No Project ID returned from API');
-
-    // 2. Poll for completion
-    let audioUrl = null;
-    let attempts = 0;
-    while (!audioUrl && attempts < 30) {
-      await new Promise(r => setTimeout(r, 1500));
-      attempts++;
-
-      const pollEndpoint = `${VOICE_PROXY}${DUBSMART_URL}/projects/tts/${projectId}`;
-      const pollRes = await fetch(pollEndpoint, {
-        headers: { 'Authorization': `Bearer ${DUBSMART_API_KEY}` }
-      });
-      if (!pollRes.ok) throw new Error(`Poll Error ${pollRes.status}`);
-      const pollData = await pollRes.json();
-
-      if (pollData.status === 'completed') {
-        audioUrl = pollData.audioUrl;
-      } else if (pollData.status === 'failed') {
-        throw new Error('TTS generation failed on server');
-      }
-    }
-
-    if (!audioUrl) throw new Error('TTS timeout: Audio not ready in time');
-
-    // 3. Play audio
-    const audio = new Audio(audioUrl);
-    updateVoiceUI('speaking', 'L\'IA vous répond...');
-    audio.play();
-
-    audio.onended = () => {
-      if (isVoiceMode) {
-        updateVoiceUI('idle', 'Prêt à vous écouter...');
-        startListening();
-      }
-    };
-  } catch (e) {
-    console.error("DubSmart Error:", e);
-    updateVoiceUI('idle', 'Erreur DubSmart: ' + e.message);
-    setTimeout(() => {
-      browserSayResponse(text);
-    }, 2000);
-  }
-}
-
-function browserSayResponse(text) {
-  if (!synth) return;
-  synth.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'fr-FR';
-  const voices = synth.getVoices();
-  const bestVoice = voices.find(v => v.name.includes('Google') && v.lang.includes('fr')) ||
-                    voices.find(v => v.name.includes('Microsoft') && v.lang.includes('fr')) ||
-                    voices[0];
-  if (bestVoice) utterance.voice = bestVoice;
-
-  utterance.onstart = () => {
-    updateVoiceUI('speaking', 'L\'IA vous répond (voix système)...');
-  };
-  utterance.onend = () => {
-    if (isVoiceMode) {
-      updateVoiceUI('idle', 'Prêt à vous écouter...');
-      startListening();
-    }
-  };
-  synth.speak(utterance);
-}
 
 // ===== CONVERSATIONS =====
 function loadConversations() {
@@ -855,7 +654,6 @@ async function sendMessage() {
   try {
     const apiKey = localStorage.getItem('ds_api_key') || DEFAULT_API_KEY;
     let systemContent = selectedModel.includes('claude')
-    let systemContent = selectedModel.includes('claude')
       ? "Tu es Claude AI, un assistant IA performant."
       : "Tu es Qwen AI, un assistant IA gratuit créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Tu réponds toujours de manière utile et concise.";
 
@@ -925,8 +723,6 @@ async function sendMessage() {
       }
       if (streamDone) break;
     }
-
-    if (isVoiceMode) sayResponse(fullContent);
 
     const all = getAllMessages();
     saveCurrentConv(all);
