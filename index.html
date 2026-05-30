@@ -887,13 +887,21 @@ async function sendMessage() {
       typingId2 = addTyping('✏️ Génération réponse…');
     }
 
-    // Use vision model if image is present
-    const modelToUse = pendingFileData ? 'qwen-vision' : selectedModel;
+    // Map UI model names to actual API model names
+    // Note: qwen-vision is mapped to qwen-plus as the API doesn't recognize qwen-vision directly
+    const modelMap = {
+      'qwen-flash': 'qwen-flash',
+      'qwen-plus': 'qwen-plus',
+      'qwen-vision': 'qwen-plus',  // Use qwen-plus for vision capabilities
+      'qwen35-plus': 'qwen35-plus',
+      'qwen3-max': 'qwen3-max'
+    };
+    const modelToUse = modelMap[selectedModel] || selectedModel;
     
     // Prepare message content
     let userContent = text;
     if (pendingFileData) {
-      // For vision model, use multimodal format
+      // For multimodal input, use the format expected by the API
       userContent = [
         {type: "text", text: text || "Que voyez-vous sur cette image ? Décrivez-la en détail."},
         {type: "image_url", image_url: {url: pendingFileData}}
@@ -1291,8 +1299,15 @@ async function getAIResponse(message, imageBase64) {
   } else {
     msgs.push({role:"user", content:message});
   }
-  // Use vision model if image is present
-  const modelToUse = imageBase64 ? 'qwen-vision' : selectedModel;
+  // Map UI model names to actual API model names
+  const modelMap = {
+    'qwen-flash': 'qwen-flash',
+    'qwen-plus': 'qwen-plus',
+    'qwen-vision': 'qwen-plus',  // Use qwen-plus for vision capabilities
+    'qwen35-plus': 'qwen35-plus',
+    'qwen3-max': 'qwen3-max'
+  };
+  const modelToUse = modelMap[selectedModel] || selectedModel;
   const resp = await fetch(API_URL, {method:"POST", mode:"cors", headers:{"Content-Type":"application/json","Authorization":"Bearer "+DEFAULT_API_KEY}, body:JSON.stringify({model:modelToUse, messages:msgs, temperature, max_tokens:4096})});
   if (!resp.ok) return "Erreur API "+resp.status;
   const data = await resp.json();
