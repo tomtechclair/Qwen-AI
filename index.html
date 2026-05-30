@@ -262,10 +262,33 @@ body{height:calc(var(--vh,1vh)*100)}
   .status{font-size:9px;padding:4px}
 }
 
-/* Touch devices hover fix */
+.voice-btn.active{color:var(--green);background:rgba(34,197,94,.12)}
 @media(hover:none){
   .conv:hover{background:initial;color:var(--text-sec)}
   .conv.active{background:var(--bg-card);color:var(--text)}
+}
+
+/* ===== VOICE MODE ===== */
+.voice-overlay{display:none;position:fixed;inset:0;background:rgba(5,5,10,.95);z-index:2000;flex-direction:column;align-items:center;justify-content:center;animation:overlayIn .25s ease;font-family:inherit}
+@keyframes overlayIn{from{opacity:0}to{opacity:1}}
+.voice-close{position:absolute;top:max(20px,env(safe-area-inset-top,20px));right:20px;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:rgba(255,255,255,.08);color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:2001}
+.voice-close:active{transform:scale(.9);background:rgba(255,255,255,.15)}
+.voice-orb-container{position:relative;width:180px;height:180px;display:flex;align-items:center;justify-content:center}
+.voice-orb{width:100px;height:100px;border-radius:50%;background:var(--grad);box-shadow:0 0 40px var(--accent);transition:all .4s cubic-bezier(.4,0,.2,1);position:relative;z-index:2}
+.voice-orb::after{content:'';position:absolute;inset:0;border-radius:50%;background:var(--grad);opacity:.4;filter:blur(20px);transition:all .4s}
+.voice-orb.listening{animation:orbListen 1.5s infinite ease-in-out}
+.voice-orb.thinking{animation:orbThink .8s infinite ease-in-out}
+.voice-orb.speaking{animation:orbSpeak 1.2s infinite ease-in-out}
+@keyframes orbListen{0%,100%{transform:scale(1);box-shadow:0 0 40px var(--accent)}50%{transform:scale(1.15);box-shadow:0 0 70px var(--green)}}
+@keyframes orbThink{0%,100%{transform:scale(1);box-shadow:0 0 40px var(--accent)}50%{transform:scale(.85);box-shadow:0 0 60px var(--blue)}}
+@keyframes orbSpeak{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.voice-status{margin-top:36px;font-size:17px;color:var(--text-sec);font-weight:500;text-align:center;padding:0 20px;transition:all .3s}
+.voice-sub{font-size:13px;color:var(--text-ter);margin-top:8px}
+
+@media(max-width:768px){
+  .voice-orb-container{width:150px;height:150px}
+  .voice-orb{width:85px;height:85px}
+  .voice-status{font-size:15px;margin-top:28px}
 }
 </style>
 </head>
@@ -302,6 +325,9 @@ body{height:calc(var(--vh,1vh)*100)}
           <option value="qwen-vision">👁️ Vision</option>
           <option value="qwen35-plus">3.5 Plus</option>
           <option value="qwen3-max">3 Max</option>
+          <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
+          <option value="claude-3-opus">Claude 3 Opus</option>
+          <option value="claude-3-haiku">Claude 3 Haiku</option>
         </select>
       </div>
       <div class="topbar-right">
@@ -337,6 +363,7 @@ body{height:calc(var(--vh,1vh)*100)}
           <textarea id="msgInput" placeholder="Posez votre question…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
           <div class="inp-acts">
             <button class="inp-btn" onclick="document.getElementById('fileInput').click()">📎</button>
+            <button class="inp-btn voice-btn" id="voiceBtn" onclick="toggleVoiceMode()" title="Mode vocal">🎙️</button>
             <input type="file" id="fileInput" style="display:none" onchange="handleFile(this)">
           </div>
           <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
@@ -387,6 +414,14 @@ body{height:calc(var(--vh,1vh)*100)}
 
 <div class="toast" id="toast"></div>
 
+<div class="voice-overlay" id="voiceOverlay">
+  <button class="voice-close" onclick="toggleVoiceMode()">✕</button>
+  <div class="voice-orb-container">
+    <div class="voice-orb" id="voiceOrb"></div>
+  </div>
+  <div class="voice-status" id="voiceStatus">Prêt à vous écouter...</div>
+</div>
+
 <script>
 const _DK = "c2stbXItYTMyYTdjZjBhZTJiMWVmNjEwZjY0YzAzODQyOWI5YjZlYTRhNTU3NTMxMmM4ZTg4OTk1NzZjZTM5ZTQ0NmYxZA==";
 const DEFAULT_API_KEY = atob(_DK);
@@ -402,6 +437,11 @@ let selectedModel = 'qwen-flash';
 let temperature = 0.7;
 let isGenerating = false;
 let touchStartX = 0;
+let voiceRec = null;
+let voiceSynth = window.speechSynthesis;
+let isVoiceMode = false;
+let voiceLoopActive = false;
+let voiceUtterance = null;
 
 // ===== INIT =====
 function init() { loadConversations(); renderConversations(); }
@@ -479,6 +519,105 @@ function msgHTML(msg) {
   return `<div class="msg ${msg.role}"><div class="msg-av">${av}</div><div class="msg-bubble">${formatContent(filterAlibaba(msg.content))}${copyBtn}</div></div>`;
 }
 
+// ===== VOICE MODE =====
+function toggleVoiceMode() {
+  isVoiceMode = !isVoiceMode;
+  document.getElementById('voiceOverlay').style.display = isVoiceMode ? 'flex' : 'none';
+  document.getElementById('voiceBtn')?.classList.toggle('active', isVoiceMode);
+  if (isVoiceMode) {
+    startVoice();
+  } else {
+    stopVoice();
+  }
+}
+
+function startVoice() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { setVoiceStatus('❌ Reconnaissance vocale non supportée'); return; }
+  voiceRec = new SR();
+  voiceRec.lang = 'fr-FR';
+  voiceRec.interimResults = false;
+  voiceRec.continuous = false;
+
+  voiceRec.onstart = () => updateOrb('listening', '🎤 Je vous écoute...');
+  voiceRec.onresult = (e) => {
+    const text = e.results[0][0].transcript;
+    document.getElementById('msgInput').value = text;
+    updateOrb('thinking', '🧠 Analyse...');
+    setTimeout(() => sendMessage(), 300);
+  };
+  voiceRec.onerror = (e) => {
+    if (e.error === 'no-speech' && voiceLoopActive) { setTimeout(() => { try { voiceRec?.start(); } catch(e) {} }, 200); return; }
+    if (e.error === 'aborted') return;
+    setVoiceStatus('❌ ' + e.error);
+    setTimeout(() => { if (isVoiceMode) startVoice(); }, 1500);
+  };
+  voiceRec.onend = () => {
+    if (voiceLoopActive && !voiceSynth.speaking) {
+      setTimeout(() => { try { voiceRec?.start(); } catch(e) {} }, 300);
+    }
+  };
+
+  voiceLoopActive = true;
+  try { voiceRec.start(); } catch(e) {}
+}
+
+function stopVoice() {
+  voiceLoopActive = false;
+  if (voiceRec) { try { voiceRec.stop(); } catch(e) {} voiceRec = null; }
+  if (voiceSynth.speaking) { voiceSynth.cancel(); }
+}
+
+function sayResponse(text) {
+  if (!voiceSynth || !isVoiceMode) return;
+  voiceSynth.cancel();
+  const utterance = new SpeechSynthesisUtterance(text.replace(/<[^>]*>/g, ''));
+  utterance.lang = 'fr-FR';
+  utterance.rate = 1.05;
+  utterance.pitch = 1;
+  utterance.volume = 1;
+
+  const voices = voiceSynth.getVoices();
+  const frVoice = voices.find(v => v.lang.startsWith('fr'));
+  if (frVoice) utterance.voice = frVoice;
+
+  voiceUtterance = utterance;
+  utterance.onstart = () => updateOrb('speaking', '🔊 L\'IA vous répond...');
+  utterance.onend = () => {
+    voiceUtterance = null;
+    if (isVoiceMode) {
+      updateOrb('listening', '🎤 Je vous écoute...');
+      setTimeout(() => { try { voiceRec?.start(); } catch(e) {} }, 200);
+    }
+  };
+  utterance.onerror = () => {
+    voiceUtterance = null;
+    if (isVoiceMode) {
+      updateOrb('listening', '🎤 Je vous écoute...');
+      setTimeout(() => { try { voiceRec?.start(); } catch(e) {} }, 500);
+    }
+  };
+  voiceSynth.speak(utterance);
+}
+
+function updateOrb(state, text) {
+  const orb = document.getElementById('voiceOrb');
+  const status = document.getElementById('voiceStatus');
+  if (orb) orb.className = 'voice-orb ' + state;
+  if (status) status.textContent = text;
+}
+
+function setVoiceStatus(text) {
+  const status = document.getElementById('voiceStatus');
+  if (status) status.textContent = text;
+}
+
+// Pre-load voices
+if (voiceSynth) {
+  voiceSynth.getVoices();
+  voiceSynth.onvoiceschanged = () => voiceSynth.getVoices();
+}
+
 // ===== SEND MESSAGE =====
 async function sendMessage() {
   const input = document.getElementById('msgInput');
@@ -500,7 +639,9 @@ async function sendMessage() {
 
   try {
     const apiKey = localStorage.getItem('ds_api_key') || DEFAULT_API_KEY;
-    let systemContent = "Tu es Qwen AI, un assistant IA gratuit créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Tu réponds toujours de manière utile et concise.";
+    let systemContent = selectedModel.includes('claude')
+      ? "Tu es Claude AI, un assistant IA performant."
+      : "Tu es Qwen AI, un assistant IA gratuit créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Tu réponds toujours de manière utile et concise.";
 
     const hasSearch = /cherche|recherche|trouve|actualité|news|météo|weather|temps|température|info.+récente|dernière|what.+new|search|google|prévision|qui a gagné|score|résultat|élection|prix|cours|bourse/i.test(text);
 
@@ -524,7 +665,7 @@ async function sendMessage() {
       body:JSON.stringify({model:selectedModel, messages:[
         {role:"system", content:systemContent},
         {role:"user", content:"Qui es-tu ? Réponds en une phrase."},
-        {role:"assistant", content:"Je suis Qwen AI, un assistant gratuit créé par Qwen_Pro."},
+        {role:"assistant", content: selectedModel.includes('claude') ? "Je suis Claude AI, un assistant IA." : "Je suis Qwen AI, un assistant gratuit créé par Qwen_Pro."},
         {role:"user", content:text}
       ], temperature, max_tokens:4096, stream:true})
     });
@@ -571,6 +712,7 @@ async function sendMessage() {
 
     const all = getAllMessages();
     saveCurrentConv(all);
+    if (isVoiceMode && fullContent) sayResponse(fullContent);
   } catch(e) {
     const t = document.getElementById(typingId); if (t) t.remove();
     addMessageToUI({role:'assistant', content:'❌ Erreur: '+e.message});
