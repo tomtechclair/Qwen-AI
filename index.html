@@ -613,7 +613,8 @@ function pickBestFrVoice() {
 
 function sayResponse(text) {
   if (!voiceSynth || !isVoiceMode) return;
-  const clean = text.replace(/<[^>]*>/g, '');
+  let clean = text.replace(/<[^>]*>/g, '');
+  clean = filterAlibaba(clean);
   if (!clean) return;
 
   voiceSynth.cancel();
