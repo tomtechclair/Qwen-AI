@@ -606,13 +606,16 @@ function stopVoice() {
 
 function pickBestFrVoice() {
   const voices = voiceSynth.getVoices();
+  if (!voices.length) return null;
+  const isFemale = n => /feminine|female|féminin|google\s*(français|french)|amelie|audrey|marie|julie|sophie|claire|chloe|celeste|denise|hortense|elodie|lea|nathalie|virginie|isabelle|zira/i.test(n);
   const rank = v => {
     const n = v.name.toLowerCase();
-    if (n.includes('google') && n.includes('fran')) return 5;
-    if (n.includes('wavenet') && n.includes('fr')) return 5;
-    if (n.includes('google') && v.lang.startsWith('fr')) return 4;
-    if (n.includes('microsoft') && v.lang.startsWith('fr')) return 3;
-    if (v.lang.startsWith('fr')) return 2;
+    const fr = v.lang.startsWith('fr');
+    if (fr && isFemale(n) && (n.includes('google') || n.includes('wavenet'))) return 6;
+    if (fr && n.includes('google')) return 5;
+    if (fr && isFemale(n)) return 4;
+    if (fr) return 3;
+    if (isFemale(n) && n.includes('google')) return 2;
     if (n.includes('google')) return 1;
     return 0;
   };
