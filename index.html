@@ -464,6 +464,9 @@ let voiceSynth = window.speechSynthesis;
 let isVoiceMode = false;
 let voiceLoopActive = false;
 let voiceUtterance = null;
+let voiceAudio = null;
+
+const STREAMELEMENTS_TTS = "https://api.streamelements.com/kappa/v2/speech?voice=fr-FR-Wavenet-A&text=";
 
 // ===== CONVERSATIONS =====
 function loadConversations() {
@@ -571,7 +574,7 @@ function startVoice() {
     setTimeout(() => { if (isVoiceMode) startVoice(); }, 1500);
   };
   voiceRec.onend = () => {
-    if (voiceLoopActive && !voiceSynth.speaking) {
+    if (voiceLoopActive && !voiceSynth.speaking && !voiceAudio) {
       setTimeout(() => { try { voiceRec?.start(); } catch(e) {} }, 300);
     }
   };
@@ -584,23 +587,55 @@ function stopVoice() {
   voiceLoopActive = false;
   if (voiceRec) { try { voiceRec.stop(); } catch(e) {} voiceRec = null; }
   if (voiceSynth.speaking) { voiceSynth.cancel(); }
+  if (voiceAudio) { try { voiceAudio.pause(); voiceAudio = null; } catch(e) {} }
 }
 
-function sayResponse(text) {
+async function sayResponse(text) {
   if (!voiceSynth || !isVoiceMode) return;
+  const clean = text.replace(/<[^>]*>/g, '');
+  if (!clean) return;
+
   voiceSynth.cancel();
-  const utterance = new SpeechSynthesisUtterance(text.replace(/<[^>]*>/g, ''));
+  if (voiceAudio) { try { voiceAudio.pause(); voiceAudio = null; } catch(e) {} }
+
+  try {
+    updateOrb('speaking', '🔊 L\'IA vous répond...');
+    const res = await fetch(STREAMELEMENTS_TTS + encodeURIComponent(clean));
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    voiceAudio = new Audio(url);
+    voiceAudio.onended = () => {
+      voiceAudio = null;
+      URL.revokeObjectURL(url);
+      if (isVoiceMode) {
+        updateOrb('listening', '🎤 Je vous écoute...');
+        setTimeout(() => { try { voiceRec?.start(); } catch(e) {} }, 200);
+      }
+    };
+    voiceAudio.onerror = () => {
+      voiceAudio = null;
+      URL.revokeObjectURL(url);
+      fallbackSay(clean);
+    };
+    voiceAudio.play();
+  } catch (e) {
+    if (voiceAudio) { try { voiceAudio.pause(); } catch(e) {} voiceAudio = null; }
+    fallbackSay(clean);
+  }
+}
+
+function fallbackSay(text) {
+  const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = 'fr-FR';
   utterance.rate = 1.05;
   utterance.pitch = 1;
   utterance.volume = 1;
-
   const voices = voiceSynth.getVoices();
   const frVoice = voices.find(v => v.lang.startsWith('fr'));
   if (frVoice) utterance.voice = frVoice;
-
   voiceUtterance = utterance;
-  utterance.onstart = () => updateOrb('speaking', '🔊 L\'IA vous répond...');
+  utterance.onstart = () => updateOrb('speaking', '🔊 L\'IA vous répond (voix système)...');
   utterance.onend = () => {
     voiceUtterance = null;
     if (isVoiceMode) {
