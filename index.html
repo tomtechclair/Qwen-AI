@@ -486,9 +486,9 @@ function initVoiceRecognition() {
       return;
     }
     if (e.error === 'network') {
-      console.warn("Erreur réseau SpeechRecognition: Vérifiez votre connexion ou vos permissions micro.");
+      console.warn("Erreur réseau SpeechRecognition.");
       updateVoiceUI('idle', 'Erreur réseau micro...');
-      setTimeout(startListening, 2000);
+      setTimeout(startListening, 5000);
       return;
     }
     console.error("Erreur reconnaissance:", e);
@@ -498,7 +498,7 @@ function initVoiceRecognition() {
 
   recognition.onend = () => {
     if (voiceLoopActive && !synth.speaking) {
-      startListening();
+      setTimeout(startListening, 300);
     }
   };
 }
