@@ -1046,6 +1046,8 @@ function scrollToBottom() {
   if (m) m.scrollTo({top: m.scrollHeight, behavior: 'smooth'});
 }
 document.addEventListener('DOMContentLoaded', function() {
+  loadConversations();
+  renderConversations();
   const m = document.querySelector('.msgs');
   const b = document.getElementById('scrollBtn');
   if (m && b) m.addEventListener('scroll', function() {
