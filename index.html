@@ -219,6 +219,8 @@ body{height:calc(var(--vh,1vh)*100)}
   #msgInput{font-size:16px;padding:8px 0}
   .send-btn{width:38px;height:38px;font-size:15px}
   .inp-btn{width:32px;height:32px;font-size:16px}
+  .voice-btn{width:36px;height:36px}
+  .voice-btn svg{width:20px;height:20px}
   .scroll-btn{bottom:75px;right:15px;width:36px;height:36px;font-size:15px}
   .toast{bottom:70px;font-size:12px;padding:8px 16px}
   .modal{padding:20px;margin:0 8px;border-radius:var(--r-lg)}
@@ -247,41 +249,12 @@ body{height:calc(var(--vh,1vh)*100)}
 @keyframes orbThink{0%,100%{transform:scale(1)}50%{transform:scale(0.9);filter:hue-rotate(45deg)}}
 @keyframes orbSpeak{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.1);opacity:.8}}
 .voice-status{margin-top:40px;font-size:18px;color:var(--text-sec);font-weight:500;transition:all .3s;text-align:center;padding:0 20px}
-.voice-btn{width:40px;height:40px;border-radius:var(--r-sm);border:none;background:0 0;color:var(--text-ter);font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
-.voice-btn:hover{color:var(--accent);transform:scale(1.1)}
-.voice-btn:active{transform:scale(.9)}
-
-@media(max-width:480px){
-  .sidebar{width:100%}
-  .topbar{height:46px;padding:0 8px}
-  .model-sel{max-width:70px;font-size:10.5px}
-  .model-pill{padding:3px 8px}
-  .topbar-btn{width:28px;height:28px;font-size:13px}
-  .menu-btn{font-size:18px}
-  .welcome-icon{width:44px;height:44px;font-size:20px;border-radius:12px}
-  .welcome h1{font-size:20px}
-  .welcome p{font-size:12px;margin-bottom:20px}
-  .quick-btn{padding:8px;font-size:11px;gap:6px}
-  .quick-btn span:first-child{font-size:14px}
-  .msg{padding:0 6px;gap:4px}
-  .msg.user{max-width:92%}
-  .msg-av{width:22px;height:22px;font-size:10px}
-  .msg-bubble{padding:7px 10px;font-size:14px;border-radius:var(--r-sm)}
-  .msgs{padding:6px 0;gap:3px}
-  .input-zone{padding:4px 0 max(4px,var(--safe-bottom))}
-  .input-wrap{border-radius:var(--r-md);padding:2px 2px 2px 12px;margin:0 6px}
-  #msgInput{font-size:16px;padding:5px 0}
-  .send-btn{width:32px;height:32px;font-size:13px;border-radius:var(--r-sm)}
-  .inp-btn{width:28px;height:28px;font-size:14px}
-  .scroll-btn{bottom:60px;right:8px;width:30px;height:30px;font-size:13px}
-  .toast{bottom:55px;font-size:10px;padding:5px 12px;max-width:85vw}
-  .modal{padding:14px;border-radius:var(--r-md)}
-  .file-pv{padding:3px 8px;font-size:11px}
-  .file-pv-img{width:24px;height:24px}
-  .status{font-size:9px;padding:4px}
-}
-
-.voice-btn.active{color:var(--green);background:rgba(34,197,94,.12)}
+.voice-btn{width:40px;height:40px;border-radius:50%;border:none;background:0 0;color:var(--text-ter);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s}
+.voice-btn svg{width:22px;height:22px;fill:currentColor;transition:all .25s}
+.voice-btn:hover{background:rgba(59,130,246,.1);color:var(--blue)}
+.voice-btn:active{transform:scale(.92)}
+.voice-btn.active{background:var(--blue);color:#fff;box-shadow:0 0 20px rgba(59,130,246,.4);animation:micPulse 2s infinite}
+@keyframes micPulse{0%,100%{box-shadow:0 0 20px rgba(59,130,246,.4)}50%{box-shadow:0 0 35px rgba(59,130,246,.6)}}
 @media(hover:none){
   .conv:hover{background:initial;color:var(--text-sec)}
   .conv.active{background:var(--bg-card);color:var(--text)}
@@ -354,7 +327,7 @@ body{height:calc(var(--vh,1vh)*100)}
           <textarea id="msgInput" placeholder="Posez votre question…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
           <div class="inp-acts">
             <button class="inp-btn" onclick="document.getElementById('fileInput').click()">📎</button>
-            <button class="inp-btn voice-btn" id="voiceBtn" onclick="toggleVoiceMode()" title="Mode vocal">🎙️</button>
+            <button class="inp-btn voice-btn" id="voiceBtn" onclick="toggleVoiceMode()" title="Mode vocal"><svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Zm-1 3a1 1 0 0 1 2 0v6a1 1 0 0 1-2 0V5Zm-4 6a5 5 0 0 0 10 0h-2a3 3 0 0 1-6 0H7Zm-2.07 1.28A7.002 7.002 0 0 0 11 19.93V22h2v-2.07a7.002 7.002 0 0 0 6.07-5.65l-1.97-.4A5.002 5.002 0 0 1 12 18a5.002 5.002 0 0 1-5.1-4.12l-1.97.4Z"/></svg></button>
             <input type="file" id="fileInput" style="display:none" onchange="handleFile(this)">
           </div>
           <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
