@@ -252,20 +252,24 @@ body{height:calc(var(--vh,1vh)*100)}
 }
 
 /* ===== VOICE MODE ===== */
-.voice-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:2000;flex-direction:column;align-items:center;justify-content:center;animation:overlayIn .3s ease;color:#fff;font-family:inherit;pointer-events:none}
-@keyframes overlayIn{from{opacity:0}to{opacity:1}}
-.voice-close{position:absolute;top:24px;right:24px;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:rgba(255,255,255,.1);color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;z-index:2001}
-.voice-close:active{transform:scale(.9);background:rgba(255,255,255,.2)}
-.voice-orb-container{position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center}
-.voice-orb{width:120px;height:120px;border-radius:50%;background:var(--grad);box-shadow:0 0 40px var(--accent);transition:all .4s cubic-bezier(.4,0,.2,1);position:relative;z-index:2}
-.voice-orb::after{content:'';position:absolute;inset:0;border-radius:50%;background:var(--grad);opacity:.5;filter:blur(15px);transition:all .4s}
-.voice-orb.listening{animation:orbListen 1.5s infinite ease-in-out;box-shadow:0 0 60px var(--green)}
-.voice-orb.thinking{animation:orbThink 0.8s infinite ease-in-out;box-shadow:0 0 60px var(--blue)}
-.voice-orb.speaking{animation:orbSpeak 1.2s infinite ease-in-out;box-shadow:0 0 60px var(--accent)}
-@keyframes orbListen{0%,100%{transform:scale(1)}50%{transform:scale(1.2);filter:brightness(1.2)}}
-@keyframes orbThink{0%,100%{transform:scale(1)}50%{transform:scale(0.9);filter:hue-rotate(45deg)}}
-@keyframes orbSpeak{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.1);opacity:.8}}
-.voice-status{margin-top:40px;font-size:18px;color:var(--text-sec);font-weight:500;transition:all .3s;text-align:center;padding:0 20px}
+.voice-overlay{position:fixed;inset:0;background:rgba(10,10,20,0.98);z-index:3000;flex-direction:column;align-items:center;justify-content:center;animation:voiceOverlayIn .4s ease;color:#fff;font-family:inherit;pointer-events:none;opacity:0;visibility:hidden;transition:all .4s ease}
+.voice-overlay.active{pointer-events:auto;opacity:1;visibility:visible}
+@keyframes voiceOverlayIn{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}
+.voice-close{position:absolute;top:20px;right:20px;width:48px;height:48px;border-radius:50%;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .3s;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.voice-close:hover{background:rgba(255,255,255,0.2);transform:scale(1.1)}
+.voice-close:active{transform:scale(0.9)}
+.voice-orb-container{position:relative;width:220px;height:220px;display:flex;align-items:center;justify-content:center}
+.voice-orb{width:140px;height:140px;border-radius:50%;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);box-shadow:0 0 50px rgba(102,126,234,0.6),0 0 100px rgba(118,75,162,0.4);transition:all .4s cubic-bezier(.4,0,.2,1);position:relative;z-index:2}
+.voice-orb::before{content:'';position:absolute;inset:-15px;border-radius:50%;border:2px solid rgba(102,126,234,0.3);animation:orbPulse 2s infinite}
+.voice-orb::after{content:'';position:absolute;inset:0;border-radius:50%;background:linear-gradient(135deg, rgba(102,126,234,0.5), rgba(118,75,162,0.5));filter:blur(20px);transition:all .4s}
+.voice-orb.listening{background:linear-gradient(135deg, #11998e 0%, #38ef7d 100%);box-shadow:0 0 60px rgba(56,239,125,0.6),0 0 120px rgba(17,153,142,0.4);animation:orbListen 1.5s infinite ease-in-out}
+.voice-orb.thinking{background:linear-gradient(135deg, #f093fb 0%, #f5576c 100%);box-shadow:0 0 60px rgba(245,87,108,0.6),0 0 120px rgba(240,147,251,0.4);animation:orbThink 0.8s infinite ease-in-out}
+.voice-orb.speaking{background:linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);box-shadow:0 0 60px rgba(79,172,254,0.6),0 0 120px rgba(0,242,254,0.4);animation:orbSpeak 1.2s infinite ease-in-out}
+@keyframes orbPulse{0%,100%{transform:scale(1);opacity:0.5}50%{transform:scale(1.2);opacity:0.2}}
+@keyframes orbListen{0%,100%{transform:scale(1)}50%{transform:scale(1.15);filter:brightness(1.2)}}
+@keyframes orbThink{0%,100%{transform:scale(1);filter:hue-rotate(0deg)}50%{transform:scale(0.92);filter:hue-rotate(30deg)}}
+@keyframes orbSpeak{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.1);opacity:0.85}}
+.voice-status{margin-top:50px;font-size:20px;color:rgba(255,255,255,0.7);font-weight:400;letter-spacing:1px;transition:all .4s;text-align:center;padding:0 20px;min-height:30px}
 .voice-btn{width:40px;height:40px;border-radius:50%;border:none;background:0 0;color:var(--text-ter);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s}
 .voice-btn svg{width:22px;height:22px;fill:currentColor;transition:all .25s}
 .voice-btn:hover{background:rgba(59,130,246,.1);color:var(--blue)}
@@ -655,7 +659,8 @@ function displayEmails(emails) {
 // ===== VOICE MODE =====
 function toggleVoiceMode() {
   isVoiceMode = !isVoiceMode;
-  document.getElementById('voiceOverlay').style.display = isVoiceMode ? 'flex' : 'none';
+  const overlay = document.getElementById('voiceOverlay');
+  overlay.classList.toggle('active', isVoiceMode);
   document.getElementById('voiceBtn')?.classList.toggle('active', isVoiceMode);
   if (isVoiceMode) {
     startVoice();
@@ -683,7 +688,7 @@ function startVoice() {
     voiceSynth.speak(unlock);
   }
 
-  voiceRec.onstart = () => updateOrb('listening', '🎤 Je vous écoute...');
+  voiceRec.onstart = () => updateOrb('listening', '');
   voiceRec.onresult = (e) => {
     const text = e.results[e.results.length-1][0].transcript;
     voiceProcessing = true;
@@ -857,6 +862,7 @@ async function sendMessage() {
     const offset = -now.getTimezoneOffset();
     const offsetStr = 'UTC' + (offset >= 0 ? '+' : '') + Math.floor(offset/60) + 'h' + (offset%60 ? String(offset%60).padStart(2,'0') : '00');
     systemContent += "\n\nDate et heure actuelles : " + dateStr + " à " + timeStr + " (" + tz + ", " + offsetStr + ").";
+    systemContent += "\n\nIMPORTANT pour l'heure : Quand on te demande l'heure, réponds JUSTE avec l'heure sans mentionner le lieu ni le fuseau. Exemple: \"Il est 14h30\" et pas \"Il est 14h30 à Berlin, Europe centrale (UTC+1)\".";
 
     const hasSearch = /cherche|recherche|trouve|actualité|news|météo|weather|temps|température|info.+récente|dernière|what.+new|search|google|prévision|qui a gagné|score|résultat|élection|prix|cours|bourse/i.test(text);
     const hasEmail = /mail|email|e-mail|bo.tes? (de )?réception|messages?|courrier|收件箱|inbox|gmail|outlook/i.test(text) && /(vérifie|regarde|consulte|ouvre|affiche|mes|mon|m(a|es)ils)/i.test(text);
