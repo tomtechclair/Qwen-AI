@@ -253,21 +253,19 @@ body{height:calc(var(--vh,1vh)*100)}
 }
 
 /* ===== VOICE MODE - GPT STYLE ===== */
-.voice-overlay{position:fixed;inset:0;background:var(--bg);z-index:3000;flex-direction:column;align-items:center;justify-content:center;animation:voiceIn .3s ease;color:var(--text);font-family:var(--font);pointer-events:none;opacity:0;visibility:hidden;transition:all .4s ease}
+.voice-overlay{position:fixed;inset:0;background:var(--bg);z-index:3000;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:voiceIn .3s ease;color:var(--text);font-family:var(--font);pointer-events:none;opacity:0;visibility:hidden;transition:all .4s ease}
 .voice-overlay::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(255,255,255,0.02) 0%,transparent 70%);pointer-events:none}
 .voice-overlay.active{pointer-events:auto;opacity:1;visibility:visible}
 @keyframes voiceIn{from{opacity:0;transform:scale(0.98)}to{opacity:1;transform:scale(1)}}
 .voice-close{position:absolute;top:24px;right:24px;width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,0.05);color:var(--text-sec);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease;z-index:10}
 .voice-close:hover{background:rgba(255,255,255,0.1);color:var(--text)}
-.voice-center{display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:5}
-.voice-circle{position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center}
-.voice-ring-outer{position:absolute;inset:0;border-radius:50%;border:1px solid rgba(255,255,255,0.06);transition:all .5s ease}
-.voice-orb{width:100px;height:100px;border-radius:50%;background:var(--grad);box-shadow:0 0 40px rgba(159,111,255,0.3),0 0 80px rgba(159,111,255,0.1);transition:all .5s cubic-bezier(0.4,0,0.2,1);position:relative;z-index:2}
-.voice-orb::before{content:'';position:absolute;inset:-12px;border-radius:50%;border:1px solid rgba(159,111,255,0.15);transition:all .5s ease}
-.voice-orb::after{content:'';position:absolute;top:20%;left:20%;width:30%;height:30%;border-radius:50%;background:rgba(255,255,255,0.25)}
+.voice-main{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:40px}
+.voice-orb{width:100px;height:100px;border-radius:50%;background:var(--grad);box-shadow:0 0 40px rgba(159,111,255,0.3),0 0 80px rgba(159,111,255,0.1);transition:all .5s cubic-bezier(0.4,0,0.2,1);position:relative}
+.voice-orb::before{content:'';position:absolute;inset:-16px;border-radius:50%;border:1px solid rgba(159,111,255,0.12);transition:all .5s ease}
+.voice-orb::after{content:'';position:absolute;top:18%;left:18%;width:35%;height:35%;border-radius:50%;background:rgba(255,255,255,0.25)}
 .voice-orb.listening{background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%);box-shadow:0 0 50px rgba(34,197,94,0.4),0 0 100px rgba(34,197,94,0.15)}
 .voice-orb.listening::before{border-color:rgba(34,197,94,0.2);animation:ringPulse 1s infinite ease-in-out}
-@keyframes ringPulse{0%,100%{transform:scale(1);opacity:0.3}50%{transform:scale(1.15);opacity:0.8}}
+@keyframes ringPulse{0%,100%{transform:scale(1);opacity:0.3}50%{transform:scale(1.12);opacity:0.7}}
 .voice-orb.thinking{background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);box-shadow:0 0 50px rgba(245,158,11,0.4),0 0 100px rgba(245,158,11,0.15);animation:thinkPulse 1.5s infinite ease-in-out}
 .voice-orb.thinking::before{border-color:rgba(245,158,11,0.2)}
 @keyframes thinkPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
@@ -278,11 +276,9 @@ body{height:calc(var(--vh,1vh)*100)}
 .voice-orb.searching::before{border-color:rgba(139,92,246,0.2);animation:ringRotate 1.5s linear infinite}
 @keyframes searchSpin{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
 @keyframes ringRotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.voice-status{margin-top:50px;font-size:16px;color:var(--text);font-weight:400;transition:all .3s ease;text-align:center;min-height:24px;z-index:5;opacity:0.9}
-.voice-hint{margin-top:12px;font-size:13px;color:var(--text-ter);text-align:center;z-index:5;opacity:0.6}
-.voice-waves{display:none;}
-.voice-btn.active{background:var(--blue);color:#fff;box-shadow:0 0 20px rgba(59,130,246,.4);animation:micPulse 2s infinite}
-@keyframes micPulse{0%,100%{box-shadow:0 0 20px rgba(59,130,246,.4)}50%{box-shadow:0 0 35px rgba(59,130,246,.6)}}
+.voice-text{display:flex;flex-direction:column;align-items:center;gap:12px}
+.voice-status{font-size:16px;color:var(--text);font-weight:400;transition:all .3s ease;opacity:0.9}
+.voice-hint{font-size:13px;color:var(--text-ter);opacity:0.6}
 @media(hover:none){
   .conv:hover{background:initial;color:var(--text-sec)}
   .conv.active{background:var(--bg-card);color:var(--text)}
@@ -408,13 +404,12 @@ body{height:calc(var(--vh,1vh)*100)}
 
 <div class="voice-overlay" id="voiceOverlay">
   <button class="voice-close" onclick="toggleVoiceMode()">✕</button>
-  <div class="voice-center">
-    <div class="voice-circle">
-      <div class="voice-ring-outer"></div>
-      <div class="voice-orb" id="voiceOrb"></div>
+  <div class="voice-main">
+    <div class="voice-orb" id="voiceOrb"></div>
+    <div class="voice-text">
+      <div class="voice-status" id="voiceStatus"></div>
+      <div class="voice-hint">Parlez pour communiquer avec Qwen</div>
     </div>
-    <div class="voice-status" id="voiceStatus"></div>
-    <div class="voice-hint">Parlez pour communiquer avec Qwen</div>
   </div>
 </div>
 
