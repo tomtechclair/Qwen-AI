@@ -268,6 +268,15 @@ body{height:calc(var(--vh,1vh)*100)}
 .voice-ring-2{inset:-25px;animation-delay:0.5s;border-color:rgba(159,111,255,0.08)}
 .voice-ring-3{inset:-50px;animation-delay:1s;border-color:rgba(159,111,255,0.05)}
 @keyframes ringExpand{0%,100%{transform:scale(1);opacity:0.3}50%{transform:scale(1.08);opacity:0.8}}
+@keyframes ringSearch{0%,100%{transform:scale(1);opacity:0.5}50%{transform:scale(1.15);opacity:1}}
+
+/* Searching state */
+.voice-orb.searching ~ .voice-waves .voice-wave{background:#a78bfa;animation:waveSearch 0.6s infinite ease-in-out}
+.voice-orb.searching ~ .voice-waves .voice-wave:nth-child(1){animation-delay:0s}
+.voice-orb.searching ~ .voice-waves .voice-wave:nth-child(2){animation-delay:0.1s}
+.voice-orb.searching ~ .voice-waves .voice-wave:nth-child(3){animation-delay:0.2s}
+.voice-orb.searching ~ .voice-waves .voice-wave:nth-child(4){animation-delay:0.3s}
+.voice-orb.searching ~ .voice-waves .voice-wave:nth-child(5){animation-delay:0.4s}
 .voice-orb{width:130px;height:130px;border-radius:50%;background:linear-gradient(135deg,var(--accent) 0%,var(--blue) 100%);box-shadow:0 0 50px rgba(159,111,255,0.35),0 0 100px rgba(159,111,255,0.15),inset 0 2px 8px rgba(255,255,255,0.15);transition:all .5s cubic-bezier(0.4,0,0.2,1);position:relative;z-index:2}
 .voice-orb::before{content:'';position:absolute;inset:-15px;border-radius:50%;border:1px solid rgba(159,111,255,0.15);animation:orbRing 2.5s infinite ease-in-out}
 .voice-orb::after{content:'';position:absolute;top:15%;left:15%;width:35%;height:35%;border-radius:50%;background:linear-gradient(135deg,rgba(255,255,255,0.4) 0%,transparent 100%)}
@@ -284,6 +293,13 @@ body{height:calc(var(--vh,1vh)*100)}
 .voice-orb.speaking{background:linear-gradient(135deg,#3b82f6 0%,#60a5fa 100%);box-shadow:0 0 60px rgba(59,130,246,0.4),0 0 120px rgba(59,130,246,0.2),inset 0 2px 8px rgba(255,255,255,0.15);animation:orbSpeak 0.8s infinite ease-in-out}
 .voice-orb.speaking::before{border-color:rgba(59,130,246,0.2)}
 @keyframes orbSpeak{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.voice-orb.searching{background:linear-gradient(135deg,#8b5cf6 0%,#a78bfa 50%,#c4b5fd 100%);box-shadow:0 0 60px rgba(139,92,246,0.4),0 0 120px rgba(139,92,246,0.2),inset 0 2px 8px rgba(255,255,255,0.2);animation:orbSearch 1.5s infinite ease-in-out}
+.voice-orb.searching::before{border-color:rgba(139,92,246,0.25);animation:orbRingSearch 1s infinite linear}
+@keyframes orbSearch{0%,100%{transform:scale(1);box-shadow:0 0 60px rgba(139,92,246,0.4),0 0 120px rgba(139,92,246,0.2)}50%{transform:scale(1.03);box-shadow:0 0 80px rgba(139,92,246,0.5),0 0 150px rgba(139,92,246,0.3)}}
+@keyframes orbRingSearch{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.voice-orb-dot{position:absolute;top:50%;left:50%;width:16px;height:16px;border-radius:50%;background:rgba(255,255,255,0.9);transform:translate(-50%,-50%);box-shadow:0 0 20px rgba(255,255,255,0.5)}
+.voice-orb.searching .voice-orb-dot{width:20px;height:20px;background:conic-gradient(transparent,rgba(255,255,255,0.8),transparent,rgba(255,255,255,0.8),transparent);animation:dotSpin 1s linear infinite}
+@keyframes dotSpin{from{transform:translate(-50%,-50%) rotate(0deg)}to{transform:translate(-50%,-50%) rotate(360deg)}}
 .voice-waves{display:flex;gap:5px;margin-top:45px;height:36px;align-items:center;justify-content:center}
 .voice-wave{width:3px;border-radius:3px;background:rgba(159,111,255,0.3);transition:all .3s ease}
 .voice-wave{animation:waveIdle 2s infinite ease-in-out;height:12px;opacity:0.3}
@@ -293,8 +309,15 @@ body{height:calc(var(--vh,1vh)*100)}
 .voice-orb.listening ~ .voice-waves .voice-wave:nth-child(3){animation-delay:0.2s;height:42px}
 .voice-orb.listening ~ .voice-waves .voice-wave:nth-child(4){animation-delay:0.3s;height:30px}
 .voice-orb.listening ~ .voice-waves .voice-wave:nth-child(5){animation-delay:0.4s;height:18px}
+.voice-orb.searching ~ .voice-waves .voice-wave{background:#a78bfa;animation:waveSearch 0.6s infinite ease-in-out}
+.voice-orb.searching ~ .voice-waves .voice-wave:nth-child(1){animation-delay:0s}
+.voice-orb.searching ~ .voice-waves .voice-wave:nth-child(2){animation-delay:0.1s}
+.voice-orb.searching ~ .voice-waves .voice-wave:nth-child(3){animation-delay:0.2s}
+.voice-orb.searching ~ .voice-waves .voice-wave:nth-child(4){animation-delay:0.3s}
+.voice-orb.searching ~ .voice-waves .voice-wave:nth-child(5){animation-delay:0.4s}
 @keyframes waveIdle{0%,100%{transform:scaleY(0.8);opacity:0.2}50%{transform:scaleY(1.2);opacity:0.4}}
 @keyframes waveAnim{0%,100%{transform:scaleY(0.6);opacity:0.5}50%{transform:scaleY(1);opacity:1}}
+@keyframes waveSearch{0%,100%{transform:scaleY(0.5);opacity:0.4;height:15px}50%{transform:scaleY(1);opacity:1;height:35px}}
 .voice-status{margin-top:40px;font-size:18px;color:var(--text);font-weight:500;letter-spacing:0.3px;transition:all .4s ease;text-align:center;padding:0 30px;min-height:26px;z-index:5}
 .voice-hint{margin-top:16px;font-size:13px;color:var(--text-ter);letter-spacing:0.2px;text-align:center;z-index:5}
 .voice-btn{width:40px;height:40px;border-radius:50%;border:none;background:0 0;color:var(--text-ter);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s}
@@ -433,9 +456,9 @@ body{height:calc(var(--vh,1vh)*100)}
       <div class="voice-ring voice-ring-3"></div>
       <div class="voice-ring voice-ring-2"></div>
       <div class="voice-ring voice-ring-1"></div>
-      <div class="voice-orb" id="voiceOrb">
-        <div class="voice-orb-dot"></div>
-      </div>
+    </div>
+    <div class="voice-orb" id="voiceOrb">
+      <div class="voice-orb-dot"></div>
     </div>
     <div class="voice-waves">
       <div class="voice-wave"></div>
