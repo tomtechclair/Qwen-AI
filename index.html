@@ -436,11 +436,6 @@ const DEFAULT_API_KEY = atob(_DK);
 const DEFAULT_CLAUDE_KEY = atob(_CK1) + atob(_CK2) + atob(_CK3);
 const API_URL = "https://api.mulerouter.ai/vendors/openai/v1/chat/completions";
 const CLAUDE_URL = "https://api.anthropic.com/v1/messages";
-const CLAUDE_PROXIES = [
-  "https://corsproxy.io/?",
-  "https://api.codetabs.com/v1/proxy?quest=",
-  "https://cors.sh/"
-];
 const TAVILY_KEY = "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";
 const TAVILY_URL = "https://api.tavily.com/search";
 
@@ -935,22 +930,28 @@ async function sendMessage() {
           context = 'Contexte: ' + history.slice(0, -1).map(m => `${m.role}: ${m.content.substring(0, 500)}`).join('\n') + '\n\n';
         }
         
-        // Try multiple proxies
+        // Try direct connection first, then proxies
         let resp = null;
         let lastError = '';
+        const endpoints = [
+          CLAUDE_URL, // Direct first
+          "https://corsproxy.io/?" + CLAUDE_URL,
+          "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(CLAUDE_URL),
+          "https://cors.sh/" + CLAUDE_URL
+        ];
         
-        for (const proxy of CLAUDE_PROXIES) {
+        for (const endpoint of endpoints) {
           try {
-            let targetUrl = proxy + encodeURIComponent(CLAUDE_URL);
-            if (proxy === "https://corsproxy.io/?") {
-              targetUrl = proxy + CLAUDE_URL;
-            }
-            resp = await fetch(targetUrl, {
+            resp = await fetch(endpoint, {
               method: "POST",
               headers: {"Content-Type": "application/json", "x-api-key": claudeKey, "anthropic-version": "2023-06-01"},
               body: JSON.stringify({model: "claude-opus-4-6", max_tokens: 4096, messages: [{role: "user", content: context + "Tu es Claude d'Anthropic. Réponds en français.\n\nQ: " + text}]})
             });
-            if (resp.ok || resp.status === 400 || resp.status === 401) break;
+            if (resp.status === 401 || resp.status === 403) {
+              // If it's an auth error, don't retry - the key is bad
+              break;
+            }
+            if (resp.ok || resp.status === 400) break;
           } catch(e) {
             lastError = e.message;
             continue;
