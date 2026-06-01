@@ -310,7 +310,7 @@ to{transform:rotate(360deg)}}
         <h1>Qwen AI</h1>
         <p>Assistant gratuit et illimité — posez vos questions, codez, traduisez, explorez !</p>
         <div class="quick-grid">
-          <button class="quick-btn" onclick="quickAction('code')"><span>💻</span> Code</button>
+          <button class="quick-btn" onclick="console.log('Code clicked'); quickAction('code')"><span>💻</span> Code</button>
           <button class="quick-btn" onclick="quickAction('explain')"><span>🧠</span> Expliquer</button>
           <button class="quick-btn" onclick="quickAction('translate')"><span>🌍</span> Traduire</button>
           <button class="quick-btn" onclick="quickAction('email')"><span>✉️</span> Email</button>
@@ -327,7 +327,7 @@ to{transform:rotate(360deg)}}
       <div class="input-zone">
         <div class="file-pv" id="filePreview"></div>
         <div class="input-wrap">
-          <textarea id="msgInput" placeholder="Posez votre question…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <textarea id="msgInput" placeholder="Posez votre question..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
           <div class="inp-acts">
             <button class="inp-btn" onclick="document.getElementById('fileInput').click()">📎</button>
             
@@ -997,6 +997,7 @@ function copyMessage(btn) {
 
 // ===== QUICK ACTIONS =====
 function quickAction(type) {
+  alert('quickAction called with: ' + type);
   const prompts = {
     code:'Écris du code Python pour une fonction de tri rapide.',
     explain:'Explique le concept de machine learning en termes simples.',
@@ -1193,6 +1194,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+
+console.log('Script loaded. sendMessage type:', typeof sendMessage);
+window.sendMessageDebug = function() {
+  alert('sendMessage: ' + typeof sendMessage + '\nisGenerating: ' + typeof isGenerating);
+};
 
 </script>
 </body>
