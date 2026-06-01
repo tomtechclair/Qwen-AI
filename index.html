@@ -556,6 +556,45 @@ document.addEventListener('keydown', function(e) {
 // ===== MODEL =====
 function changeModel(model) { selectedModel = model; showToast('🤖 Modèle: '+model); }
 
+// ===== SEND MESSAGE =====
+async function sendMessage() {
+  var msgInput = document.getElementById('msgInput');
+  if (!msgInput) return;
+  var text = msgInput.value.trim();
+  if (!text) return;
+  msgInput.value = '';
+  autoResize(msgInput);
+  addMessage(text, 'user');
+  setStatus('loading', 'Réponse en cours...');
+  try {
+    var response = await getAIResponse(text, pendingFileData);
+    addMessage(response, 'assistant');
+    setStatus('ready', 'Propulsé par Qwen Flash');
+  } catch(e) {
+    addMessage('Erreur: '+e.message, 'assistant');
+    setStatus('ready', 'Propulsé par Qwen Flash');
+  }
+}
+
+function addMessage(text, type) {
+  var msgs = document.getElementById('messages');
+  var welcome = document.getElementById('welcomeScreen');
+  if (welcome) welcome.style.display = 'none';
+  if (msgs) msgs.classList.add('active');
+  var div = document.createElement('div');
+  div.className = 'msg ' + type;
+  var avatar = type === 'user' ? '👤' : '🤖';
+  div.innerHTML = '<div class="msg-av">' + avatar + '</div><div class="msg-bubble">' + escapeHtml(text) + '</div>';
+  if (msgs) msgs.appendChild(div);
+  scrollToBottom();
+}
+
+function escapeHtml(text) {
+  var d = document.createElement('div');
+  d.textContent = text;
+  return d.innerHTML;
+}
+
 // ===== AI RESPONSE (non-stream fallback) =====
 async function getAIResponse(message, imageBase64) {
   const msgs = [{role:"system", content:"Tu es Qwen AI, un assistant IA gratuit créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Parle de façon naturelle et conversationnelle, annonce ce que tu fais, utilise des phrases courtes et fluides."}];
