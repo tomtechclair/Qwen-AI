@@ -237,8 +237,6 @@ body{height:calc(var(--vh,1vh)*100)}
   #msgInput{font-size:16px;padding:8px 0}
   .send-btn{width:38px;height:38px;font-size:15px}
   .inp-btn{width:32px;height:32px;font-size:16px}
-  .voice-btn{width:36px;height:36px}
-  .voice-btn svg{width:20px;height:20px}
   .scroll-btn{bottom:75px;right:15px;width:36px;height:36px;font-size:15px}
   .toast{bottom:70px;font-size:12px;padding:8px 16px}
   .modal{padding:20px;margin:0 8px;border-radius:var(--r-lg)}
@@ -253,32 +251,12 @@ body{height:calc(var(--vh,1vh)*100)}
 }
 
 /* ===== VOICE MODE - GPT STYLE ===== */
-.voice-overlay{position:fixed;inset:0;background:var(--bg);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:voiceIn .3s ease;color:var(--text);font-family:var(--font);pointer-events:none;opacity:0;visibility:hidden;transition:all .4s ease}
-.voice-overlay::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(255,255,255,0.02) 0%,transparent 70%);pointer-events:none}
-.voice-overlay.active{pointer-events:auto;opacity:1;visibility:visible}
-@keyframes voiceIn{from{opacity:0;transform:scale(0.98)}to{opacity:1;transform:scale(1)}}
-.voice-close{position:absolute;top:24px;right:24px;width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,0.05);color:var(--text-sec);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s ease;z-index:10}
-.voice-close:hover{background:rgba(255,255,255,0.1);color:var(--text)}
-.voice-main{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:40px}
-.voice-orb{width:100px;height:100px;border-radius:50%;background:var(--grad);box-shadow:0 0 40px rgba(159,111,255,0.3),0 0 80px rgba(159,111,255,0.1);transition:all .5s cubic-bezier(0.4,0,0.2,1);position:relative}
-.voice-orb::before{content:'';position:absolute;inset:-16px;border-radius:50%;border:1px solid rgba(159,111,255,0.12);transition:all .5s ease}
-.voice-orb::after{content:'';position:absolute;top:18%;left:18%;width:35%;height:35%;border-radius:50%;background:rgba(255,255,255,0.25)}
-.voice-orb.listening{background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%);box-shadow:0 0 50px rgba(34,197,94,0.4),0 0 100px rgba(34,197,94,0.15)}
-.voice-orb.listening::before{border-color:rgba(34,197,94,0.2);animation:ringPulse 1s infinite ease-in-out}
-@keyframes ringPulse{0%,100%{transform:scale(1);opacity:0.3}50%{transform:scale(1.12);opacity:0.7}}
-.voice-orb.thinking{background:linear-gradient(135deg,#f59e0b 0%,#d97706 100%);box-shadow:0 0 50px rgba(245,158,11,0.4),0 0 100px rgba(245,158,11,0.15);animation:thinkPulse 1.5s infinite ease-in-out}
-.voice-orb.thinking::before{border-color:rgba(245,158,11,0.2)}
-@keyframes thinkPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
-.voice-orb.speaking{background:linear-gradient(135deg,#3b82f6 0%,#2563eb 100%);box-shadow:0 0 50px rgba(59,130,246,0.4),0 0 100px rgba(59,130,246,0.15);animation:speakPulse 0.8s infinite ease-in-out}
-.voice-orb.speaking::before{border-color:rgba(59,130,246,0.2)}
-@keyframes speakPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-.voice-orb.searching{background:linear-gradient(135deg,#8b5cf6 0%,#7c3aed 100%);box-shadow:0 0 50px rgba(139,92,246,0.4),0 0 100px rgba(139,92,246,0.15);animation:searchSpin 2s infinite linear}
-.voice-orb.searching::before{border-color:rgba(139,92,246,0.2);animation:ringRotate 1.5s linear infinite}
-@keyframes searchSpin{0%,100%{transform:scale(1)}50%{transform:scale(1.02)}}
-@keyframes ringRotate{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-.voice-text{display:flex;flex-direction:column;align-items:center;gap:12px}
-.voice-status{font-size:16px;color:var(--text);font-weight:400;transition:all .3s ease;opacity:0.9}
-.voice-hint{font-size:13px;color:var(--text-ter);opacity:0.6}
+to{opacity:1;transform:scale(1)}}
+50%{transform:scale(1.12);opacity:0.7}}
+50%{transform:scale(1.05)}}
+50%{transform:scale(1.08)}}
+50%{transform:scale(1.02)}}
+to{transform:rotate(360deg)}}
 @media(hover:none){
   .conv:hover{background:initial;color:var(--text-sec)}
   .conv.active{background:var(--bg-card);color:var(--text)}
@@ -353,7 +331,7 @@ body{height:calc(var(--vh,1vh)*100)}
           <textarea id="msgInput" placeholder="Posez votre question…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
           <div class="inp-acts">
             <button class="inp-btn" onclick="document.getElementById('fileInput').click()">📎</button>
-            <button id="voiceBtn" onclick="showVoiceMode()" style="width:44px;height:44px;background:linear-gradient(135deg,#9f6fff,#3b82f6);border:none;border-radius:10px;color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(159,111,255,0.4)">🎤</button>
+            
             <input type="file" id="fileInput" style="display:none" onchange="handleFile(this)">
           </div>
           <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
@@ -404,20 +382,7 @@ body{height:calc(var(--vh,1vh)*100)}
 
 <div class="toast" id="toast"></div>
 
-<div id="voiceOverlay" style="display:none;position:fixed;inset:0;background:#05050a;z-index:99999;align-items:center;justify-content:center;flex-direction:column;color:white;font-family:Inter,sans-serif">
-  <button onclick="hideVoiceMode()" style="position:absolute;top:20px;right:20px;width:40px;height:40px;background:rgba(255,255,255,0.1);border:none;border-radius:50%;color:white;font-size:20px;cursor:pointer">✕</button>
-  <div style="width:150px;height:150px;background:linear-gradient(135deg,#9f6fff,#3b82f6);border-radius:50%;animation:pulse 2s infinite;display:flex;align-items:center;justify-content:center;font-size:50px">🎤</div>
-  <p id="voiceStatus" style="margin-top:30px;font-size:18px;color:#a0a0c0">Mode Vocal</p>
-  <p style="margin-top:10px;font-size:14px;color:#707090">Cliquez pour parler</p>
-  <button onclick="startVoiceTest()" style="margin-top:40px;padding:15px 40px;background:linear-gradient(135deg,#9f6fff,#3b82f6);border:none;border-radius:12px;color:white;font-size:16px;cursor:pointer;font-weight:600">🎤 Activer le Micro</button>
-</div>
-  <button class="voice-close" onclick="document.getElementById('voiceOverlay').style.display='none'">✕</button>
-  <div class="voice-main">
-    <div class="voice-orb" id="voiceOrb"></div>
-    <div class="voice-text">
-      <div class="voice-status" id="voiceStatus"></div>
-      <div class="voice-hint">Parlez pour communiquer avec Qwen</div>
-    </div>
+
   </div>
 </div>
 
@@ -454,14 +419,6 @@ let selectedModel = 'qwen-flash';
 let temperature = 0.7;
 let isGenerating = false;
 let touchStartX = 0;
-let voiceRec = null;
-let voiceSynth = window.speechSynthesis;
-let isVoiceMode = false;
-let voiceLoopActive = false;
-let voiceUtterance = null;
-let voiceProcessing = false;
-let voiceRetries = 0;
-
 // ===== CONVERSATIONS =====
 function loadConversations() {
   try { conversations = JSON.parse(localStorage.getItem('qwen-convs')) || []; } catch(e) { conversations = []; }
@@ -618,7 +575,6 @@ async function fetchGmailViaAPI(token) {
 function displayEmails(emails) {
   if (!emails || !emails.length) {
     addMessageToUI({role:'assistant', content:'📬 Aucun email récent trouvé.'});
-    if (isVoiceMode && voiceSynth) sayResponse('Aucun email récent trouvé.');
     return;
   }
 
@@ -669,181 +625,13 @@ function displayEmails(emails) {
         }
       }
       saveCurrentConv(getAllMessages());
-      if (isVoiceMode && voiceSynth) sayResponse(full);
-    }
+      }
   })();
 }
 
-// ===== VOICE MODE =====
-function toggleVoiceMode() {
-  console.log('toggleVoiceMode clicked');
-  const overlay = document.getElementById('voiceOverlay');
-  const voiceBtn = document.getElementById('voiceBtn');
-  
-  if (overlay) {
-    overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
-    overlay.style.opacity = overlay.style.display === 'flex' ? '1' : '0';
-    overlay.style.visibility = overlay.style.display === 'flex' ? 'visible' : 'hidden';
-    
-    if (overlay.style.display === 'flex') {
-      overlay.classList.add('active');
-      if (voiceBtn) voiceBtn.style.background = 'var(--accent-dim)';
-      setVoiceStatus('Pret...');
-      startVoice();
-    } else {
-      overlay.classList.remove('active');
-      if (voiceBtn) voiceBtn.style.background = '';
-      stopVoice();
-    }
-  }
 }
 
-function startVoice() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { setVoiceStatus('❌ Reconnaissance vocale non supportée'); return; }
-  voiceRetries = 0;
-  voiceRec = new SR();
-  voiceRec.lang = 'fr-FR';
-  voiceRec.interimResults = false;
-  voiceRec.continuous = true;
 
-  // Déverrouille SpeechSynthesis sur mobile (iOS nécessite un geste)
-  if (voiceSynth) {
-    voiceSynth.cancel();
-    const unlock = new SpeechSynthesisUtterance(' ');
-    unlock.volume = 0;
-    unlock.rate = 1;
-    unlock.lang = 'fr-FR';
-    voiceSynth.speak(unlock);
-  }
-
-  voiceRec.onstart = () => updateOrb('listening', '');
-  voiceRec.onresult = (e) => {
-    const text = e.results[e.results.length-1][0].transcript;
-    voiceProcessing = true;
-    document.getElementById('msgInput').value = text;
-    updateOrb('thinking', '🧠 Analyse...');
-    if (voiceRec) { try { voiceRec.stop(); } catch(e) {} }
-    setTimeout(() => sendMessage(), 200);
-  };
-  voiceRec.onerror = (e) => {
-    if (e.error === 'aborted') return;
-    if (e.error === 'no-speech' || e.error === 'network') {
-      setTimeout(() => { if (isVoiceMode) { try { voiceRec?.start(); } catch(e) { startVoice(); } } }, 300);
-      return;
-    }
-    if (e.error === 'not-allowed') { setVoiceStatus('❌ Microphone bloqué — autorisez-le dans les paramètres'); return; }
-    if (e.error === 'service-not-allowed') {
-      voiceRetries++;
-      if (voiceRetries < 3) { setTimeout(() => { if (isVoiceMode) startVoice(); }, 1000); return; }
-      setVoiceStatus('❌ Service vocal indisponible sur cet appareil');
-      setTimeout(() => { if (isVoiceMode) toggleVoiceMode(); }, 2500);
-      return;
-    }
-    setTimeout(() => { if (isVoiceMode) startVoice(); }, 1500);
-  };
-  voiceRec.onend = () => {
-    if (voiceLoopActive && !voiceSynth.speaking && !voiceProcessing) {
-      setTimeout(() => { try { voiceRec?.start(); } catch(e) { startVoice(); } }, 300);
-    }
-  };
-
-  voiceLoopActive = true;
-  try { voiceRec.start(); } catch(e) { setVoiceStatus('❌ Erreur démarrage micro'); }
-}
-
-function stopVoice() {
-  voiceLoopActive = false;
-  if (voiceRec) { try { voiceRec.stop(); } catch(e) {} voiceRec = null; }
-  if (voiceSynth.speaking) { voiceSynth.cancel(); }
-}
-
-function pickBestFrVoice() {
-  const voices = voiceSynth.getVoices();
-  if (!voices.length) return null;
-  const byName = s => voices.find(v => v.name.toLowerCase().includes(s));
-  const amélie = byName('amelie');
-  if (amélie) return amélie;
-  const isFemale = n => /feminine|female|féminin|google\s*(français|french)|audrey|marie|julie|sophie|claire|chloe|celeste|denise|hortense|elodie|lea|nathalie|virginie|isabelle|zira/i.test(n);
-  const rank = v => {
-    const n = v.name.toLowerCase();
-    const fr = v.lang.startsWith('fr');
-    if (fr && isFemale(n) && (n.includes('google') || n.includes('wavenet'))) return 6;
-    if (fr && n.includes('google')) return 5;
-    if (fr && isFemale(n)) return 4;
-    if (fr) return 3;
-    if (isFemale(n) && n.includes('google')) return 2;
-    if (n.includes('google')) return 1;
-    return 0;
-  };
-  return voices.reduce((a, v) => rank(v) > rank(a) ? v : a, voices[0]);
-}
-
-function sayResponse(text) {
-  if (!voiceSynth || !isVoiceMode) return;
-  let clean = text.replace(/<[^>]*>/g, '');
-  clean = filterAlibaba(clean);
-  clean = clean.replace(/\p{Extended_Pictographic}/gu, '').replace(/[\uFE00-\uFE0F]/g, '').trim();
-  if (!clean) return;
-
-  voiceSynth.cancel();
-  voiceProcessing = false;
-
-  // Split aux limites des mots (~180 chars max) pour éviter les coupures en milieu de mot
-  const parts = [];
-  let start = 0;
-  while (start < clean.length) {
-    if (start + 180 >= clean.length) { parts.push(clean.slice(start)); break; }
-    let end = start + 170;
-    while (end > start && !/\s|\.|,|!|\?|;|:/.test(clean[end])) end--;
-    if (end === start) end = start + 180;
-    parts.push(clean.slice(start, end + 1));
-    start = end + 1;
-  }
-
-  function speakChunk(i) {
-    if (i >= parts.length || !isVoiceMode) {
-      voiceProcessing = false;
-      if (isVoiceMode) {
-        updateOrb('listening', '🎤 Je vous écoute...');
-        setTimeout(() => { try { voiceRec?.start(); } catch(e) { startVoice(); } }, 200);
-      }
-      return;
-    }
-    const u = new SpeechSynthesisUtterance(parts[i]);
-    u.lang = 'fr-FR';
-    u.rate = 0.85;
-    u.pitch = 1;
-    u.volume = 1;
-    const best = pickBestFrVoice();
-    if (best) u.voice = best;
-    if (i === 0) u.onstart = () => updateOrb('speaking', '🔊 L\'IA vous répond...');
-    u.onend = () => setTimeout(() => speakChunk(i + 1), 80);
-    u.onerror = () => setTimeout(() => speakChunk(i + 1), 80);
-    voiceSynth.speak(u);
-  }
-
-  // Délai nécessaire sur mobile (iOS Safari)
-  setTimeout(() => speakChunk(0), 50);
-}
-
-function updateOrb(state, text) {
-  const orb = document.getElementById('voiceOrb');
-  const status = document.getElementById('voiceStatus');
-  if (orb) orb.className = 'voice-orb ' + state;
-  if (status) status.textContent = text;
-}
-
-function setVoiceStatus(text) {
-  const status = document.getElementById('voiceStatus');
-  if (status) status.textContent = text;
-}
-
-// Pre-load voices
-if (voiceSynth) {
-  voiceSynth.getVoices();
-  voiceSynth.onvoiceschanged = () => voiceSynth.getVoices();
-}
 
 // ===== SEND MESSAGE =====
 async function sendMessage() {
@@ -903,7 +691,6 @@ async function sendMessage() {
       setTimeout(() => openEmailForm(), 300);
       const all = getAllMessages();
       saveCurrentConv(all);
-      if (isVoiceMode && voiceSynth) sayResponse(emailMsg);
       isGenerating = false; setStatus('', 'Propulsé par Qwen Flash');
       return;
     }
@@ -972,7 +759,6 @@ async function sendMessage() {
         md.className = 'msg assistant'; md.id = msgId;
         md.innerHTML = '<div class="msg-av">🤖</div><div class="msg-bubble">' + responseText + '</div>';
         document.getElementById('messages').appendChild(md);
-        if (isVoiceMode && voiceSynth) sayResponse(responseText.replace(/<[^>]*>/g, '\n'));
         saveCurrentConv(getAllMessages());
         isGenerating = false; setStatus('', 'Propulsé par Qwen Flash'); return;
       } catch(e) {
@@ -1410,61 +1196,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
-
-// ===== VOICE MODE FUNCTIONS =====
-function showVoiceMode() {
-  var overlay = document.getElementById('voiceOverlay');
-  if (overlay) {
-    overlay.style.display = 'flex';
-    var btn = document.getElementById('voiceBtn');
-    if (btn) btn.style.transform = 'scale(1.1)';
-  }
-}
-
-function hideVoiceMode() {
-  var overlay = document.getElementById('voiceOverlay');
-  if (overlay) {
-    overlay.style.display = 'none';
-    var btn = document.getElementById('voiceBtn');
-    if (btn) btn.style.transform = 'scale(1)';
-  }
-}
-
-function startVoiceTest() {
-  var status = document.getElementById('voiceStatus');
-  if (status) status.textContent = 'Demarrage du micro...';
-  
-  // Try to use Speech Recognition
-  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (SR) {
-    var recognition = new SR();
-    recognition.lang = 'fr-FR';
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    
-    recognition.onresult = function(event) {
-      var transcript = event.results[0][0].transcript;
-      if (status) status.textContent = 'Vous avez dit: ' + transcript;
-      // Send this text to the chat
-      document.getElementById('msgInput').value = transcript;
-      hideVoiceMode();
-      sendMessage();
-    };
-    
-    recognition.onerror = function(event) {
-      if (status) status.textContent = 'Erreur: ' + event.error;
-    };
-    
-    recognition.onend = function() {
-      if (status) status.textContent = 'Traitement...';
-    };
-    
-    recognition.start();
-    if (status) status.textContent = 'Ecoute en cours...';
-  } else {
-    if (status) status.textContent = 'Reconnaissance vocale non supportée';
-  }
-}
 
 </script>
 </body>
