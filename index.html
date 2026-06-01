@@ -669,18 +669,11 @@ function displayEmails(emails) {
 
 // ===== VOICE MODE =====
 function toggleVoiceMode() {
-  const debug = document.getElementById('voiceDebug');
-  const log = (msg) => { console.log(msg); if (debug) debug.innerHTML += msg + '<br>'; };
-  log('toggleVoiceMode() appelé...');
   isVoiceMode = !isVoiceMode;
   const overlay = document.getElementById('voiceOverlay');
   const voiceBtn = document.getElementById('voiceBtn');
-  log('isVoiceMode = ' + isVoiceMode);
-  log('overlay: ' + (overlay ? 'OK' : 'NULL'));
-  log('voiceBtn: ' + (voiceBtn ? 'OK' : 'NULL'));
   if (overlay) overlay.classList.toggle('active', isVoiceMode);
   if (voiceBtn) voiceBtn.classList.toggle('active', isVoiceMode);
-  document.body.style.background = isVoiceMode ? 'red' : '';
   if (isVoiceMode) {
     setVoiceStatus('Demarrage...');
     startVoice();
@@ -690,12 +683,8 @@ function toggleVoiceMode() {
 }
 
 function startVoice() {
-  const debug = document.getElementById('voiceDebug');
-  const log = (msg) => { console.log(msg); if (debug) debug.innerHTML += msg + '<br>'; };
-  log('startVoice() - Demarrage...');
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  log('SpeechRecognition disponible: ' + (SR ? 'OUI' : 'NON'));
-  if (!SR) { setVoiceStatus('❌ Reconnaissance vocale non supportée'); log('ERREUR: SR non dispo'); return; }
+  if (!SR) { setVoiceStatus('❌ Reconnaissance vocale non supportée'); return; }
   voiceRetries = 0;
   voiceRec = new SR();
   voiceRec.lang = 'fr-FR';
