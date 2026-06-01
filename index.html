@@ -409,7 +409,7 @@ body{height:calc(var(--vh,1vh)*100)}
     <div class="voice-orb" id="voiceOrb"></div>
     <div class="voice-text">
       <div class="voice-status" id="voiceStatus"></div>
-      <div class="voice-hint">Parlez pour communiquer avec Qwen</div>
+      <div class="voice-hint">Parlez pour communiquer avec Qwen</div><div id="voiceDebug" style="font-size:11px;color:#666;margin-top:20px"></div>
     </div>
   </div>
 </div>
@@ -669,11 +669,19 @@ function displayEmails(emails) {
 
 // ===== VOICE MODE =====
 function toggleVoiceMode() {
+  const debug = document.getElementById('voiceDebug');
+  const log = (msg) => { console.log(msg); if (debug) debug.innerHTML += msg + '<br>'; };
+  log('toggleVoiceMode() appelé...');
   isVoiceMode = !isVoiceMode;
   const overlay = document.getElementById('voiceOverlay');
-  overlay.classList.toggle('active', isVoiceMode);
-  document.getElementById('voiceBtn')?.classList.toggle('active', isVoiceMode);
+  const voiceBtn = document.getElementById('voiceBtn');
+  log('isVoiceMode = ' + isVoiceMode);
+  log('overlay: ' + (overlay ? 'OK' : 'NULL'));
+  log('voiceBtn: ' + (voiceBtn ? 'OK' : 'NULL'));
+  if (overlay) overlay.classList.toggle('active', isVoiceMode);
+  if (voiceBtn) voiceBtn.classList.toggle('active', isVoiceMode);
   if (isVoiceMode) {
+    setVoiceStatus('Demarrage...');
     startVoice();
   } else {
     stopVoice();
@@ -681,8 +689,12 @@ function toggleVoiceMode() {
 }
 
 function startVoice() {
+  const debug = document.getElementById('voiceDebug');
+  const log = (msg) => { console.log(msg); if (debug) debug.innerHTML += msg + '<br>'; };
+  log('startVoice() - Demarrage...');
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) { setVoiceStatus('❌ Reconnaissance vocale non supportée'); return; }
+  log('SpeechRecognition disponible: ' + (SR ? 'OUI' : 'NON'));
+  if (!SR) { setVoiceStatus('❌ Reconnaissance vocale non supportée'); log('ERREUR: SR non dispo'); return; }
   voiceRetries = 0;
   voiceRec = new SR();
   voiceRec.lang = 'fr-FR';
