@@ -302,7 +302,12 @@ to{transform:rotate(360deg)}}
         <button class="topbar-btn" onclick="openSettings()">⚙️</button>
         <button class="topbar-btn" onclick="openAPI()">🔑</button>
       </div>
-    </header>
+    <!-- TEMP TEST BUTTON -->
+<div style="position:fixed;top:10px;right:10px;z-index:9999;background:red;padding:10px;">
+  <button onclick="quickAction('code')">TEST quickAction</button>
+</div>
+
+</header>
 
     <div class="chat">
       <div class="welcome" id="welcomeScreen">
@@ -997,6 +1002,7 @@ function copyMessage(btn) {
 
 // ===== QUICK ACTIONS =====
 function quickAction(type) {
+  console.log('quickAction called:', type);
   const prompts = {
     code:'Écris du code Python pour une fonction de tri rapide.',
     explain:'Explique le concept de machine learning en termes simples.',
