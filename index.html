@@ -669,17 +669,21 @@ function displayEmails(emails) {
 
 // ===== VOICE MODE =====
 function toggleVoiceMode() {
+  alert('Mode vocal active!');
+  console.log('toggleVoiceMode called');
+  alert('toggling...');
   isVoiceMode = !isVoiceMode;
+  alert('isVoiceMode=' + isVoiceMode);
   const overlay = document.getElementById('voiceOverlay');
-  const voiceBtn = document.getElementById('voiceBtn');
-  if (overlay) overlay.classList.toggle('active', isVoiceMode);
-  if (voiceBtn) voiceBtn.classList.toggle('active', isVoiceMode);
-  if (isVoiceMode) {
-    setVoiceStatus('Demarrage...');
-    startVoice();
-  } else {
-    stopVoice();
+  alert('overlay=' + overlay);
+  if (overlay) {
+    alert('showing overlay');
+    overlay.style.display = 'flex';
+    overlay.style.opacity = '1';
+    overlay.style.visibility = 'visible';
+    overlay.classList.add('active');
   }
+  alert('done');
 }
 
 function startVoice() {
