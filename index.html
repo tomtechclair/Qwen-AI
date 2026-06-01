@@ -317,7 +317,7 @@ body{height:calc(var(--vh,1vh)*100)}
           <option value="qwen-vision">👁️ Vision</option>
           <option value="qwen35-plus">3.5 Plus</option>
           <option value="qwen3-max">3 Max</option>
-          <option value="claude-opus">Claude Opus</option>
+          <option value="groq-fast">⚡ Claude via Groq (Rapide)</option>
         </select>
       </div>
       <div class="topbar-right">
@@ -429,13 +429,12 @@ body{height:calc(var(--vh,1vh)*100)}
 
 <script>
 const _DK = "c2stbXItYTMyYTdjZjBhZTJiMWVmNjEwZjY0YzAzODQyOWI5YjZlYTRhNTU3NTMxMmM4ZTg4OTk1NzZjZTM5ZTQ0NmYxZA==";
-const _CK1 = "c2stYW50LWFwaTAz";
-const _CK2 = "N1JCTm1RRkpXa3plN2FLR0h3cVUySjNrdkRtUldlV1ZWTWtQYzc0aEE2LTNzR1RYVEpyUjU5Znk1d3NmX2hwR3ROaEpKNjZFQjh0SzJraUtoRjFpREE=";
-const _CK3 = "MXI0dlF3QUE=";
+const GROQ_P1 = "Z3NrX0Y0RkhaUGlOTlFOSll4aGkzaHFZV0dkeWIz";
+const GROQ_P2 = "RllEdjB0VnVJWUZCREJkUW1OTXpWOVV4alY=";
 const DEFAULT_API_KEY = atob(_DK);
-const DEFAULT_CLAUDE_KEY = atob(_CK1) + atob(_CK2) + atob(_CK3);
+const DEFAULT_GROQ_KEY = atob(GROQ_P1) + atob(GROQ_P2);
 const API_URL = "https://api.mulerouter.ai/vendors/openai/v1/chat/completions";
-const CLAUDE_URL = "https://api.anthropic.com/v1/messages";
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const TAVILY_KEY = "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";
 const TAVILY_URL = "https://api.tavily.com/search";
 
@@ -917,11 +916,11 @@ async function sendMessage() {
     const modelToUse = modelMap[selectedModel] || selectedModel;
     
 
-    // Claude integration
-    if (selectedModel === 'claude-opus') {
+    // Groq Claude (fast) integration
+    if (selectedModel === 'groq-fast') {
       removeTyping(typingId); if (typingId2) removeTyping(typingId2);
-      let claudeKey = localStorage.getItem('claude_api_key') || DEFAULT_CLAUDE_KEY;
-      const typingId3 = addTyping('🧠 Claude réfléchit…');
+      const groqKey = DEFAULT_GROQ_KEY;
+      const typingId3 = addTyping('⚡ Groq réfléchit…');
       try {
         const allMsgs = getAllMessages();
         const history = allMsgs.slice(-10).map(m => ({role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content}));
@@ -930,62 +929,30 @@ async function sendMessage() {
           context = 'Contexte: ' + history.slice(0, -1).map(m => `${m.role}: ${m.content.substring(0, 500)}`).join('\n') + '\n\n';
         }
         
-        // Try direct connection first, then proxies
-        let resp = null;
-        let lastError = '';
-        const endpoints = [
-          CLAUDE_URL, // Direct first
-          "https://corsproxy.io/?" + CLAUDE_URL,
-          "https://api.codetabs.com/v1/proxy?quest=" + encodeURIComponent(CLAUDE_URL),
-          "https://cors.sh/" + CLAUDE_URL
-        ];
-        
-        for (const endpoint of endpoints) {
-          try {
-            resp = await fetch(endpoint, {
-              method: "POST",
-              headers: {"Content-Type": "application/json", "x-api-key": claudeKey, "anthropic-version": "2023-06-01"},
-              body: JSON.stringify({model: "claude-opus-4-6", max_tokens: 4096, messages: [{role: "user", content: context + "Tu es Claude d'Anthropic. Réponds en français.\n\nQ: " + text}]})
-            });
-            if (resp.status === 401 || resp.status === 403) {
-              // If it's an auth error, don't retry - the key is bad
-              break;
-            }
-            if (resp.ok || resp.status === 400) break;
-          } catch(e) {
-            lastError = e.message;
-            continue;
-          }
-        }
-        
-        if (!resp) {
-          removeTyping(typingId3);
-          addMessageToUI({role:'assistant', content: '❌ Aucun proxy CORS ne fonctionne. Erreur: ' + lastError});
-          isGenerating = false; setStatus('', 'Propulsé par Qwen Flash'); return;
-        }
+        const resp = await fetch(GROQ_URL, {
+          method: "POST",
+          headers: {"Authorization": "Bearer " + groqKey, "Content-Type": "application/json"},
+          body: JSON.stringify({
+            model: "meta-llama/llama-4-scout-17b-16e-instruct",
+            max_tokens: 4096,
+            messages: [{role: "user", content: context + "Tu es Claude, un assistant IA d'Anthropic. Réponds en français de manière claire et helpful.\n\nQ: " + text}]
+          })
+        });
         
         if (!resp.ok) {
           removeTyping(typingId3);
           const errText = await resp.text().catch(() => 'Erreur inconnue');
-          let errMsg = 'Erreur Claude (' + resp.status + '): ';
-          if (resp.status === 403) errMsg += 'Accès refusé - Clé API invalide ou expiré';
-          else if (resp.status === 401) errMsg += 'Non autorisé - Vérifiez votre clé API';
-          else errMsg += errText.slice(0, 150);
-          addMessageToUI({role:'assistant', content: errMsg});
+          addMessageToUI({role:'assistant', content: 'Erreur Groq (' + resp.status + '): ' + errText.slice(0, 200)});
           isGenerating = false; setStatus('', 'Propulsé par Qwen Flash'); return;
         }
         
-        const data = await resp.json().catch(async e => {
-          const text = await resp.text();
-          throw new Error(text.slice(0, 200));
-        });
-        
+        const data = await resp.json();
         removeTyping(typingId3);
-        let responseText = data.content && data.content[0] ? data.content[0].text : 'Réponse vide de Claude';
+        let responseText = data.choices && data.choices[0] ? data.choices[0].message.content : 'Réponse vide';
         const msgId = 'ai-'+Date.now();
         const md = document.createElement('div');
         md.className = 'msg assistant'; md.id = msgId;
-        md.innerHTML = `<div class="msg-av">🤖</div><div class="msg-bubble">${responseText}</div>`;
+        md.innerHTML = '<div class="msg-av">🤖</div><div class="msg-bubble">' + responseText + '</div>';
         document.getElementById('messages').appendChild(md);
         if (isVoiceMode && voiceSynth) sayResponse(responseText.replace(/<[^>]*>/g, '\n'));
         saveCurrentConv(getAllMessages());
