@@ -353,7 +353,7 @@ body{height:calc(var(--vh,1vh)*100)}
           <textarea id="msgInput" placeholder="Posez votre question…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
           <div class="inp-acts">
             <button class="inp-btn" onclick="document.getElementById('fileInput').click()">📎</button>
-            <button class="inp-btn voice-btn" id="voiceBtn" onclick="toggleVoiceMode()" title="Mode vocal">🎤</button>
+            <button class="inp-btn voice-btn" id="voiceBtn" onclick="document.getElementById('voiceOverlay').style.display='flex'" title="Mode vocal" style="background:orange;min-width:50px;min-height:50px;font-size:24px">🎤</button>
             <input type="file" id="fileInput" style="display:none" onchange="handleFile(this)">
           </div>
           <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
@@ -404,8 +404,8 @@ body{height:calc(var(--vh,1vh)*100)}
 
 <div class="toast" id="toast"></div>
 
-<div class="voice-overlay" id="voiceOverlay">
-  <button class="voice-close" onclick="toggleVoiceMode()">✕</button>
+<div class="voice-overlay" id="voiceOverlay" style="display:none">
+  <button class="voice-close" onclick="document.getElementById('voiceOverlay').style.display='none'">✕</button>
   <div class="voice-main">
     <div class="voice-orb" id="voiceOrb"></div>
     <div class="voice-text">
