@@ -275,8 +275,13 @@ function quickAction(type) {
     summary:'Résume ce texte en 3 points clés: ',
     poem:'Écris un poème sur la technologie et l\'intelligence artificielle.'
   };
+  console.log('prompts:', prompts);
+  console.log('type:', type);
+  console.log('prompt:', prompts[type]);
   const input = document.getElementById('msgInput');
+  console.log('input:', input);
   input.value = prompts[type] || '';
+  console.log('input.value set to:', input.value);
   input.focus();
   // Visual feedback
   const feedback = document.createElement('div');
