@@ -352,7 +352,7 @@ body{height:calc(var(--vh,1vh)*100)}
           <textarea id="msgInput" placeholder="Posez votre question…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
           <div class="inp-acts">
             <button class="inp-btn" onclick="document.getElementById('fileInput').click()">📎</button>
-            <button class="inp-btn voice-btn" id="voiceBtn" onclick="toggleVoiceMode()" title="Mode vocal" ><svg viewBox="0 0 24 24"><rect x="3" y="10" width="3" height="8" rx="1"/><rect x="8.5" y="6" width="3" height="16" rx="1"/><rect x="14" y="8" width="3" height="12" rx="1"/><rect x="19.5" y="4" width="3" height="18" rx="1"/></svg></button><svg viewBox="0 0 24 24"><rect x="3" y="10" width="3" height="8" rx="1"/><rect x="8.5" y="6" width="3" height="16" rx="1"/><rect x="14" y="8" width="3" height="12" rx="1"/><rect x="19.5" y="4" width="3" height="18" rx="1"/></svg></button>
+            <button class="inp-btn voice-btn" id="voiceBtn" onclick="toggleVoiceMode()" title="Mode vocal">🎤</button>
             <input type="file" id="fileInput" style="display:none" onchange="handleFile(this)">
           </div>
           <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
@@ -669,21 +669,27 @@ function displayEmails(emails) {
 
 // ===== VOICE MODE =====
 function toggleVoiceMode() {
-  alert('Mode vocal active!');
   console.log('toggleVoiceMode called');
-  alert('toggling...');
   isVoiceMode = !isVoiceMode;
-  alert('isVoiceMode=' + isVoiceMode);
   const overlay = document.getElementById('voiceOverlay');
-  alert('overlay=' + overlay);
+  const voiceBtn = document.getElementById('voiceBtn');
   if (overlay) {
-    alert('showing overlay');
     overlay.style.display = 'flex';
     overlay.style.opacity = '1';
     overlay.style.visibility = 'visible';
     overlay.classList.add('active');
   }
-  alert('done');
+  if (voiceBtn) voiceBtn.classList.add('active');
+  if (isVoiceMode) {
+    setVoiceStatus('Demarrage...');
+    startVoice();
+  } else {
+    if (overlay) {
+      overlay.style.display = 'none';
+      overlay.classList.remove('active');
+    }
+    stopVoice();
+  }
 }
 
 function startVoice() {
