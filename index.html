@@ -317,6 +317,7 @@ body{height:calc(var(--vh,1vh)*100)}
           <option value="qwen-vision">👁️ Vision</option>
           <option value="qwen35-plus">3.5 Plus</option>
           <option value="qwen3-max">3 Max</option>
+          <option value="claude-opus">Claude Opus</option>
         </select>
       </div>
       <div class="topbar-right">
@@ -430,6 +431,7 @@ body{height:calc(var(--vh,1vh)*100)}
 const _DK = "c2stbXItYTMyYTdjZjBhZTJiMWVmNjEwZjY0YzAzODQyOWI5YjZlYTRhNTU3NTMxMmM4ZTg4OTk1NzZjZTM5ZTQ0NmYxZA==";
 const DEFAULT_API_KEY = atob(_DK);
 const API_URL = "https://api.mulerouter.ai/vendors/openai/v1/chat/completions";
+const CLAUDE_URL = "https://api.anthropic.com/v1/messages";
 const TAVILY_KEY = "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";
 const TAVILY_URL = "https://api.tavily.com/search";
 
@@ -910,6 +912,52 @@ async function sendMessage() {
     };
     const modelToUse = modelMap[selectedModel] || selectedModel;
     
+
+    // Claude integration
+    if (selectedModel === 'claude-opus') {
+      removeTyping(typingId); if (typingId2) removeTyping(typingId2);
+      let claudeKey = localStorage.getItem('claude_api_key');
+      if (!claudeKey) {
+        const key = prompt('Entrez votre clé API Claude (sera sauvegardée):');
+        if (!key) { isGenerating = false; setStatus('', 'Propulsé par Qwen Flash'); return; }
+        localStorage.setItem('claude_api_key', key);
+        claudeKey = key;
+      }
+      const typingId3 = addTyping('🧠 Claude réfléchit…');
+      try {
+        const allMsgs = getAllMessages();
+        const history = allMsgs.slice(-10).map(m => ({role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content}));
+        let context = '';
+        if (history.length > 2) {
+          context = 'Contexte: ' + history.slice(0, -1).map(m => `${m.role}: ${m.content.substring(0, 500)}`).join('\n') + '\n\n';
+        }
+        const resp = await fetch(CLAUDE_URL, {
+          method: "POST",
+          headers: {"Content-Type": "application/json", "x-api-key": claudeKey, "anthropic-version": "2023-06-01"},
+          body: JSON.stringify({model: "claude-opus-4-6", max_tokens: 4096, messages: [{role: "user", content: context + "Tu es Claude d'Anthropic. Réponds en français.\n\nQ: " + text}]})
+        });
+        if (!resp.ok) {
+          removeTyping(typingId3);
+          addMessageToUI({role:'assistant', content: 'Erreur Claude: ' + (await resp.text()).slice(0, 100)});
+          isGenerating = false; setStatus('', 'Propulsé par Qwen Flash'); return;
+        }
+        const data = await resp.json();
+        removeTyping(typingId3);
+        const msgId = 'ai-'+Date.now();
+        const md = document.createElement('div');
+        md.className = 'msg assistant'; md.id = msgId;
+        md.innerHTML = `<div class="msg-av">🤖</div><div class="msg-bubble">${data.content[0].text}</div>`;
+        document.getElementById('messages').appendChild(md);
+        if (isVoiceMode && voiceSynth) sayResponse(data.content[0].text.replace(/<[^>]*>/g, '\n'));
+        saveCurrentConv(getAllMessages());
+        isGenerating = false; setStatus('', 'Propulsé par Qwen Flash'); return;
+      } catch(e) {
+        removeTyping(typingId3);
+        addMessageToUI({role:'assistant', content: 'Erreur: ' + e.message});
+        isGenerating = false; setStatus('', 'Propulsé par Qwen Flash'); return;
+      }
+    }
+
     // Prepare message content
     let userContent = text;
     if (pendingFileData) {
