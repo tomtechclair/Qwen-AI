@@ -250,7 +250,6 @@ body{height:calc(var(--vh,1vh)*100)}
   .topbar-right{gap:4px}
 }
 
-/* ===== VOICE MODE - GPT STYLE ===== */
 to{opacity:1;transform:scale(1)}}
 50%{transform:scale(1.12);opacity:0.7}}
 50%{transform:scale(1.05)}}
@@ -798,7 +797,6 @@ async function sendMessage() {
                 : resp.status === 403 ? "❌ Accès refusé à ce modèle."
                 : "Erreur API "+resp.status+": "+err.slice(0,200);
       addMessageToUI({role:'assistant', content: msg});
-      if (isVoiceMode) sayResponse(msg.replace(/<[^>]*>/g, '').replace(/\p{Extended_Pictographic}/gu, ''));
       isGenerating = false; setStatus('','Propulsé par Qwen Flash');
       return;
     }
@@ -913,7 +911,6 @@ async function sendMessage() {
 
     const all = getAllMessages();
     saveCurrentConv(all);
-    if (isVoiceMode && fullContent) sayResponse(fullContent);
   } catch(e) {
     const t = document.getElementById(typingId); if (t) t.remove();
     addMessageToUI({role:'assistant', content:'❌ Erreur: '+e.message});
