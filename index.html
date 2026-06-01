@@ -264,7 +264,7 @@ to{transform:rotate(360deg)}}
 <script>
 // Quick action buttons
 function quickAction(type) {
-  const prompts = {
+  var prompts = {
     code:'Écris du code Python pour une fonction de tri rapide.',
     explain:'Explique le concept de machine learning en termes simples.',
     translate:'Traduis ce texte en anglais: ',
@@ -274,19 +274,25 @@ function quickAction(type) {
     summary:'Résume ce texte en 3 points clés: ',
     poem:'Écris un poème sur la technologie et l\'intelligence artificielle.'
   };
-  console.log('prompts:', prompts);
-  console.log('type:', type);
-  console.log('prompt:', prompts[type]);
-  const input = document.getElementById('msgInput');
-  console.log('input:', input);
-  input.value = prompts[type] || '';
-  input.focus();
-  // Visual feedback
-  const feedback = document.createElement('div');
+  var text = prompts[type] || '';
+  var msgInput = document.getElementById('msgInput');
+  if (!msgInput) {
+    console.error('msgInput not found!');
+    return;
+  }
+  msgInput.value = text;
+  var event = new Event('input', { bubbles: true, cancelable: true });
+  msgInput.dispatchEvent(event);
+  if (msgInput.shadowRoot) {
+    var inner = msgInput.shadowRoot.querySelector('div');
+    if (inner) inner.textContent = text;
+  }
+  msgInput.focus();
+  var feedback = document.createElement('div');
   feedback.textContent = '✅ ' + type;
   feedback.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#4CAF50;color:#fff;padding:8px 16px;border-radius:15px;z-index:99999;font-size:14px;font-weight:bold;';
   document.body.appendChild(feedback);
-  setTimeout(() => feedback.remove(), 2000);
+  setTimeout(function() { feedback.remove(); }, 2000);
 }
 </script>
 </head>
