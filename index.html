@@ -261,6 +261,16 @@ to{transform:rotate(360deg)}}
   .conv.active{background:var(--bg-card);color:var(--text)}
 }
 </style>
+<script>
+// Click counter
+document.addEventListener('click', function() {
+  var counter = document.getElementById('clickCounter');
+  if (counter) {
+    var count = parseInt(counter.textContent.replace('Clicks: ', '')) + 1;
+    counter.textContent = 'Clicks: ' + count;
+  }
+});
+</script>
 </head>
 <body>
 
@@ -1208,5 +1218,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 </script>
+<div id="clickCounter" style="position:fixed;top:5px;right:5px;background:#0f0;color:#000;padding:10px;font-size:16px;z-index:99999;font-weight:bold;">Clicks: 0</div>
 </body>
 </html>
