@@ -264,7 +264,6 @@ to{transform:rotate(360deg)}}
 <script>
 // Quick action buttons
 function quickAction(type) {
-  console.log('quickAction called with type:', type);
   const prompts = {
     code:'Écris du code Python pour une fonction de tri rapide.',
     explain:'Explique le concept de machine learning en termes simples.',
@@ -281,8 +280,6 @@ function quickAction(type) {
   const input = document.getElementById('msgInput');
   console.log('input:', input);
   input.value = prompts[type] || '';
-  console.log('input.value set to:', input.value);
-  input.dispatchEvent(new Event('input', {bubbles: true}));
   input.focus();
   // Visual feedback
   const feedback = document.createElement('div');
@@ -342,14 +339,14 @@ function quickAction(type) {
         <h1>Qwen AI</h1>
         <p>Assistant gratuit et illimité — posez vos questions, codez, traduisez, explorez !</p>
         <div class="quick-grid">
-          <button class="quick-btn" onclick="setTimeout(() => quickAction('code'), 100)"><span>💻</span> Code</button>
-          <button class="quick-btn" onclick="setTimeout(() => quickAction('explain'), 100)"><span>🧠</span> Expliquer</button>
-          <button class="quick-btn" onclick="setTimeout(() => quickAction('translate'), 100)"><span>🌍</span> Traduire</button>
-          <button class="quick-btn" onclick="setTimeout(() => quickAction('email'), 100)"><span>✉️</span> Email</button>
-          <button class="quick-btn" onclick="setTimeout(() => quickAction('ideas'), 100)"><span>💡</span> Idées</button>
-          <button class="quick-btn" onclick="setTimeout(() => quickAction('math'), 100)"><span>🧮</span> Maths</button>
-          <button class="quick-btn" onclick="setTimeout(() => quickAction('summary'), 100)"><span>📝</span> Résumer</button>
-          <button class="quick-btn" onclick="setTimeout(() => quickAction('poem'), 100)"><span>📜</span> Poème</button>
+          <button class="quick-btn" onclick="quickAction('code')"><span>💻</span> Code</button>
+          <button class="quick-btn" onclick="quickAction('explain')"><span>🧠</span> Expliquer</button>
+          <button class="quick-btn" onclick="quickAction('translate')"><span>🌍</span> Traduire</button>
+          <button class="quick-btn" onclick="quickAction('email')"><span>✉️</span> Email</button>
+          <button class="quick-btn" onclick="quickAction('ideas')"><span>💡</span> Idées</button>
+          <button class="quick-btn" onclick="quickAction('math')"><span>🧮</span> Maths</button>
+          <button class="quick-btn" onclick="quickAction('summary')"><span>📝</span> Résumer</button>
+          <button class="quick-btn" onclick="quickAction('poem')"><span>📜</span> Poème</button>
         </div>
       </div>
 
