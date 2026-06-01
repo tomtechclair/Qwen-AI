@@ -1014,6 +1014,11 @@ function copyMessage(btn) {
 // ===== QUICK ACTIONS =====
 function quickAction(type) {
   console.log('quickAction called with type:', type);
+  var d=document.createElement('div');
+  d.style.cssText='position:fixed;top:20%;left:50%;background:#00f;color:#fff;padding:15px;font-size:16px;z-index:99999';
+  d.textContent='quickAction called: '+type;
+  document.body.appendChild(d);
+  setTimeout(function(){d.remove()},3000);
   const prompts = {
     code:'Écris du code Python pour une fonction de tri rapide.',
     explain:'Explique le concept de machine learning en termes simples.',
