@@ -436,7 +436,7 @@ const DEFAULT_API_KEY = atob(_DK);
 const DEFAULT_CLAUDE_KEY = atob(_CK1) + atob(_CK2) + atob(_CK3);
 const API_URL = "https://api.mulerouter.ai/vendors/openai/v1/chat/completions";
 const CLAUDE_URL = "https://api.anthropic.com/v1/messages";
-const CLAUDE_CORS = "https://cors-anywhere.herokuapp.com/";
+const CLAUDE_PROXY = "https://cors.bridged.cc/";
 const TAVILY_KEY = "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";
 const TAVILY_URL = "https://api.tavily.com/search";
 
@@ -930,7 +930,7 @@ async function sendMessage() {
         if (history.length > 2) {
           context = 'Contexte: ' + history.slice(0, -1).map(m => `${m.role}: ${m.content.substring(0, 500)}`).join('\n') + '\n\n';
         }
-        const resp = await fetch(CLAUDE_CORS + CLAUDE_URL, {
+        const resp = await fetch(CLAUDE_PROXY + CLAUDE_URL, {
           method: "POST",
           headers: {"Content-Type": "application/json", "x-api-key": claudeKey, "anthropic-version": "2023-06-01"},
           body: JSON.stringify({model: "claude-opus-4-6", max_tokens: 4096, messages: [{role: "user", content: context + "Tu es Claude d'Anthropic. Réponds en français.\n\nQ: " + text}]})
