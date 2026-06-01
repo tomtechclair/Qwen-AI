@@ -266,6 +266,21 @@ to{transform:rotate(360deg)}}
 const API_URL = 'https://dash.qwen.ai/api/v1/chat/completions';
 const DEFAULT_API_KEY = 'sk-qwen-pro-free-tier-1234567890abcdef';
 
+// ===== MAINTENANCE MODE (Mobile) =====
+(function checkMobile() {
+  var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  if (isMobile) {
+    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;text-align:center;padding:20px;background:#1a1a2e;color:#fff;font-family:sans-serif"><h1>🔧 Mode Maintenance</h1><p style="margin-top:15px;font-size:18px">Le site est en maintenance sur mobile.<br><br>Revenez à partir du <strong>jeudi 4 juin</strong> à <strong>20H</strong>.</p><p style="margin-top:20px;opacity:.6">Version desktop disponible.</p></div>';
+    document.body.style.margin = '0';
+    document.body.style.padding = '0';
+    return; // Stop execution for mobile
+  }
+})();
+
+// ===== VARIABLES =====
+var pendingFileData = null;
+var pendingFileName = '';
+
 // ===== MODELS =====
 const MODELS = [
   'qwen-flash',
