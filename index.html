@@ -586,6 +586,29 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
+// Ensure quick buttons work - add event listeners with fallback
+(function initQuickButtons() {
+  var retries = 0;
+  function tryInit() {
+    var btns = document.querySelectorAll('.quick-btn');
+    if (btns.length === 0 && retries < 20) {
+      retries++;
+      setTimeout(tryInit, 100);
+      return;
+    }
+    btns.forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        var onclick = btn.getAttribute('onclick') || '';
+        var match = onclick.match(/quickAction\('([^']+)'\)/);
+        if (match && typeof quickAction === 'function') {
+          quickAction(match[1]);
+        }
+      });
+    });
+  }
+  tryInit();
+})();
+
 </script>
 </body>
 </html>
