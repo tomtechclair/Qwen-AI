@@ -262,6 +262,18 @@ to{transform:rotate(360deg)}}
 }
 </style>
 <script>
+// ===== API CONFIG =====
+const API_URL = 'https://dash.qwen.ai/api/v1/chat/completions';
+const DEFAULT_API_KEY = 'sk-qwen-pro-free-tier-1234567890abcdef';
+
+// ===== MODELS =====
+const MODELS = [
+  'qwen-flash',
+  'qwen-turbo',
+  'qwen-plus',
+  'qwen-max'
+];
+
 // Quick action buttons
 function quickAction(type) {
   var prompts = {
