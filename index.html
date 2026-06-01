@@ -353,7 +353,7 @@ body{height:calc(var(--vh,1vh)*100)}
           <textarea id="msgInput" placeholder="Posez votre question…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
           <div class="inp-acts">
             <button class="inp-btn" onclick="document.getElementById('fileInput').click()">📎</button>
-            <button class="inp-btn voice-btn" id="voiceBtn" onclick="document.getElementById('voiceOverlay').style.display='flex'" title="Mode vocal" style="background:orange;min-width:50px;min-height:50px;font-size:24px">🎤</button>
+            <button id="voiceBtn" onclick="showVoiceMode()" style="width:44px;height:44px;background:linear-gradient(135deg,#9f6fff,#3b82f6);border:none;border-radius:10px;color:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 15px rgba(159,111,255,0.4)">🎤</button>
             <input type="file" id="fileInput" style="display:none" onchange="handleFile(this)">
           </div>
           <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
@@ -404,7 +404,13 @@ body{height:calc(var(--vh,1vh)*100)}
 
 <div class="toast" id="toast"></div>
 
-<div class="voice-overlay" id="voiceOverlay" style="display:none">
+<div id="voiceOverlay" style="display:none;position:fixed;inset:0;background:#05050a;z-index:99999;align-items:center;justify-content:center;flex-direction:column;color:white;font-family:Inter,sans-serif">
+  <button onclick="hideVoiceMode()" style="position:absolute;top:20px;right:20px;width:40px;height:40px;background:rgba(255,255,255,0.1);border:none;border-radius:50%;color:white;font-size:20px;cursor:pointer">✕</button>
+  <div style="width:150px;height:150px;background:linear-gradient(135deg,#9f6fff,#3b82f6);border-radius:50%;animation:pulse 2s infinite;display:flex;align-items:center;justify-content:center;font-size:50px">🎤</div>
+  <p id="voiceStatus" style="margin-top:30px;font-size:18px;color:#a0a0c0">Mode Vocal</p>
+  <p style="margin-top:10px;font-size:14px;color:#707090">Cliquez pour parler</p>
+  <button onclick="startVoiceTest()" style="margin-top:40px;padding:15px 40px;background:linear-gradient(135deg,#9f6fff,#3b82f6);border:none;border-radius:12px;color:white;font-size:16px;cursor:pointer;font-weight:600">🎤 Activer le Micro</button>
+</div>
   <button class="voice-close" onclick="document.getElementById('voiceOverlay').style.display='none'">✕</button>
   <div class="voice-main">
     <div class="voice-orb" id="voiceOrb"></div>
@@ -1404,6 +1410,62 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 });
+
+// ===== VOICE MODE FUNCTIONS =====
+function showVoiceMode() {
+  var overlay = document.getElementById('voiceOverlay');
+  if (overlay) {
+    overlay.style.display = 'flex';
+    var btn = document.getElementById('voiceBtn');
+    if (btn) btn.style.transform = 'scale(1.1)';
+  }
+}
+
+function hideVoiceMode() {
+  var overlay = document.getElementById('voiceOverlay');
+  if (overlay) {
+    overlay.style.display = 'none';
+    var btn = document.getElementById('voiceBtn');
+    if (btn) btn.style.transform = 'scale(1)';
+  }
+}
+
+function startVoiceTest() {
+  var status = document.getElementById('voiceStatus');
+  if (status) status.textContent = 'Demarrage du micro...';
+  
+  // Try to use Speech Recognition
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SR) {
+    var recognition = new SR();
+    recognition.lang = 'fr-FR';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    
+    recognition.onresult = function(event) {
+      var transcript = event.results[0][0].transcript;
+      if (status) status.textContent = 'Vous avez dit: ' + transcript;
+      // Send this text to the chat
+      document.getElementById('msgInput').value = transcript;
+      hideVoiceMode();
+      sendMessage();
+    };
+    
+    recognition.onerror = function(event) {
+      if (status) status.textContent = 'Erreur: ' + event.error;
+    };
+    
+    recognition.onend = function() {
+      if (status) status.textContent = 'Traitement...';
+    };
+    
+    recognition.start();
+    if (status) status.textContent = 'Ecoute en cours...';
+  } else {
+    if (status) status.textContent = 'Reconnaissance vocale non supportée';
+  }
+}
+
 </script>
 </body>
 </html>
