@@ -323,7 +323,7 @@ document.addEventListener('click', function() {
         <h1>Qwen AI</h1>
         <p>Assistant gratuit et illimité — posez vos questions, codez, traduisez, explorez !</p>
         <div class="quick-grid">
-          <button class="quick-btn" onclick="var d=document.createElement('div');d.style.cssText='position:fixed;top:50%;left:50%;background:#f00;color:#fff;padding:20px;font-size:20px;z-index:99999';d.textContent='CLICK WORKED';document.body.appendChild(d);setTimeout(function(){d.remove()},3000)"><span>💻</span> Code</button>
+          <button class="quick-btn" onclick="var d=document.createElement('div');d.style.cssText='position:fixed;top:50%;left:50%;background:#f00;color:#fff;padding:20px;font-size:20px;z-index:99999';d.textContent='CLICK WORKED';document.body.appendChild(d);setTimeout(function(){d.remove()},3000);quickAction('code')"><span>💻</span> Code</button>
           <button class="quick-btn" onclick="quickAction('explain')"><span>🧠</span> Expliquer</button>
           <button class="quick-btn" onclick="quickAction('translate')"><span>🌍</span> Traduire</button>
           <button class="quick-btn" onclick="quickAction('email')"><span>✉️</span> Email</button>
