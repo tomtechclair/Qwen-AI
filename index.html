@@ -302,12 +302,7 @@ to{transform:rotate(360deg)}}
         <button class="topbar-btn" onclick="openSettings()">⚙️</button>
         <button class="topbar-btn" onclick="openAPI()">🔑</button>
       </div>
-    <!-- TEMP TEST BUTTON -->
-<div style="position:fixed;top:10px;right:10px;z-index:9999;background:red;padding:10px;">
-  <button onclick="document.body.style.background='yellow';alert('clicked')">TEST CLICK</button>
-</div>
-
-</header>
+    </header>
 
     <div class="chat">
       <div class="welcome" id="welcomeScreen">
@@ -338,7 +333,7 @@ to{transform:rotate(360deg)}}
             
             <input type="file" id="fileInput" style="display:none" onchange="handleFile(this)">
           </div>
-          <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+          <button class="send-btn" id="sendBtn" onclick="console.log('send clicked'); sendMessage()">➤</button>
         </div>
       </div>
     </div>
@@ -641,8 +636,9 @@ function displayEmails(emails) {
 async function sendMessage() {
   const input = document.getElementById('msgInput');
   const text = input.value.trim();
-  if (!text && !pendingFileData) return;
-  if (isGenerating) return;
+  console.log('sendMessage called, text:', text.substring(0, 50));
+  if (!text && !pendingFileData) { console.log('No text, returning'); return; }
+  if (isGenerating) { console.log('Already generating, returning'); return; }
 
   const msgsEl = document.getElementById('messages');
   document.getElementById('welcomeScreen').style.display = 'none';
@@ -1002,7 +998,6 @@ function copyMessage(btn) {
 
 // ===== QUICK ACTIONS =====
 function quickAction(type) {
-  console.log('quickAction called:', type);
   const prompts = {
     code:'Écris du code Python pour une fonction de tri rapide.',
     explain:'Explique le concept de machine learning en termes simples.',
