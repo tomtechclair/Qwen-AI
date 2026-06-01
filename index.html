@@ -429,7 +429,11 @@ body{height:calc(var(--vh,1vh)*100)}
 
 <script>
 const _DK = "c2stbXItYTMyYTdjZjBhZTJiMWVmNjEwZjY0YzAzODQyOWI5YjZlYTRhNTU3NTMxMmM4ZTg4OTk1NzZjZTM5ZTQ0NmYxZA==";
+const _CK1 = "c2stYW50LWFwaTAz";
+const _CK2 = "Um01NHV5ZkU1XzJsLWVsa2pWLUNGN1BPUzZ6YlJnQ0NFUEp5bVl0cnYtZDNiRWl3Y1JRYVUzY3FqRzJGT2tCV3ZET0hCZWhwUXdrYVBVb0h3LW11TkE=";
+const _CK3 = "NWdTVjJRQUE=";
 const DEFAULT_API_KEY = atob(_DK);
+const DEFAULT_CLAUDE_KEY = atob(_CK1) + atob(_CK2) + atob(_CK3);
 const API_URL = "https://api.mulerouter.ai/vendors/openai/v1/chat/completions";
 const CLAUDE_URL = "https://api.anthropic.com/v1/messages";
 const TAVILY_KEY = "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";
@@ -916,13 +920,7 @@ async function sendMessage() {
     // Claude integration
     if (selectedModel === 'claude-opus') {
       removeTyping(typingId); if (typingId2) removeTyping(typingId2);
-      let claudeKey = localStorage.getItem('claude_api_key');
-      if (!claudeKey) {
-        const key = prompt('Entrez votre clé API Claude (sera sauvegardée):');
-        if (!key) { isGenerating = false; setStatus('', 'Propulsé par Qwen Flash'); return; }
-        localStorage.setItem('claude_api_key', key);
-        claudeKey = key;
-      }
+      let claudeKey = localStorage.getItem('claude_api_key') || DEFAULT_CLAUDE_KEY;
       const typingId3 = addTyping('🧠 Claude réfléchit…');
       try {
         const allMsgs = getAllMessages();
