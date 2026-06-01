@@ -286,7 +286,7 @@ body{height:calc(var(--vh,1vh)*100)}
 </style>
 </head>
 <body>
-<div id="TEST_VOICE_BTN" style="position:fixed;top:0;left:0;z-index:999999;background:red;color:white;padding:15px 25px;font-size:20px;font-weight:bold;cursor:pointer;border:none;border-radius:0 0 10px 0;box-shadow:0 4px 15px rgba(0,0,0,0.3)" onclick="toggleVoiceMode()">🎤 VOCAL TEST (CLICK ME)</div>>
+
 <div class="app">
   <div class="sb-backdrop" id="sbBackdrop"></div>
 
@@ -410,7 +410,7 @@ body{height:calc(var(--vh,1vh)*100)}
     <div class="voice-orb" id="voiceOrb"></div>
     <div class="voice-text">
       <div class="voice-status" id="voiceStatus"></div>
-      <div class="voice-hint">Parlez pour communiquer avec Qwen</div><div id="voiceDebug" style="font-size:11px;color:#666;margin-top:20px"></div>
+      <div class="voice-hint">Parlez pour communiquer avec Qwen</div>
     </div>
   </div>
 </div>
@@ -670,26 +670,25 @@ function displayEmails(emails) {
 
 // ===== VOICE MODE =====
 function toggleVoiceMode() {
-  console.log('toggleVoiceMode called');
-  isVoiceMode = !isVoiceMode;
+  console.log('toggleVoiceMode clicked');
   const overlay = document.getElementById('voiceOverlay');
   const voiceBtn = document.getElementById('voiceBtn');
+  
   if (overlay) {
-    overlay.style.display = 'flex';
-    overlay.style.opacity = '1';
-    overlay.style.visibility = 'visible';
-    overlay.classList.add('active');
-  }
-  if (voiceBtn) voiceBtn.classList.add('active');
-  if (isVoiceMode) {
-    setVoiceStatus('Demarrage...');
-    startVoice();
-  } else {
-    if (overlay) {
-      overlay.style.display = 'none';
+    overlay.style.display = overlay.style.display === 'flex' ? 'none' : 'flex';
+    overlay.style.opacity = overlay.style.display === 'flex' ? '1' : '0';
+    overlay.style.visibility = overlay.style.display === 'flex' ? 'visible' : 'hidden';
+    
+    if (overlay.style.display === 'flex') {
+      overlay.classList.add('active');
+      if (voiceBtn) voiceBtn.style.background = 'var(--accent-dim)';
+      setVoiceStatus('Pret...');
+      startVoice();
+    } else {
       overlay.classList.remove('active');
+      if (voiceBtn) voiceBtn.style.background = '';
+      stopVoice();
     }
-    stopVoice();
   }
 }
 
