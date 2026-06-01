@@ -436,7 +436,11 @@ const DEFAULT_API_KEY = atob(_DK);
 const DEFAULT_CLAUDE_KEY = atob(_CK1) + atob(_CK2) + atob(_CK3);
 const API_URL = "https://api.mulerouter.ai/vendors/openai/v1/chat/completions";
 const CLAUDE_URL = "https://api.anthropic.com/v1/messages";
-const CLAUDE_PROXY = "https://cors.bridged.cc/";
+const CLAUDE_PROXIES = [
+  "https://corsproxy.io/?",
+  "https://api.codetabs.com/v1/proxy?quest=",
+  "https://proxy.cors.sh/"
+];
 const TAVILY_KEY = "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";
 const TAVILY_URL = "https://api.tavily.com/search";
 
@@ -930,18 +934,51 @@ async function sendMessage() {
         if (history.length > 2) {
           context = 'Contexte: ' + history.slice(0, -1).map(m => `${m.role}: ${m.content.substring(0, 500)}`).join('\n') + '\n\n';
         }
-        const resp = await fetch(CLAUDE_PROXY + CLAUDE_URL, {
-          method: "POST",
-          headers: {"Content-Type": "application/json", "x-api-key": claudeKey, "anthropic-version": "2023-06-01"},
-          body: JSON.stringify({model: "claude-opus-4-6", max_tokens: 4096, messages: [{role: "user", content: context + "Tu es Claude d'Anthropic. Réponds en français.\n\nQ: " + text}]})
-        });
-        if (!resp.ok) {
+        
+        // Try multiple proxies
+        let resp = null;
+        let lastError = '';
+        
+        for (const proxy of CLAUDE_PROXIES) {
+          try {
+            let targetUrl = proxy + encodeURIComponent(CLAUDE_URL);
+            if (proxy === "https://corsproxy.io/?") {
+              targetUrl = proxy + CLAUDE_URL;
+            }
+            resp = await fetch(targetUrl, {
+              method: "POST",
+              headers: {"Content-Type": "application/json", "x-api-key": claudeKey, "anthropic-version": "2023-06-01"},
+              body: JSON.stringify({model: "claude-opus-4-6", max_tokens: 4096, messages: [{role: "user", content: context + "Tu es Claude d'Anthropic. Réponds en français.\n\nQ: " + text}]})
+            });
+            if (resp.ok || resp.status === 400 || resp.status === 401) break;
+          } catch(e) {
+            lastError = e.message;
+            continue;
+          }
+        }
+        
+        if (!resp) {
           removeTyping(typingId3);
-          const errText = await resp.text();
-          addMessageToUI({role:'assistant', content: 'Erreur Claude (' + resp.status + '): ' + (errText.includes('CORS') ? 'Problème de connexion Cross-Origin. L\'API Anthropic nécessite un proxy.' : errText.slice(0, 200))});
+          addMessageToUI({role:'assistant', content: '❌ Aucun proxy CORS ne fonctionne. Erreur: ' + lastError});
           isGenerating = false; setStatus('', 'Propulsé par Qwen Flash'); return;
         }
-        const data = await resp.json();
+        
+        if (!resp.ok) {
+          removeTyping(typingId3);
+          const errText = await resp.text().catch(() => 'Erreur inconnue');
+          let errMsg = 'Erreur Claude (' + resp.status + '): ';
+          if (resp.status === 403) errMsg += 'Accès refusé - Clé API invalide ou expiré';
+          else if (resp.status === 401) errMsg += 'Non autorisé - Vérifiez votre clé API';
+          else errMsg += errText.slice(0, 150);
+          addMessageToUI({role:'assistant', content: errMsg});
+          isGenerating = false; setStatus('', 'Propulsé par Qwen Flash'); return;
+        }
+        
+        const data = await resp.json().catch(async e => {
+          const text = await resp.text();
+          throw new Error(text.slice(0, 200));
+        });
+        
         removeTyping(typingId3);
         let responseText = data.content && data.content[0] ? data.content[0].text : 'Réponse vide de Claude';
         const msgId = 'ai-'+Date.now();
@@ -954,11 +991,7 @@ async function sendMessage() {
         isGenerating = false; setStatus('', 'Propulsé par Qwen Flash'); return;
       } catch(e) {
         removeTyping(typingId3);
-        let errMsg = e.message;
-        if (errMsg.includes('Failed to fetch') || errMsg.includes('NetworkError')) {
-          errMsg = 'Erreur réseau: impossible de contacter l\'API Claude. L\'API Anthropic nécessite peut-être un proxy CORS.';
-        }
-        addMessageToUI({role:'assistant', content: 'Erreur: ' + errMsg});
+        addMessageToUI({role:'assistant', content: 'Erreur: ' + e.message.slice(0, 200)});
         isGenerating = false; setStatus('', 'Propulsé par Qwen Flash'); return;
       }
     }
