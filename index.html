@@ -253,7 +253,7 @@ body{height:calc(var(--vh,1vh)*100)}
 }
 
 /* ===== VOICE MODE - GPT STYLE ===== */
-.voice-overlay{position:fixed;inset:0;background:var(--bg);z-index:3000;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:voiceIn .3s ease;color:var(--text);font-family:var(--font);pointer-events:none;opacity:0;visibility:hidden;transition:all .4s ease}
+.voice-overlay{position:fixed;inset:0;background:var(--bg);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;animation:voiceIn .3s ease;color:var(--text);font-family:var(--font);pointer-events:none;opacity:0;visibility:hidden;transition:all .4s ease}
 .voice-overlay::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 50%,rgba(255,255,255,0.02) 0%,transparent 70%);pointer-events:none}
 .voice-overlay.active{pointer-events:auto;opacity:1;visibility:visible}
 @keyframes voiceIn{from{opacity:0;transform:scale(0.98)}to{opacity:1;transform:scale(1)}}
@@ -352,7 +352,7 @@ body{height:calc(var(--vh,1vh)*100)}
           <textarea id="msgInput" placeholder="Posez votre question…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
           <div class="inp-acts">
             <button class="inp-btn" onclick="document.getElementById('fileInput').click()">📎</button>
-            <button class="inp-btn voice-btn" id="voiceBtn" onclick="toggleVoiceMode()" title="Mode vocal" style="background:rgba(255,0,0,0.2)">🎤 TEST</button><svg viewBox="0 0 24 24"><rect x="3" y="10" width="3" height="8" rx="1"/><rect x="8.5" y="6" width="3" height="16" rx="1"/><rect x="14" y="8" width="3" height="12" rx="1"/><rect x="19.5" y="4" width="3" height="18" rx="1"/></svg></button>
+            <button class="inp-btn voice-btn" id="voiceBtn" onclick="toggleVoiceMode()" title="Mode vocal" ><svg viewBox="0 0 24 24"><rect x="3" y="10" width="3" height="8" rx="1"/><rect x="8.5" y="6" width="3" height="16" rx="1"/><rect x="14" y="8" width="3" height="12" rx="1"/><rect x="19.5" y="4" width="3" height="18" rx="1"/></svg></button><svg viewBox="0 0 24 24"><rect x="3" y="10" width="3" height="8" rx="1"/><rect x="8.5" y="6" width="3" height="16" rx="1"/><rect x="14" y="8" width="3" height="12" rx="1"/><rect x="19.5" y="4" width="3" height="18" rx="1"/></svg></button>
             <input type="file" id="fileInput" style="display:none" onchange="handleFile(this)">
           </div>
           <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
@@ -410,7 +410,6 @@ body{height:calc(var(--vh,1vh)*100)}
     <div class="voice-text">
       <div class="voice-status" id="voiceStatus"></div>
       <div class="voice-hint">Parlez pour communiquer avec Qwen</div><div id="voiceDebug" style="font-size:11px;color:#666;margin-top:20px"></div>
-    <button onclick="toggleVoiceMode()" style="position:fixed;bottom:20px;left:20px;padding:20px;background:red;color:white;font-size:20px;z-index:9999;cursor:pointer">🎤 MODE VOCAL TEST</button>
     </div>
   </div>
 </div>
@@ -681,6 +680,7 @@ function toggleVoiceMode() {
   log('voiceBtn: ' + (voiceBtn ? 'OK' : 'NULL'));
   if (overlay) overlay.classList.toggle('active', isVoiceMode);
   if (voiceBtn) voiceBtn.classList.toggle('active', isVoiceMode);
+  document.body.style.background = isVoiceMode ? 'red' : '';
   if (isVoiceMode) {
     setVoiceStatus('Demarrage...');
     startVoice();
