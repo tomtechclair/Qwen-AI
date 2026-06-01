@@ -333,7 +333,7 @@ to{transform:rotate(360deg)}}
             
             <input type="file" id="fileInput" style="display:none" onchange="handleFile(this)">
           </div>
-          <button class="send-btn" id="sendBtn" onclick="console.log('send clicked'); sendMessage()">➤</button>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
         </div>
       </div>
     </div>
@@ -636,9 +636,8 @@ function displayEmails(emails) {
 async function sendMessage() {
   const input = document.getElementById('msgInput');
   const text = input.value.trim();
-  console.log('sendMessage called, text:', text.substring(0, 50));
-  if (!text && !pendingFileData) { console.log('No text, returning'); return; }
-  if (isGenerating) { console.log('Already generating, returning'); return; }
+  if (!text && !pendingFileData) return;
+  if (isGenerating) return;
 
   const msgsEl = document.getElementById('messages');
   document.getElementById('welcomeScreen').style.display = 'none';
