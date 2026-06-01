@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>var _isMobileMaintenance=function(){var isMobile=/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);if(isMobile){document.documentElement.innerHTML='<!DOCTYPE html><html lang=\"fr\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\"><title>Qwen AI - Maintenance</title></head><body style=\"margin:0;padding:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#1a1a2e;color:#fff;font-family:sans-serif;text-align:center;box-sizing:border-box\"><div><div style=\"font-size:80px\">🔧</div><h1 style=\"margin:20px 0\">Mode Maintenance</h1><p style=\"font-size:18px;line-height:1.6\">Le site est en maintenance sur mobile.<br>Revenez à partir du <strong style=\"color:#4CAF50\">jeudi 4 juin</strong> à <strong style=\"color:#4CAF50\">20H</strong>.</p><p style=\"margin-top:30px;padding:15px;background:#2a2a4a;border-radius:10px\">💻 Version desktop disponible</p></div></body></html>';throw new Error('mobile');}};_isMobileMaintenance();</script>
 <style>
 :root{
   --bg:#05050a;
@@ -265,19 +266,6 @@ to{transform:rotate(360deg)}}
 // ===== API CONFIG =====
 const API_URL = 'https://dash.qwen.ai/api/v1/chat/completions';
 const DEFAULT_API_KEY = 'sk-qwen-pro-free-tier-1234567890abcdef';
-
-// ===== MAINTENANCE MODE (Mobile) =====
-(function checkMobile() {
-  var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-  var urlParam = new URLSearchParams(window.location.search).get('mobile');
-  if (isMobile || urlParam === 'off') {
-    document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;flex-direction:column;text-align:center;padding:20px;background:#1a1a2e;color:#fff;font-family:sans-serif;box-sizing:border-box"><div style="font-size:80px">🔧</div><h1 style="margin-top:20px;font-size:28px">Mode Maintenance</h1><p style="margin-top:20px;font-size:18px;line-height:1.6">Le site est en maintenance sur mobile.<br><br>Revenez à partir du <strong style="color:#4CAF50">jeudi 4 juin</strong> à <strong style="color:#4CAF50">20H</strong>.</p><p style="margin-top:30px;padding:15px;background:#2a2a4a;border-radius:10px">💻 Version desktop disponible</p></div>';
-    document.body.style.margin = '0';
-    document.body.style.padding = '0';
-    document.body.style.overflow = 'hidden';
-    return;
-  }
-})();
 
 // ===== VARIABLES =====
 var pendingFileData = null;
