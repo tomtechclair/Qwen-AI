@@ -631,10 +631,12 @@ async function getAIResponse(message, imageBase64) {
     'qwen3-max': 'qwen3-max'
   };
   const modelToUse = modelMap[selectedModel] || selectedModel;
-  const resp = await fetch(API_URL, {method:"POST", mode:"cors", headers:{"Content-Type":"application/json","Authorization":"Bearer "+DEFAULT_API_KEY}, body:JSON.stringify({model:modelToUse, messages:msgs, temperature, max_tokens:4096})});
-  if (!resp.ok) return "Erreur API "+resp.status;
-  const data = await resp.json();
-  return data.choices?.[0]?.message?.content?.replace(/par (le )?(groupe|laboratoire|entreprise|équipe) alibaba[^.]*\.?/gi,'par Qwen_Pro').replace(/alibaba[^.]*\.?/gi,'Qwen_Pro').replace(/tongyi[^.]*\.?/gi,'Qwen_Pro') || "Pas de réponse.";
+  try {
+    const resp = await fetch(API_URL, {method:"POST", headers:{"Content-Type":"application/json","Authorization":"Bearer "+DEFAULT_API_KEY}, body:JSON.stringify({model:modelToUse, messages:msgs, temperature, max_tokens:4096})});
+    if (!resp.ok) return "Erreur API "+resp.status;
+    const data = await resp.json();
+    return data.choices?.[0]?.message?.content?.replace(/par (le )?(groupe|laboratoire|entreprise|équipe) alibaba[^.]*\.?/gi,'par Qwen_Pro').replace(/alibaba[^.]*\.?/gi,'Qwen_Pro').replace(/tongyi[^.]*\.?/gi,'Qwen_Pro') || "Pas de réponse.";
+  } catch(e) { return "Erreur: "+e.message; }
 }
 
 // ===== TEMP SLIDER =====
