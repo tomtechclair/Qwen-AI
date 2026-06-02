@@ -756,12 +756,71 @@ let selectedModel = 'qwen3-max';
 let temperature = 0.7;
 let maxTokens = 1000;
 let animationsEnabled = true;
+let conversations = JSON.parse(localStorage.getItem('qwen_conversations') || '[]');
 
 // === INIT ===
 document.addEventListener('DOMContentLoaded', () => {
   autoResize(document.getElementById('msgInput'));
   updateStatus('ready', 'Propulsé par Qwen3 Max');
+  loadConversations();
 });
+
+// === CONVERSATION FUNCTIONS ===
+function saveConversation() {
+  if (messages.length === 0) return;
+  const title = messages[0]?.content?.substring(0, 50) || 'Discussion';
+  const conv = {
+    id: Date.now(),
+    title: title + (title.length >= 50 ? '...' : ''),
+    messages: [...messages],
+    model: selectedModel,
+    date: new Date().toLocaleString('fr-FR')
+  };
+  // Remove duplicate if exists
+  conversations = conversations.filter(c => c.id !== conv.id);
+  conversations.unshift(conv);
+  // Keep only last 20
+  if (conversations.length > 20) conversations = conversations.slice(0, 20);
+  localStorage.setItem('qwen_conversations', JSON.stringify(conversations));
+  loadConversations();
+}
+
+function loadConversations() {
+  const list = document.getElementById('convList');
+  if (!list) return;
+  list.innerHTML = '';
+  conversations.forEach((conv, i) => {
+    const div = document.createElement('div');
+    div.className = 'conv-item' + (i === 0 ? ' active' : '');
+    div.innerHTML = `<span>💬</span>${conv.title}`;
+    div.onclick = () => loadConversation(conv.id);
+    list.appendChild(div);
+  });
+}
+
+function loadConversation(id) {
+  const conv = conversations.find(c => c.id === id);
+  if (!conv) return;
+  messages = [...conv.messages];
+  selectedModel = conv.model || 'qwen3-max';
+  document.getElementById('modelSelect').value = selectedModel;
+  document.getElementById('welcome').style.display = 'none';
+  const container = document.getElementById('messages');
+  container.innerHTML = '';
+  messages.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'msg ' + m.role;
+    div.innerHTML = m.content.replace(/\n/g, '<br>');
+    container.appendChild(div);
+  });
+  container.scrollTop = container.scrollHeight;
+}
+
+function deleteConversation(id) {
+  conversations = conversations.filter(c => c.id !== id);
+  localStorage.setItem('qwen_conversations', JSON.stringify(conversations));
+  loadConversations();
+}
 
 // === FUNCTIONS ===
 function handleKey(e) {
@@ -929,6 +988,8 @@ function hideWelcome() {
 }
 
 function clearChat() {
+  // Save current conversation before clearing
+  if (messages.length > 0) saveConversation();
   messages = [];
   document.getElementById('messages').innerHTML = '';
   document.getElementById('welcome').style.display = 'flex';
