@@ -402,10 +402,10 @@ header {
   </div>
   <div class="header-actions">
     <select class="model-select" id="modelSelect" onchange="changeModel(this.value)">
-      <option value="qwen-flash">Qwen Flash</option>
-      <option value="qwen-turbo">Qwen Turbo</option>
-      <option value="qwen-plus">Qwen Plus</option>
-      <option value="qwen-max">Qwen Max</option>
+      <option value="qwen3-flash">Qwen3 Flash</option>
+      <option value="qwen3-plus">Qwen3 Plus</option>
+      <option value="qwen3-max">Qwen3 Max</option>
+      <option value="qwen3-7-max">Qwen3.7 Max</option>
     </select>
     <button class="icon-btn" onclick="toggleSettings()" title="Paramètres">⚙️</button>
     <button class="icon-btn" onclick="clearChat()" title="Nouvelle discussion">✨</button>
@@ -445,7 +445,7 @@ header {
 
 <script>
 // === CONFIG ===
-const API_URL = 'https://dash.qwen.ai/api/v1/chat/completions';
+const API_URL = 'https://api.mulerouter.ai/v1/chat/completions';
 const API_KEY = 'sk-mr-a32a7cf0ae2b1ef610f64c038429b9b6ea4a5575312c8e8899576ce39e446f1d';
 const SYSTEM_PROMPT = 'Tu es Qwen AI, un assistant intelligent créé par Qwen_Pro. Tu tappelles Qwen AI, pas Qwen. Réponds de façon naturelle et conversationnelle en français. Annonce ce que tu fais, utilise des phrases courtes et fluides.';
 
