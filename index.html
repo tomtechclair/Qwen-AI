@@ -757,11 +757,23 @@ function checkMaintenanceEnd() {
   const hours = now.getHours();
   const minutes = now.getMinutes();
   const currentMinutesFromMidnight = hours * 60 + minutes;
-  // 6h30 = 6 * 60 + 30 = 390 minutes
-  const maintenanceEndMinutes = 6 * 60 + 30;
   
-  if (currentMinutesFromMidnight < maintenanceEndMinutes) {
-    // Activer le mode maintenance (avant 6h30)
+  // Maintenance active: 18:00 (today evening) to 06:30 (tomorrow morning)
+  // 18:00 = 18 * 60 = 1080 minutes
+  // 06:30 = 6 * 60 + 30 = 390 minutes
+  
+  let isMaintenanceTime = false;
+  
+  if (hours >= 18) {
+    // After 6 PM (18:00) - activate maintenance
+    isMaintenanceTime = true;
+  } else if (currentMinutesFromMidnight < 390) {
+    // Before 6:30 AM - activate maintenance
+    isMaintenanceTime = true;
+  }
+  
+  if (isMaintenanceTime) {
+    // Activer le mode maintenance
     document.body.classList.add('maintenance-active');
     const mobileMaintenance = document.querySelector('.mobile-maintenance');
     if (mobileMaintenance) {
@@ -769,7 +781,7 @@ function checkMaintenanceEnd() {
     }
     return false;
   } else {
-    // Désactiver le mode maintenance (après 6h30)
+    // Désactiver le mode maintenance
     document.body.classList.remove('maintenance-active');
     const mobileMaintenance = document.querySelector('.mobile-maintenance');
     if (mobileMaintenance) {
