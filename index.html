@@ -632,8 +632,7 @@ header {
 <div class="mobile-maintenance">
   <div class="icon">🔧</div>
   <h1>Mode Maintenance</h1>
-  <p>Le site est en maintenance sur mobile.<br>Revenez à partir du :</p>
-  <div class="date">📅 Jeudi 4 juin 2026 à 20H</div>
+  <p>Le site est en maintenance sur mobile.<br>Revenez à partir de 6H30 du matin.</p>
   <div class="loader">
     <span></span>
     <span></span>
@@ -757,11 +756,23 @@ function checkMaintenanceEnd() {
   const hours = now.getHours();
   const minutes = now.getMinutes();
   const currentMinutesFromMidnight = hours * 60 + minutes;
-  // 6h30 = 6 * 60 + 30 = 390 minutes
-  const maintenanceEndMinutes = 6 * 60 + 30;
   
-  if (currentMinutesFromMidnight < maintenanceEndMinutes) {
-    // Activer le mode maintenance (avant 6h30)
+  // Maintenance active: 18:00 (today evening) to 06:30 (tomorrow morning)
+  // 18:00 = 18 * 60 = 1080 minutes
+  // 06:30 = 6 * 60 + 30 = 390 minutes
+  
+  let isMaintenanceTime = false;
+  
+  if (hours >= 18) {
+    // After 6 PM (18:00) - activate maintenance
+    isMaintenanceTime = true;
+  } else if (currentMinutesFromMidnight < 390) {
+    // Before 6:30 AM - activate maintenance
+    isMaintenanceTime = true;
+  }
+  
+  if (isMaintenanceTime) {
+    // Activer le mode maintenance
     document.body.classList.add('maintenance-active');
     const mobileMaintenance = document.querySelector('.mobile-maintenance');
     if (mobileMaintenance) {
@@ -769,7 +780,7 @@ function checkMaintenanceEnd() {
     }
     return false;
   } else {
-    // Désactiver le mode maintenance (après 6h30)
+    // Désactiver le mode maintenance
     document.body.classList.remove('maintenance-active');
     const mobileMaintenance = document.querySelector('.mobile-maintenance');
     if (mobileMaintenance) {
