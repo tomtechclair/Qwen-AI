@@ -36,26 +36,99 @@ body {
 /* Mobile Check - Maintenance Mode */
 @media (max-width: 768px) {
   body {
-    display: block;
-    background: var(--bg);
-  }
-  body > *:not(script):not(style) {
-    display: none !important;
-  }
-  body::before {
-    content: '🔧 Mode Maintenance\n\nLe site est en maintenance sur mobile.\nRevenez à partir du jeudi 4 juin à 20H.';
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    text-align: center;
-    white-space: pre;
-    font-size: 18px;
-    color: var(--text);
-    padding: 20px;
+    background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
     font-family: 'Outfit', sans-serif;
   }
+  body > *:not(script):not(style):not(link) {
+    display: none !important;
+  }
+  .mobile-maintenance {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 30px;
+    max-width: 400px;
+    animation: fadeIn 0.6s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .mobile-maintenance .icon {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, #7c3aed, #ec4899);
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 50px;
+    margin-bottom: 30px;
+    box-shadow: 0 20px 60px rgba(124, 58, 237, 0.4);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  .mobile-maintenance h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 15px;
+    background: linear-gradient(135deg, #fff, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .mobile-maintenance p {
+    font-size: 16px;
+    color: #9ca3af;
+    line-height: 1.6;
+    margin-bottom: 30px;
+  }
+  .mobile-maintenance .date {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 25px;
+    background: rgba(124, 58, 237, 0.2);
+    border: 1px solid rgba(124, 58, 237, 0.3);
+    border-radius: 15px;
+    color: #a78bfa;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .mobile-maintenance .loader {
+    margin-top: 40px;
+    display: flex;
+    gap: 8px;
+  }
+  .mobile-maintenance .loader span {
+    width: 12px;
+    height: 12px;
+    background: #7c3aed;
+    border-radius: 50%;
+    animation: bounce 1.4s infinite ease-in-out;
+  }
+  .mobile-maintenance .loader span:nth-child(1) { animation-delay: 0s; }
+  .mobile-maintenance .loader span:nth-child(2) { animation-delay: 0.2s; }
+  .mobile-maintenance .loader span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+    40% { transform: scale(1); opacity: 1; }
+  }
 }
+/* Mobile Maintenance Screen */
+.mobile-maintenance {
+  display: none;
+}
+
 /* Header */
 header {
   display: flex;
@@ -554,6 +627,19 @@ header {
 </style>
 </head>
 <body>
+
+<!-- Mobile Maintenance Screen -->
+<div class="mobile-maintenance">
+  <div class="icon">🔧</div>
+  <h1>Mode Maintenance</h1>
+  <p>Le site est en maintenance sur mobile.<br>Revenez à partir du :</p>
+  <div class="date">📅 Jeudi 4 juin 2026 à 20H</div>
+  <div class="loader">
+    <span></span>
+    <span></span>
+    <span></span>
+  </div>
+</div>
 
 <header>
   <div class="logo">
