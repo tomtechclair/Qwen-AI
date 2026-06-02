@@ -745,7 +745,17 @@ const getLocalTimeInfo = () => {
   return `Heure locale: ${timeStr}, Date: ${dateStr}, Timezone: ${timeZone}`;
 };
 
-const getSystemPrompt = () => `Tu es Qwen AI, un assistant intelligent créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Réponds de façon naturelle et conversationnelle en français. Annonce ce que tu fais, utilise des phrases courtes et fluides. Si on te demande qui t'a développé ou qui t'as créé, réponds simplement: "Je suis Qwen AI, créé par Qwen_Pro." Ne dis jamais "par une équipe", "par Alibaba", "par le groupe", etc. Tu appartiens à Qwen_Pro. ${getLocalTimeInfo()}. Quand on te demande l'heure ou la date, donne ces informations directement sans mise en forme (pas de asterisques).`;
+const getSystemPrompt = () => {
+  const hour = new Date().getHours();
+  let greeting = 'Bonjour';
+  if (hour >= 18) greeting = 'Bonsoir';
+  else if (hour >= 12) greeting = 'Bon après-midi';
+  else if (hour < 6) greeting = 'Bonne nuit';
+  
+  const namePart = userName ? `Tu t'adresses à ${userName} en utilisant "${greeting} ${userName}" au début de tes réponses.` : '';
+  
+  return `Tu es Qwen AI, un assistant intelligent créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Réponds de façon naturelle et conversationnelle en français. Annonce ce que tu fais, utilise des phrases courtes et fluides. Si on te demande qui t'a développé ou qui t'as créé, réponds simplement: "Je suis Qwen AI, créé par Qwen_Pro." Ne dis jamais "par une équipe", "par Alibaba", "par le groupe", etc. Tu appartiens à Qwen_Pro. ${namePart} ${getLocalTimeInfo()}. Quand on te demande l'heure ou la date, donne ces informations directement sans mise en forme (pas de asterisques).`;
+};
 
 // === MOBILE MAINTENANCE CHECK ===
 function checkMaintenanceEnd() {
@@ -797,6 +807,32 @@ let temperature = 0.7;
 let maxTokens = 1000;
 let animationsEnabled = true;
 let conversations = JSON.parse(localStorage.getItem('qwen_conversations') || '[]');
+let userName = localStorage.getItem('qwen_username') || '';
+
+// === USER FUNCTIONS ===
+function saveUserName(name) {
+  userName = name.trim();
+  localStorage.setItem('qwen_username', userName);
+}
+
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 6) return 'Bonne nuit';
+  if (hour < 12) return 'Bonjour';
+  if (hour < 18) return 'Bon après-midi';
+  return 'Bonsoir';
+}
+
+function updateWelcomeMessage() {
+  const welcomeEl = document.getElementById('welcome');
+  const h1El = welcomeEl.querySelector('h1');
+  
+  if (userName) {
+    h1El.textContent = `${getGreeting()}, ${userName}`;
+  } else {
+    h1El.textContent = `${getGreeting()} sur Qwen AI`;
+  }
+}
 
 // === INIT ===
 // Run maintenance check immediately (before DOMContentLoaded)
@@ -806,7 +842,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // Re-check maintenance status after DOM is ready
   checkMaintenanceEnd();
   
-  autoResize(document.getElementById('msgInput'));
+  // Update welcome message with greeting and user name
+  updateWelcomeMessage();
+  
+  // Ask for name if not set
+  if (!userName) {
+    setTimeout(() => {
+      const name = prompt('Comment puis-je vous appeler ? (Votre prénom)');
+      if (name && name.trim()) {
+        saveUserName(name.trim());
+        updateWelcomeMessage();
+      }
+    }, 500);
+  }
   updateStatus('ready', 'Propulsé par Qwen3 Max');
   
   // Load conversations from localStorage
@@ -1059,6 +1107,8 @@ function clearChat() {
   messages = [];
   document.getElementById('messages').innerHTML = '';
   document.getElementById('welcome').style.display = 'flex';
+  // Update welcome message with current greeting
+  updateWelcomeMessage();
   document.getElementById('msgInput').focus();
 }
 
