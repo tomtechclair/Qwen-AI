@@ -33,19 +33,27 @@ body {
   flex-direction: column;
   overflow: hidden;
 }
-/* Mobile Check */
+/* Mobile Check - Maintenance Mode */
 @media (max-width: 768px) {
-  body { display: none; }
+  body {
+    display: block;
+    background: var(--bg);
+  }
+  body > *:not(script):not(style) {
+    display: none !important;
+  }
   body::before {
     content: '🔧 Mode Maintenance\n\nLe site est en maintenance sur mobile.\nRevenez à partir du jeudi 4 juin à 20H.';
     display: flex;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+    min-height: 100vh;
     text-align: center;
     white-space: pre;
     font-size: 18px;
+    color: var(--text);
     padding: 20px;
+    font-family: 'Outfit', sans-serif;
   }
 }
 /* Header */
