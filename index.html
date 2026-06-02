@@ -2,679 +2,598 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
-<!-- v1780245752 -->
-<title>Qwen AI – Assistant Gratuit</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Qwen AI – Assistant Intelligent</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://accounts.google.com/gsi/client" async defer></script>
-<script>var _isMobileMaintenance=function(){var isMobile=/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);if(isMobile){document.documentElement.innerHTML='<!DOCTYPE html><html lang=\"fr\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1.0\"><title>Qwen AI - Maintenance</title></head><body style=\"margin:0;padding:0;display:flex;align-items:center;justify-content:center;min-height:100vh;background:#1a1a2e;color:#fff;font-family:sans-serif;text-align:center;box-sizing:border-box\"><div><div style=\"font-size:80px\">🔧</div><h1 style=\"margin:20px 0\">Mode Maintenance</h1><p style=\"font-size:18px;line-height:1.6\">Le site est en maintenance sur mobile.<br>Revenez à partir du <strong style=\"color:#4CAF50\">jeudi 4 juin</strong> à <strong style=\"color:#4CAF50\">20H</strong>.</p><p style=\"margin-top:30px;padding:15px;background:#2a2a4a;border-radius:10px\">💻 Version desktop disponible</p></div></body></html>';throw new Error('mobile');}};_isMobileMaintenance();</script>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#05050a;
-  --bg-surface:#0b0b1a;
-  --bg-card:#121225;
-  --bg-hover:#1a1a35;
-  --bg-elevated:#21213d;
-  --border:rgba(255,255,255,.08);
-  --border-hover:rgba(255,255,255,.12);
-  --text:#fcfcfe;
-  --text-sec:#a0a0c0;
-  --text-ter:#707090;
-  --text-muted:#4a4a6a;
-  --accent:#9f6fff;
-  --accent-light:#c4b5fd;
-  --accent-dim:rgba(159,111,255,.12);
-  --blue:#3b82f6;
-  --green:#22c55e;
-  --amber:#f59e0b;
-  --red:#ef4444;
-  --grad:linear-gradient(135deg,var(--accent),var(--blue));
-  --shadow:0 4px 20px rgba(0,0,0,.6);
-  --shadow-lg:0 12px 48px rgba(0,0,0,.7);
-  --r-sm:8px;
-  --r-md:12px;
-  --r-lg:16px;
-  --r-xl:24px;
-  --font:'Inter',system-ui,sans-serif;
-  --safe-bottom:env(safe-area-inset-bottom,0px);
+:root {
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --card: #1a1a25;
+  --hover: #222235;
+  --border: rgba(255,255,255,0.06);
+  --text: #f0f0f5;
+  --muted: #6b6b80;
+  --accent: #7c3aed;
+  --accent-light: #a78bfa;
+  --accent-dim: rgba(124,58,237,0.15);
+  --success: #10b981;
+  --error: #ef4444;
+  --radius: 16px;
+  --shadow: 0 4px 30px rgba(0,0,0,0.4);
 }
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased;overscroll-behavior:none}
-body{height:calc(var(--vh,1vh)*100)}
-::selection{background:rgba(139,92,246,.35)}
-::-webkit-scrollbar{width:3px}
-::-webkit-scrollbar-track{background:0 0}
-::-webkit-scrollbar-thumb{background:var(--bg-elevated);border-radius:6px}
-::placeholder{color:var(--text-ter)}
-
-/* ===== APP ===== */
-.app{display:flex;height:100%;width:100%;position:relative}
-
-/* ===== SIDEBAR ===== */
-.sidebar{width:280px;flex-shrink:0;background:var(--bg-surface);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:10}
-.sb-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 12px;border-bottom:1px solid var(--border)}
-.sb-brand{display:flex;align-items:center;gap:10px}
-.sb-logo{width:34px;height:34px;border-radius:var(--r-sm);background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:#fff;flex-shrink:0}
-.sb-brand h1{font-size:15px;font-weight:700;letter-spacing:-.2px}
-.sb-brand span{font-size:10px;color:var(--text-ter);font-weight:500}
-.sb-close{display:none;width:32px;height:32px;border-radius:var(--r-sm);border:none;background:0 0;color:var(--text-ter);font-size:18px;cursor:pointer;align-items:center;justify-content:center;transition:all .15s}
-.sb-close:hover{background:var(--bg-hover);color:var(--text-sec)}
-@keyframes pulseAccent{0%{box-shadow:0 0 0 0 rgba(159,111,255,.4)}100%{box-shadow:0 0 0 10px rgba(159,111,255,0)}}
-.new-chat{margin:10px 12px 6px;padding:10px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--grad);color:#fff;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .2s;font-family:inherit;animation:pulseAccent 2s infinite}
-.new-chat:active{transform:scale(.97)}
-.sb-label{padding:8px 16px 4px;font-size:9.5px;font-weight:600;color:var(--text-muted);letter-spacing:.8px;text-transform:uppercase}
-.convs{flex:1;overflow-y:auto;padding:0 8px}
-.conv{padding:8px 10px;margin:1px 0;border-radius:var(--r-sm);cursor:pointer;display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-sec);border:1px solid transparent;transition:all .12s}
-.conv:hover{background:var(--bg-card);color:var(--text)}
-.conv.active{background:var(--bg-card);border-color:var(--accent-dim);color:var(--text)}
-.conv-icon{font-size:12px;opacity:.4;flex-shrink:0}
-.conv-txt{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.conv-del{opacity:0;font-size:9px;padding:2px 6px;border-radius:4px;cursor:pointer;flex-shrink:0;transition:all .12s}
-.conv:hover .conv-del{opacity:1}
-.conv-del:active{background:rgba(239,68,68,.15);color:var(--red)}
-.sb-ft{padding:10px 12px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:2px}
-.sb-btn{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--r-sm);cursor:pointer;font-size:12px;color:var(--text-ter);transition:all .12s}
-.sb-btn:active{background:var(--bg-card);color:var(--text-sec)}
-
-/* ===== MAIN ===== */
-.main{flex:1;display:flex;flex-direction:column;min-width:0;position:relative;background:var(--bg)}
-
-/* ===== TOPBAR ===== */
-.topbar{display:flex;align-items:center;padding:0 16px;height:54px;gap:10px;background:rgba(5,5,10,.7);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--border);position:relative;z-index:2}
-.menu-btn{display:none;width:34px;height:34px;border-radius:var(--r-sm);border:none;background:0 0;color:var(--text-ter);font-size:20px;cursor:pointer;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
-.menu-btn:active{background:var(--bg-card)}
-.model-pill{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:var(--r-lg);background:var(--bg-card);border:1px solid var(--border);cursor:pointer;transition:all .15s}
-.model-pill:active{background:var(--bg-hover)}
-.model-pill span:first-child{font-size:13px}
-.model-sel{background:0 0;border:none;color:var(--text);font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;outline:none;max-width:120px}
-.model-sel option{background:var(--bg-surface);color:var(--text)}
-.topbar-right{display:flex;align-items:center;gap:4px;margin-left:auto}
-.topbar-btn{width:32px;height:32px;border-radius:var(--r-sm);border:none;background:0 0;color:var(--text-ter);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.topbar-btn:active{background:var(--bg-card);color:var(--text-sec)}
-
-/* ===== CHAT ===== */
-.chat{flex:1;display:flex;flex-direction:column;min-height:0;position:relative}
-
-/* ===== WELCOME ===== */
-.welcome{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px 20px;max-width:520px;margin:0 auto;width:100%}
-.welcome-icon{width:64px;height:64px;border-radius:18px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:20px;position:relative;flex-shrink:0}
-.welcome-icon::after{content:'';position:absolute;inset:-5px;border-radius:23px;background:var(--grad);opacity:.12;filter:blur(14px)}
-.welcome h1{font-size:28px;font-weight:800;letter-spacing:-.6px;margin-bottom:8px;background:linear-gradient(135deg,#fff 30%,var(--accent-light) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-.welcome p{font-size:13.5px;color:var(--text-sec);line-height:1.6;margin-bottom:28px;max-width:400px}
-.quick-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;width:100%;max-width:400px}
-.quick-btn{padding:14px;border-radius:var(--r-md);background:var(--bg-card);border:1px solid var(--border);color:var(--text);cursor:pointer;display:flex;align-items:center;gap:12px;transition:all .2s cubic-bezier(.4,0,.2,1);font-family:inherit;font-size:13px}
-.quick-btn:hover{background:var(--bg-hover);border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.3)}
-.quick-btn:active{background:var(--bg-hover);transform:scale(.98)}
-.quick-btn span:first-child{font-size:20px;flex-shrink:0}
-
-/* ===== MESSAGES ===== */
-.msgs{flex:1;overflow-y:auto;padding:16px 0;display:none;flex-direction:column;gap:6px;scroll-behavior:smooth}
-.msgs.active{display:flex}
-.msg{display:flex;gap:10px;max-width:820px;padding:0 16px;animation:msgIn .3s cubic-bezier(.3,.1,1);margin-bottom:8px}
-@keyframes msgIn{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
-.msg.user{flex-direction:row-reverse;margin-left:auto;max-width:82%}
-.msg-av{width:32px;height:32px;border-radius:10px;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px;box-shadow:var(--shadow)}
-.msg.user .msg-av{background:var(--grad);color:#fff}
-.msg-bubble{position:relative;padding:12px 16px;background:var(--bg-card);border:1px solid var(--border);font-size:14.5px;line-height:1.6;color:var(--text);word-break:break-word;border-radius:var(--r-md);box-shadow:var(--shadow)}
-.msg.assistant .msg-bubble{border-radius:var(--r-md) var(--r-md) var(--r-md) 4px;background:linear-gradient(135deg, var(--bg-card), #16162e);border-color:rgba(159,111,255,.2)}
-.msg.user .msg-bubble{background:var(--accent-dim);border-color:rgba(159,111,255,.3);border-radius:var(--r-md) var(--r-md) 4px var(--r-md);color:var(--text)}
-.msg-bubble pre{margin:6px 0;padding:10px;background:rgba(0,0,0,.4);border-radius:var(--r-sm);overflow-x:auto;font-size:12px;line-height:1.4;border:1px solid var(--border)}
-.msg-bubble code{background:rgba(0,0,0,.3);padding:1px 5px;border-radius:4px;font-size:13px}
-.msg-bubble pre code{background:0 0;padding:0}
-.msg-copy{position:absolute;right:8px;bottom:8px;width:22px;height:22px;border-radius:6px;border:none;background:rgba(255,255,255,.05);color:var(--text-ter);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;opacity:0}
-.msg:hover .msg-copy{opacity:1}
-.msg-copy:hover{background:var(--bg-hover);color:var(--text)}
-.cb-copy{float:right;padding:2px 8px;border-radius:4px;border:none;background:var(--accent-dim);color:var(--accent-light);font-size:10px;cursor:pointer;font-family:inherit;margin-bottom:4px}
-
-/* ===== TYPING ===== */
-.typing{display:flex;gap:4px;padding:8px 0}
-.typing span{width:6px;height:6px;border-radius:50%;background:var(--text-sec);animation:ty 1.4s infinite}
-.typing span:nth-child(2){animation-delay:.2s}
-.typing span:nth-child(3){animation-delay:.4s}
-@keyframes ty{0%,100%{transform:translateY(0);opacity:.3}50%{transform:translateY(-4px);opacity:1}}
-
-/* ===== INPUT ===== */
-.input-zone{padding:10px 0 max(10px,var(--safe-bottom));position:relative;z-index:2}
-.input-wrap{display:flex;align-items:flex-end;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl);padding:4px 4px 4px 16px;margin:0 12px;transition:all .2s}
-.input-wrap:focus-within{border-color:var(--accent-dim);box-shadow:0 0 0 3px rgba(139,92,246,.06)}
-#msgInput{flex:1;background:0 0;border:none;color:var(--text);font-size:15px;font-family:inherit;resize:none;max-height:100px;line-height:1.5;outline:none;padding:8px 0}
-.inp-acts{display:flex;align-items:center;gap:2px}
-.inp-btn{width:34px;height:34px;border-radius:var(--r-sm);border:none;background:0 0;color:var(--text-ter);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0}
-.inp-btn:active{background:var(--bg-hover)}
-.send-btn{width:40px;height:40px;border-radius:var(--r-md);border:none;background:var(--grad);color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
-.send-btn:active{transform:scale(.92)}
-.send-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
-.file-pv{display:none;align-items:center;gap:8px;padding:6px 12px;margin:0 12px 8px;background:var(--accent-dim);border-radius:var(--r-sm);border:1px solid rgba(139,92,246,.12);font-size:12px}
-.file-pv.show{display:flex}
-.file-pv-img{width:32px;height:32px;border-radius:4px;object-fit:cover}
-.file-pv-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text-sec)}
-.file-rm{width:22px;height:22px;border-radius:5px;border:none;background:rgba(239,68,68,.1);color:var(--red);font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-
-/* ===== SCROLL BOTTOM ===== */
-.scroll-btn{position:absolute;bottom:90px;right:20px;width:38px;height:38px;border-radius:50%;border:1px solid var(--border);background:var(--bg-surface);color:var(--text-ter);font-size:16px;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:var(--shadow);z-index:5;transition:all .2s}
-.scroll-btn.show{display:flex}
-.scroll-btn:active{transform:scale(.92)}
-
-/* ===== TOAST ===== */
-.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--bg-elevated);border:1px solid var(--border);padding:8px 18px;border-radius:var(--r-md);font-size:12.5px;color:var(--text);opacity:0;transition:all .3s cubic-bezier(.4,0,.2,1);z-index:2000;box-shadow:var(--shadow-lg);pointer-events:none;white-space:nowrap}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-/* ===== EMAIL CREDENTIAL OVERLAY ===== */
-.email-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:2500;flex-direction:column;align-items:center;justify-content:center;padding:20px;animation:overlayIn .3s ease}
-.email-box{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--r-xl);padding:28px 24px;width:100%;max-width:380px;box-shadow:var(--shadow-lg)}
-.email-box h2{font-size:18px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px}
-.email-box p{font-size:13px;color:var(--text-sec);margin-bottom:20px;line-height:1.4}
-.email-field{width:100%;padding:12px 14px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--bg-surface);color:var(--text);font-size:14px;font-family:inherit;margin-bottom:12px;outline:none;transition:border .2s}
-.email-field:focus{border-color:var(--accent)}
-.email-field::placeholder{color:var(--text-muted)}
-.email-hint{font-size:11px;color:var(--text-muted);margin:-8px 0 16px;line-height:1.3}
-.email-btns{display:flex;gap:8px}
-.email-btns button{flex:1;padding:11px;border-radius:var(--r-md);border:none;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;font-family:inherit}
-.email-btn-ok{background:var(--grad);color:#fff}
-.email-btn-ok:hover{opacity:.9}
-.email-btn-skip{background:var(--bg-hover);color:var(--text-sec)}
-.email-btn-skip:hover{background:var(--bg-elevated);color:var(--text)}
-
-/* ===== MODAL ===== */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);z-index:1000;align-items:center;justify-content:center;padding:16px}
-.modal-overlay.show{display:flex}
-.modal{background:var(--bg-surface);border:1px solid var(--border);border-radius:var(--r-xl);width:100%;max-width:400px;padding:24px;animation:modalIn .25s cubic-bezier(.4,0,.2,1)}
-@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:none}}
-.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
-.modal-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
-.modal-close{width:30px;height:30px;border-radius:var(--r-sm);border:none;background:var(--bg-card);color:var(--text-ter);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .12s}
-.modal-close:active{background:rgba(239,68,68,.1);color:var(--red)}
-.modal-body{margin-bottom:12px}
-.info-box{padding:14px;border-radius:var(--r-lg);background:var(--accent-dim);border:1px solid rgba(139,92,246,.1);font-size:13px;color:var(--text-sec);line-height:1.6}
-.info-box strong{color:var(--accent-light)}
-.form-group{margin-bottom:14px}
-.form-label{font-size:10px;font-weight:600;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px}
-.form-input{width:100%;padding:10px 14px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--bg-card);color:var(--text);font-size:13px;font-family:inherit;outline:none;transition:all .2s}
-.form-input:focus{border-color:var(--accent-dim);box-shadow:0 0 0 2px rgba(139,92,246,.08)}
-.submit-btn{width:100%;padding:10px;border-radius:var(--r-md);border:none;background:var(--grad);color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
-.submit-btn:active{transform:scale(.98)}
-
-/* ===== STATUS ===== */
-.status{display:flex;align-items:center;justify-content:center;gap:6px;padding:6px;font-size:10px;color:var(--text-muted);border-top:1px solid var(--border)}
-.status-dot{width:5px;height:5px;border-radius:50%;background:var(--green)}
-.status-dot.warn{background:var(--amber)}
-.status-dot.err{background:var(--red)}
-
-/* ===== DESKTOP ===== */
-@media(min-width:769px){
-  .sb-close{display:none!important}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
-
-/* ===== MOBILE ===== */
-@media(max-width:768px){
-  .sidebar{position:fixed;left:0;top:0;bottom:0;z-index:100;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);width:280px;padding-bottom:var(--safe-bottom);box-shadow:10px 0 30px rgba(0,0,0,.4)}
-  .sidebar.open{transform:translateX(0)}
-  .sb-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:99}
-  .sb-backdrop.show{display:block}
-  .sb-close{display:flex}
-  .menu-btn{display:flex}
-  .topbar{height:50px;padding:0 12px;gap:8px}
-  .model-pill{padding:4px 10px}
-  .model-sel{font-size:11px;max-width:90px}
-  .topbar-btn{width:30px;height:30px;font-size:14px}
-  .chat{padding:0}
-  .welcome{padding:32px 16px}
-  .welcome-icon{width:56px;height:56px;font-size:26px;border-radius:16px;margin-bottom:20px}
-  .welcome h1{font-size:26px}
-  .welcome p{font-size:14px;margin-bottom:28px}
-  .quick-grid{gap:10px}
-  .quick-btn{padding:12px;font-size:13px}
-  .quick-btn span:first-child{font-size:18px}
-  .msg{padding:0 12px;gap:8px}
-  .msg.user{max-width:85%}
-  .msg-av{width:28px;height:28px;font-size:12px}
-  .msg-bubble{padding:10px 14px;font-size:14px;border-radius:var(--r-sm)}
-  .msg.assistant .msg-bubble{border-radius:var(--r-sm) var(--r-sm) var(--r-sm) 4px}
-  .msg.user .msg-bubble{border-radius:var(--r-sm) var(--r-sm) 4px var(--r-sm)}
-  .msgs{padding:12px 0;gap:6px}
-  .input-zone{padding:10px 0 max(10px,var(--safe-bottom))}
-  .input-wrap{border-radius:var(--r-lg);padding:4px 4px 4px 16px;margin:0 10px}
-  #msgInput{font-size:16px;padding:8px 0}
-  .send-btn{width:38px;height:38px;font-size:15px}
-  .inp-btn{width:32px;height:32px;font-size:16px}
-  .scroll-btn{bottom:75px;right:15px;width:36px;height:36px;font-size:15px}
-  .toast{bottom:70px;font-size:12px;padding:8px 16px}
-  .modal{padding:20px;margin:0 8px;border-radius:var(--r-lg)}
-  .modal-title{font-size:16px}
-  .sb-ft{padding:12px 12px}
-  .conv-del{opacity:1;padding:4px 8px}
-  .conv:active,.sb-btn:active,.topbar-btn:active,.inp-btn:active{transform:scale(.95)}
-  .model-pill:active{background:var(--bg-hover)}
-  .file-pv{margin:0 10px 8px;padding:6px 12px}
-  .file-pv-img{width:30px;height:30px}
-  .topbar-right{gap:4px}
+/* Mobile Check */
+@media (max-width: 768px) {
+  body { display: none; }
+  body::before {
+    content: '🔧 Mode Maintenance\n\nLe site est en maintenance sur mobile.\nRevenez à partir du jeudi 4 juin à 20H.';
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    text-align: center;
+    white-space: pre;
+    font-size: 18px;
+    padding: 20px;
+  }
 }
-
-to{opacity:1;transform:scale(1)}}
-50%{transform:scale(1.12);opacity:0.7}}
-50%{transform:scale(1.05)}}
-50%{transform:scale(1.08)}}
-50%{transform:scale(1.02)}}
-to{transform:rotate(360deg)}}
-@media(hover:none){
-  .conv:hover{background:initial;color:var(--text-sec)}
-  .conv.active{background:var(--bg-card);color:var(--text)}
+/* Header */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  z-index: 100;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 24px;
+  font-weight: 700;
+}
+.logo-icon {
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(135deg, var(--accent), #ec4899);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+.header-actions {
+  display: flex;
+  gap: 12px;
+}
+.icon-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: all 0.2s;
+}
+.icon-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+  border-color: var(--accent);
+}
+.icon-btn.active {
+  background: var(--accent-dim);
+  color: var(--accent-light);
+  border-color: var(--accent);
+}
+/* Main Layout */
+.main-container {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+/* Sidebar */
+.sidebar {
+  width: 280px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 12px;
+}
+.sidebar-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  padding: 0 8px;
+}
+.new-chat-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+.new-chat-btn:hover {
+  background: #6d28d9;
+  transform: translateY(-1px);
+}
+.conv-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.conv-item {
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--muted);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.conv-item:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+.conv-item.active {
+  background: var(--accent-dim);
+  color: var(--accent-light);
+}
+/* Chat Area */
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 20px;
+}
+/* Welcome */
+.welcome {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px;
+}
+.welcome h1 {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, var(--text), var(--accent-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.welcome p {
+  color: var(--muted);
+  font-size: 16px;
+  max-width: 500px;
+}
+.quick-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 30px;
+}
+.quick-btn {
+  padding: 12px 20px;
+  border-radius: 24px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+.quick-btn:hover {
+  background: var(--hover);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+/* Messages */
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.msg {
+  max-width: 700px;
+  padding: 16px 20px;
+  border-radius: 16px;
+  line-height: 1.6;
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.msg.user {
+  align-self: flex-end;
+  background: var(--accent);
+  color: white;
+  border-bottom-right-radius: 4px;
+}
+.msg.assistant {
+  align-self: flex-start;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+}
+.msg.assistant pre {
+  background: var(--surface);
+  padding: 12px;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin: 12px 0;
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+}
+.msg.assistant code {
+  background: var(--surface);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: 'Space Mono', monospace;
+  font-size: 13px;
+}
+/* Input Area */
+.input-area {
+  padding: 16px 0 24px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+}
+.msg-input {
+  flex: 1;
+  padding: 16px 20px;
+  border-radius: 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 15px;
+  resize: none;
+  min-height: 56px;
+  max-height: 200px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.msg-input:focus {
+  border-color: var(--accent);
+}
+.msg-input::placeholder {
+  color: var(--muted);
+}
+.send-btn {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--accent);
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.send-btn:hover {
+  background: #6d28d9;
+  transform: scale(1.05);
+}
+.send-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+/* Status Bar */
+.status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  font-size: 12px;
+  color: var(--muted);
+  gap: 8px;
+}
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+}
+.status-dot.loading {
+  background: var(--accent);
+  animation: pulse 1s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+/* Model Select */
+.model-select {
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+}
+.model-select:focus {
+  border-color: var(--accent);
+}
+/* Loading dots */
+.loading-dots {
+  display: inline-flex;
+  gap: 4px;
+}
+.loading-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+  animation: bounce 1.4s infinite ease-in-out;
+}
+.loading-dots span:nth-child(1) { animation-delay: 0s; }
+.loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
 }
 </style>
-<script>
-// ===== API CONFIG =====
-const API_URL = 'https://dash.qwen.ai/api/v1/chat/completions';
-const DEFAULT_API_KEY = 'sk-mr-a32a7cf0ae2b1ef610f64c038429b9b6ea4a5575312c8e8899576ce39e446f1d';
-
-// ===== VARIABLES =====
-var pendingFileData = null;
-var pendingFileName = '';
-var selectedModel = 'qwen-flash';
-var temperature = 0.7;
-
-// ===== MODELS =====
-const MODELS = [
-  'qwen-flash',
-  'qwen-turbo',
-  'qwen-plus',
-  'qwen-max'
-];
-
-// Quick action buttons
-function quickAction(type) {
-  var prompts = {
-    code:'Écris du code Python pour une fonction de tri rapide.',
-    explain:'Explique le concept de machine learning en termes simples.',
-    translate:'Traduis ce texte en anglais: ',
-    email:'Rédige un email professionnel pour demander un rendez-vous.',
-    ideas:'Donne-moi 5 idées pour un projet web moderne.',
-    math:'Résous cette équation: x² + 5x + 6 = 0',
-    summary:'Résume ce texte en 3 points clés: ',
-    poem:'Écris un poème sur la technologie et l\'intelligence artificielle.'
-  };
-  var text = prompts[type] || '';
-  var msgInput = document.getElementById('msgInput');
-  if (!msgInput) {
-    console.error('msgInput not found!');
-    return;
-  }
-  msgInput.value = text;
-  var event = new Event('input', { bubbles: true, cancelable: true });
-  msgInput.dispatchEvent(event);
-  if (msgInput.shadowRoot) {
-    var inner = msgInput.shadowRoot.querySelector('div');
-    if (inner) inner.textContent = text;
-  }
-  msgInput.focus();
-  var feedback = document.createElement('div');
-  feedback.textContent = '✅ ' + type;
-  feedback.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#4CAF50;color:#fff;padding:8px 16px;border-radius:15px;z-index:99999;font-size:14px;font-weight:bold;';
-  document.body.appendChild(feedback);
-  setTimeout(function() { feedback.remove(); }, 2000);
-}
-</script>
 </head>
 <body>
 
-<div class="app">
-  <div class="sb-backdrop" id="sbBackdrop"></div>
-
-  <aside class="sidebar" id="sidebar">
-    <div class="sb-hdr">
-      <div class="sb-brand">
-        <div class="sb-logo">Q</div>
-        <div><h1>Qwen AI</h1><span>Assistant gratuit</span></div>
-      </div>
-      <button class="sb-close" onclick="closeSidebar()">✕</button>
-    </div>
-    <button class="new-chat" onclick="newChat()"><span>✨</span> Nouvelle discussion</button>
-    <div class="sb-label">Conversations</div>
-    <div class="convs" id="convsList"></div>
-    <div class="sb-ft">
-      <div class="sb-btn" onclick="openSettings()"><span>⚙️</span> Paramètres</div>
-      <div class="sb-btn" onclick="openAPI()"><span>🔑</span> API</div>
-    </div>
-  </aside>
-
-  <main class="main">
-    <header class="topbar">
-      <button class="menu-btn" onclick="toggleSidebar()">☰</button>
-      <div class="model-pill">
-        <span>⚡</span>
-        <select class="model-sel" id="modelSelect" onchange="changeModel(this.value)">
-          <option value="qwen-flash">Qwen 2.5 72B</option>
-          <option value="qwen-plus">Qwen 2.5 32B</option>
-          <option value="qwen-vision">👁️ Vision</option>
-          <option value="qwen35-plus">3.5 Plus</option>
-          <option value="qwen3-max">3 Max</option>
-          <option value="groq-fast">⚡ Claude via Groq (Rapide)</option>
-        </select>
-      </div>
-      <div class="topbar-right">
-        <button class="topbar-btn" onclick="openSettings()">⚙️</button>
-        <button class="topbar-btn" onclick="openAPI()">🔑</button>
-      </div>
-    </header>
-
-
-<div class="chat">
-      <div class="welcome" id="welcomeScreen">
-        <div class="welcome-icon">🧠</div>
-        <h1>Qwen AI</h1>
-        <p>Assistant gratuit et illimité — posez vos questions, codez, traduisez, explorez !</p>
-        <div class="quick-grid">
-          <button class="quick-btn" onclick="quickAction('code')"><span>💻</span> Code</button>
-          <button class="quick-btn" onclick="quickAction('explain')"><span>🧠</span> Expliquer</button>
-          <button class="quick-btn" onclick="quickAction('translate')"><span>🌍</span> Traduire</button>
-          <button class="quick-btn" onclick="quickAction('email')"><span>✉️</span> Email</button>
-          <button class="quick-btn" onclick="quickAction('ideas')"><span>💡</span> Idées</button>
-          <button class="quick-btn" onclick="quickAction('math')"><span>🧮</span> Maths</button>
-          <button class="quick-btn" onclick="quickAction('summary')"><span>📝</span> Résumer</button>
-          <button class="quick-btn" onclick="quickAction('poem')"><span>📜</span> Poème</button>
-        </div>
-      </div>
-
-      <div class="msgs" id="messages"></div>
-      <button class="scroll-btn" id="scrollBtn" onclick="scrollToBottom()">↓</button>
-
-      <div class="input-zone">
-        <div class="file-pv" id="filePreview"></div>
-        <div class="input-wrap">
-          <textarea id="msgInput" placeholder="Posez votre question…" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
-          <div class="inp-acts">
-            <button class="inp-btn" onclick="document.getElementById('fileInput').click()">📎</button>
-            
-            <input type="file" id="fileInput" style="display:none" onchange="handleFile(this)">
-          </div>
-          <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
-        </div>
-      </div>
-    </div>
-
-    <div class="status"><div class="status-dot" id="statusDot"></div><span id="statusTxt">Propulsé par Qwen Flash</span></div>
-  </main>
-</div>
-
-<div class="modal-overlay" id="settingsModal">
-  <div class="modal">
-    <div class="modal-hdr">
-      <div class="modal-title">⚙️ Paramètres</div>
-      <button class="modal-close" onclick="closeSettings()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="info-box">
-        Développé par <strong>Qwen_Pro</strong> — projet open source.<br><br>
-        🔓 Propulsé par <strong>Qwen Flash</strong> via MuleRouter — gratuit.
-      </div>
-      <div class="form-group">
-        <label class="form-label">Température <span id="tempVal" style="float:right;color:var(--accent-light)">0.7</span></label>
-        <input type="range" class="form-input" id="tempSlider" min="0" max="100" value="70" style="padding:0;cursor:pointer">
-        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);margin-top:6px">
-          <span>Précis</span>
-          <span>Créatif</span>
-        </div>
-      </div>
-    </div>
-    <button class="submit-btn" onclick="closeSettings()">Fermer</button>
+<header>
+  <div class="logo">
+    <div class="logo-icon">Q</div>
+    <span>Qwen AI</span>
   </div>
-</div>
-
-<div class="modal-overlay" id="apiModal">
-  <div class="modal">
-    <div class="modal-hdr">
-      <div class="modal-title">🔑 API</div>
-      <button class="modal-close" onclick="closeAPI()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="info-box">🔑 <strong>Clé API intégrée</strong> — aucun réglage nécessaire</div>
-    </div>
-    <button class="submit-btn" onclick="closeAPI()">✅ OK</button>
+  <div class="header-actions">
+    <select class="model-select" id="modelSelect" onchange="changeModel(this.value)">
+      <option value="qwen-flash">Qwen Flash</option>
+      <option value="qwen-turbo">Qwen Turbo</option>
+      <option value="qwen-plus">Qwen Plus</option>
+      <option value="qwen-max">Qwen Max</option>
+    </select>
+    <button class="icon-btn" onclick="toggleSettings()" title="Paramètres">⚙️</button>
+    <button class="icon-btn" onclick="clearChat()" title="Nouvelle discussion">✨</button>
   </div>
-</div>
+</header>
 
-<div class="toast" id="toast"></div>
-
-
+<div class="main-container">
+  <div class="sidebar">
+    <button class="new-chat-btn" onclick="clearChat()">✨ Nouvelle discussion</button>
+    <div class="sidebar-title">Conversations récentes</div>
+    <div class="conv-list" id="convList"></div>
   </div>
-</div>
 
-<div class="email-overlay" id="emailOverlay">
-  <div class="email-box">
-    <h2>📧 Connexion Gmail</h2>
-    <p id="emailDesc">Connecte-toi avec Google pour que je lise tes emails.</p>
-    <div id="googleButtonContainer" style="display:flex;justify-content:center;margin:16px 0"></div>
-    <div id="emailLoading" style="display:none;text-align:center;padding:16px;color:var(--text-sec);font-size:13px">⟳ Récupération des emails…</div>
-    <div class="email-hint">💡 Tu dois d'abord configurer ton <strong>Google Client ID</strong> dans les paramètres (⚙️).</div>
-    <div class="email-btns">
-      <button class="email-btn-skip" onclick="closeEmail()" style="flex:1">Fermer</button>
+  <div class="chat-area">
+    <div class="welcome" id="welcome">
+      <h1>Bienvenue sur Qwen AI</h1>
+      <p>Votre assistant intelligent. Posez vos questions, demandez du code, des traductions, ou juste une conversation !</p>
+      <div class="quick-actions">
+        <button class="quick-btn" onclick="sendQuick('Écris du code Python pour une fonction de tri')">💻 Code</button>
+        <button class="quick-btn" onclick="sendQuick('Explique le machine learning en termes simples')">🧠 Expliquer</button>
+        <button class="quick-btn" onclick="sendQuick('Traduis en anglais:')">🌍 Traduire</button>
+        <button class="quick-btn" onclick="sendQuick('Écris un poème sur la nuit')">📝 Poème</button>
+        <button class="quick-btn" onclick="sendQuick('Donne-moi des idées pour un projet')">💡 Idées</button>
+      </div>
+    </div>
+    <div class="messages" id="messages"></div>
+    <div class="input-area">
+      <textarea class="msg-input" id="msgInput" placeholder="Posez votre question..." rows="1" onkeydown="handleKey(event)"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+    </div>
+    <div class="status-bar">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusTxt">Propulsé par Qwen Flash</span>
     </div>
   </div>
 </div>
 
 <script>
-// Debug function - exposed to window for testing
+// === CONFIG ===
+const API_URL = 'https://dash.qwen.ai/api/v1/chat/completions';
+const API_KEY = 'sk-mr-a32a7cf0ae2b1ef610f64c038429b9b6ea4a5575312c8e8899576ce39e446f1d';
+const SYSTEM_PROMPT = 'Tu es Qwen AI, un assistant intelligent créé par Qwen_Pro. Tu tappelles Qwen AI, pas Qwen. Réponds de façon naturelle et conversationnelle en français. Annonce ce que tu fais, utilise des phrases courtes et fluides.';
 
-function showFilePreview(isImg, name, data) {
-  const pv = document.getElementById('filePreview');
-  pv.classList.add('show');
-  pv.innerHTML = isImg
-    ? `<img src="${data}" class="file-pv-img" alt="${name}"><span class="file-pv-name">${name}</span><button class="file-rm" onclick="removeFile()">✕</button>`
-    : `<span style="font-size:20px">📄</span><span class="file-pv-name">${name}</span><button class="file-rm" onclick="removeFile()">✕</button>`;
-}
-function removeFile() { pendingFileData = null; pendingFileName = ''; const p = document.getElementById('filePreview'); p.classList.remove('show'); p.innerHTML = ''; }
-window.removeFile = removeFile;
+// === STATE ===
+let messages = [];
+let selectedModel = 'qwen-flash';
+let isLoading = false;
 
-// ===== WEB SEARCH =====
-async function searchWeb(query) {
-  try {
-    const res = await fetch(TAVILY_URL, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({api_key:TAVILY_KEY, query, max_results:4, include_answer:true})});
-    if (!res.ok) return {text:'Aucun résultat.', html:'Aucun résultat.'};
-    const data = await res.json();
-    const ans = data.answer ? `<div style="color:var(--accent-light);margin-bottom:4px">📌 ${data.answer}</div>` : '';
-    const links = data.results?.map(r => `<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:4px"><span style="color:var(--text-ter);flex-shrink:0">🔗</span><a href="${r.url||'#'}" target="_blank" rel="noopener" style="color:var(--accent-light);text-decoration:none;font-size:12px;word-break:break-all">${r.title}</a></div>`).join('') || '';
-    const txt = data.results?.map(r => `- ${r.title}: ${r.content.substring(0,250)} (${r.url})`).join('\n') || '';
-    return {text: ans + txt, html: ans + links};
-  } catch(e) { return {text:'Erreur: '+e.message, html:'Erreur'}; }
-}
-
-// ===== MODALS =====
-function openSettings() { document.getElementById('settingsModal').classList.add('show'); }
-function closeSettings() { document.getElementById('settingsModal').classList.remove('show'); }
-function openAPI() { document.getElementById('apiModal').classList.add('show'); }
-function closeAPI() { document.getElementById('apiModal').classList.remove('show'); }
-
-// ===== TOAST =====
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 3000);
-}
-window.toast = showToast;
-
-// ===== STATUS =====
-function setStatus(state, txt) {
-  const d = document.getElementById('statusDot');
-  const t = document.getElementById('statusTxt');
-  if (d) d.className = 'status-dot '+state;
-  if (t) t.textContent = txt;
-}
-
-// ===== INPUT HELPERS =====
-function autoResize(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight, 100) + 'px'; }
-function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
-
-// ===== MOBILE =====
-function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sbBackdrop').classList.toggle('show');
-}
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sbBackdrop').classList.remove('show');
-}
-document.getElementById('sbBackdrop').addEventListener('click', closeSidebar);
-document.addEventListener('click', function(e) {
-  if (e.target.closest('.conv') && window.innerWidth <= 768) closeSidebar();
+// === INIT ===
+document.addEventListener('DOMContentLoaded', () => {
+  autoResize(document.getElementById('msgInput'));
+  updateStatus('ready', 'Propulsé par Qwen Flash');
 });
 
-// Swipe
-document.addEventListener('touchstart', function(e) {
-  if (window.innerWidth > 768) return;
-  touchStartX = e.changedTouches[0].screenX;
-}, {passive:true});
-document.addEventListener('touchend', function(e) {
-  if (window.innerWidth > 768) return;
-  const diff = e.changedTouches[0].screenX - touchStartX;
-  const sb = document.getElementById('sidebar');
-  if (diff > 50 && touchStartX < 30) { sb.classList.add('open'); document.getElementById('sbBackdrop').classList.add('show'); }
-  if (diff < -50 && !sb.contains(e.target)) closeSidebar();
-}, {passive:true});
-
-// Keyboard (iOS)
-if (window.visualViewport) {
-  window.visualViewport.addEventListener('resize', function() {
-    const diff = window.innerHeight - window.visualViewport.height;
-    const inp = document.querySelector('.input-zone');
-    if (diff > 100 && inp) inp.style.paddingBottom = Math.max(10, diff - window.innerHeight + window.visualViewport.height + 10) + 'px';
-    else if (inp) inp.style.paddingBottom = '';
-  });
+// === FUNCTIONS ===
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+  autoResize(e.target);
 }
 
-// Overscroll
-document.addEventListener('touchmove', function(e) {
-  const msgs = document.querySelector('.msgs');
-  if (msgs && msgs.contains(e.target) && msgs.scrollTop <= 0) e.preventDefault();
-}, {passive:false});
-
-// ===== VH FIX =====
-const setVH = () => document.documentElement.style.setProperty('--vh', window.innerHeight * 0.01 + 'px');
-setVH();
-window.addEventListener('resize', setVH);
-
-// ===== SCROLL BOTTOM =====
-function scrollToBottom() {
-  const m = document.querySelector('.msgs');
-  if (m) m.scrollTo({top: m.scrollHeight, behavior: 'smooth'});
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 200) + 'px';
 }
-document.addEventListener('DOMContentLoaded', function() {
-  loadConversations();
-  renderConversations();
-  const m = document.querySelector('.msgs');
-  const b = document.getElementById('scrollBtn');
-  if (m && b) m.addEventListener('scroll', function() {
-    b.classList.toggle('show', m.scrollHeight - m.scrollTop - m.clientHeight > 80 && m.classList.contains('active'));
-  });
-});
 
-// ===== KEYBOARD =====
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') { closeSettings(); closeAPI(); }
-});
+function changeModel(model) {
+  selectedModel = model;
+  updateStatus('ready', 'Propulsé par ' + model.replace('qwen-', 'Qwen ').replace('-', ' '));
+}
 
-// ===== MODEL =====
-function changeModel(model) { selectedModel = model; showToast('🤖 Modèle: '+model); }
-
-// ===== SEND MESSAGE =====
 async function sendMessage() {
-  var msgInput = document.getElementById('msgInput');
-  if (!msgInput) return;
-  var text = msgInput.value.trim();
-  if (!text) return;
-  msgInput.value = '';
-  autoResize(msgInput);
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text || isLoading) return;
+  
+  input.value = '';
+  input.style.height = 'auto';
+  
   addMessage(text, 'user');
-  setStatus('loading', 'Réponse en cours...');
+  hideWelcome();
+  setLoading(true);
+  updateStatus('loading', 'Réponse en cours...');
+  
   try {
-    var response = await getAIResponse(text, pendingFileData);
+    const response = await getAIResponse(text);
     addMessage(response, 'assistant');
-    setStatus('ready', 'Propulsé par Qwen Flash');
   } catch(e) {
-    addMessage('Erreur: '+e.message, 'assistant');
-    setStatus('ready', 'Propulsé par Qwen Flash');
+    addMessage('Erreur: ' + e.message, 'assistant');
   }
+  
+  setLoading(false);
+  updateStatus('ready', 'Propulsé par ' + selectedModel.replace('qwen-', 'Qwen '));
 }
 
-function addMessage(text, type) {
-  var msgs = document.getElementById('messages');
-  var welcome = document.getElementById('welcomeScreen');
-  if (welcome) welcome.style.display = 'none';
-  if (msgs) msgs.classList.add('active');
-  var div = document.createElement('div');
-  div.className = 'msg ' + type;
-  var avatar = type === 'user' ? '👤' : '🤖';
-  div.innerHTML = '<div class="msg-av">' + avatar + '</div><div class="msg-bubble">' + escapeHtml(text) + '</div>';
-  if (msgs) msgs.appendChild(div);
-  scrollToBottom();
+function sendQuick(text) {
+  document.getElementById('msgInput').value = text;
+  sendMessage();
 }
 
-function escapeHtml(text) {
-  var d = document.createElement('div');
-  d.textContent = text;
-  return d.innerHTML;
-}
-
-// ===== AI RESPONSE (non-stream fallback) =====
-async function getAIResponse(message, imageBase64) {
-  const msgs = [{role:"system", content:"Tu es Qwen AI, un assistant IA gratuit créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Parle de façon naturelle et conversationnelle, annonce ce que tu fais, utilise des phrases courtes et fluides."}];
-  if (imageBase64) {
-    msgs.push({role:"user", content:[{type:"text", text:message||"Décris cette image."},{type:"image_url", image_url:{url:imageBase64}}]});
-  } else {
-    msgs.push({role:"user", content:message});
-  }
-  // Map UI model names to actual API model names
-  const modelMap = {
-    'qwen-flash': 'qwen-flash',
-    'qwen-plus': 'qwen-plus',
-    'qwen-vision': 'qwen-plus',  // Use qwen-plus for vision capabilities
-    'qwen35-plus': 'qwen35-plus',
-    'qwen3-max': 'qwen3-max'
-  };
-  const modelToUse = modelMap[selectedModel] || selectedModel;
+async function getAIResponse(userMessage) {
+  const msgs = [
+    { role: 'system', content: SYSTEM_PROMPT },
+    ...messages.map(m => ({ role: m.role, content: m.content })),
+    { role: 'user', content: userMessage }
+  ];
+  
   try {
-    const resp = await fetch(API_URL, {method:"POST", headers:{"Content-Type":"application/json","Authorization":"Bearer "+DEFAULT_API_KEY}, body:JSON.stringify({model:modelToUse, messages:msgs, temperature, max_tokens:4096})});
-    if (!resp.ok) return "Erreur API "+resp.status;
+    const resp = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + API_KEY
+      },
+      body: JSON.stringify({
+        model: selectedModel,
+        messages: msgs,
+        temperature: 0.7,
+        max_tokens: 2048
+      })
+    });
+    
+    if (!resp.ok) {
+      const err = await resp.text().catch(() => '');
+      throw new Error('Erreur ' + resp.status + ': ' + err);
+    }
+    
     const data = await resp.json();
-    return data.choices?.[0]?.message?.content?.replace(/par (le )?(groupe|laboratoire|entreprise|équipe) alibaba[^.]*\.?/gi,'par Qwen_Pro').replace(/alibaba[^.]*\.?/gi,'Qwen_Pro').replace(/tongyi[^.]*\.?/gi,'Qwen_Pro') || "Pas de réponse.";
-  } catch(e) { return "Erreur: "+e.message; }
+    let text = data.choices?.[0]?.message?.content || 'Pas de réponse';
+    
+    // Clean responses
+    text = text.replace(/par (le )?(groupe|laboratoire|entreprise|équipe) alibaba[^.]*\.?/gi, 'par Qwen_Pro');
+    text = text.replace(/alibaba[^.]*\.?/gi, 'Qwen_Pro');
+    text = text.replace(/tongyi[^.]*\.?/gi, 'Qwen_Pro');
+    
+    return text;
+  } catch(e) {
+    throw e;
+  }
 }
 
-// ===== TEMP SLIDER =====
-document.addEventListener('DOMContentLoaded', function() {
-  const s = document.getElementById('tempSlider');
-  const v = document.getElementById('tempVal');
-  if (s) {
-    s.value = temperature * 100;
-    s.addEventListener('input', function() {
-      temperature = this.value / 100;
-      if (v) v.textContent = temperature.toFixed(1);
-    });
+function addMessage(text, role) {
+  messages.push({ role, content: text });
+  
+  const container = document.getElementById('messages');
+  
+  if (role === 'assistant' && text.includes('```')) {
+    text = text.replace(/```(\w*)\n?([\s\S]*?)```/g, '<pre><code>$2</code></pre>');
+    text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
   }
-});
+  
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = text.replace(/\n/g, '<br>');
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
 
-// Ensure quick buttons work - add event listeners with fallback
-(function initQuickButtons() {
-  var retries = 0;
-  function tryInit() {
-    var btns = document.querySelectorAll('.quick-btn');
-    if (btns.length === 0 && retries < 20) {
-      retries++;
-      setTimeout(tryInit, 100);
-      return;
-    }
-    btns.forEach(function(btn) {
-      btn.addEventListener('click', function(e) {
-        var onclick = btn.getAttribute('onclick') || '';
-        var match = onclick.match(/quickAction\('([^']+)'\)/);
-        if (match && typeof quickAction === 'function') {
-          quickAction(match[1]);
-        }
-      });
-    });
-  }
-  tryInit();
-})();
+function hideWelcome() {
+  const w = document.getElementById('welcome');
+  if (w) w.style.display = 'none';
+}
 
+function clearChat() {
+  messages = [];
+  document.getElementById('messages').innerHTML = '';
+  document.getElementById('welcome').style.display = 'flex';
+  document.getElementById('msgInput').focus();
+}
+
+function setLoading(loading) {
+  isLoading = loading;
+  document.getElementById('sendBtn').disabled = loading;
+}
+
+function updateStatus(state, text) {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusTxt');
+  dot.className = 'status-dot' + (state === 'loading' ? ' loading' : '');
+  txt.textContent = text;
+}
+
+function toggleSettings() {
+  alert('Paramètres en cours de développement');
+}
 </script>
+
 </body>
 </html>
