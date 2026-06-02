@@ -789,10 +789,16 @@ function loadConversations() {
   const list = document.getElementById('convList');
   if (!list) return;
   list.innerHTML = '';
+  
+  if (conversations.length === 0) {
+    list.innerHTML = '<div style="color: var(--muted); font-size: 13px; text-align: center; padding: 20px;">Aucune conversation</div>';
+    return;
+  }
+  
   conversations.forEach((conv, i) => {
     const div = document.createElement('div');
     div.className = 'conv-item' + (i === 0 ? ' active' : '');
-    div.innerHTML = `<span>💬</span>${conv.title}`;
+    div.innerHTML = `<span>💬</span><span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${conv.title}</span><button onclick="event.stopPropagation(); deleteConversation(${conv.id})" style="background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px;">✕</button>`;
     div.onclick = () => loadConversation(conv.id);
     list.appendChild(div);
   });
