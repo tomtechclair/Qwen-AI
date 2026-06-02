@@ -806,8 +806,183 @@ let selectedModel = 'qwen3-max';
 let temperature = 0.7;
 let maxTokens = 1000;
 let animationsEnabled = true;
-let conversations = JSON.parse(localStorage.getItem('qwen_conversations') || '[]');
-let userName = localStorage.getItem('qwen_username') || '';
+let conversations = [];
+let userName = '';
+let db = null; // IndexedDB instance
+
+// === STORAGE SYSTEM (localStorage + IndexedDB fallback) ===
+const DB_NAME = 'QwenAIDB';
+const DB_VERSION = 1;
+const STORE_CONVERSATIONS = 'conversations';
+const STORE_SETTINGS = 'settings';
+
+// Initialiser IndexedDB
+function initIndexedDB() {
+  return new Promise((resolve, reject) => {
+    // Vérifier si IndexedDB est disponible
+    if (!window.indexedDB) {
+      console.warn('IndexedDB non disponible, utilisation de localStorage');
+      resolve(null);
+      return;
+    }
+    
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    
+    // Gestion des erreurs IndexedDB
+    request.onerror = (e) => {
+      console.error('Erreur IndexedDB:', e);
+      resolve(null); // Fallback vers localStorage
+    };
+    
+    request.onsuccess = (e) => {
+      db = e.target.result;
+      console.log('IndexedDB initialisé avec succès');
+      resolve(db);
+    };
+    
+    request.onupgradeneeded = (e) => {
+      const database = e.target.result;
+      // Créer les stores si nécessaire
+      if (!database.objectStoreNames.contains(STORE_CONVERSATIONS)) {
+        database.createObjectStore(STORE_CONVERSATIONS, { keyPath: 'id' });
+      }
+      if (!database.objectStoreNames.contains(STORE_SETTINGS)) {
+        database.createObjectStore(STORE_SETTINGS, { keyPath: 'key' });
+      }
+    };
+  });
+}
+
+// Sauvegarder dans IndexedDB
+function saveToIndexedDB(storeName, data) {
+  return new Promise((resolve, reject) => {
+    if (!db) {
+      reject(new Error('IndexedDB non initialisé'));
+      return;
+    }
+    
+    try {
+      const transaction = db.transaction([storeName], 'readwrite');
+      const store = transaction.objectStore(storeName);
+      
+      // Pour les conversations, on stocke un tableau
+      const request = store.put({ id: 'all', data: data });
+      
+      request.onsuccess = () => resolve(true);
+      request.onerror = () => reject(request.error);
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+// Charger depuis IndexedDB
+function loadFromIndexedDB(storeName) {
+  return new Promise((resolve, reject) => {
+    if (!db) {
+      reject(new Error('IndexedDB non initialisé'));
+      return;
+    }
+    
+    try {
+      const transaction = db.transaction([storeName], 'readonly');
+      const store = transaction.objectStore(storeName);
+      const request = store.get('all');
+      
+      request.onsuccess = () => resolve(request.result?.data || null);
+      request.onerror = () => reject(request.error);
+    } catch (e) {
+      reject(e);
+    }
+  });
+}
+
+// Sauvegarder avec fallback automatique (IndexedDB -> localStorage)
+async function saveData(key, data) {
+  try {
+    // Essayer IndexedDB d'abord
+    if (db) {
+      await saveToIndexedDB(STORE_CONVERSATIONS, data);
+      console.log('Sauvegarde IndexedDB réussie');
+    }
+  } catch (e) {
+    console.warn('IndexedDB échoué, fallback localStorage:', e);
+  }
+  
+  // Toujours sauvegarder dans localStorage comme backup
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+    console.log('Sauvegarde localStorage réussie');
+    return true;
+  } catch (e) {
+    // Si localStorage échoue (quota exceeded, etc.)
+    console.error('localStorage échoué:', e);
+    handleStorageError(e);
+    return false;
+  }
+}
+
+// Charger avec fallback automatique (IndexedDB -> localStorage)
+async function loadData(key, defaultValue = null) {
+  try {
+    // Essayer IndexedDB d'abord
+    if (db) {
+      const data = await loadFromIndexedDB(STORE_CONVERSATIONS);
+      if (data) {
+        console.log('Chargement IndexedDB réussi');
+        return data;
+      }
+    }
+  } catch (e) {
+    console.warn('IndexedDB échoué, fallback localStorage:', e);
+  }
+  
+  // Fallback vers localStorage
+  try {
+    const saved = localStorage.getItem(key);
+    if (saved) {
+      console.log('Chargement localStorage réussi');
+      return JSON.parse(saved);
+    }
+  } catch (e) {
+    console.error('Erreur lecture localStorage:', e);
+  }
+  
+  return defaultValue;
+}
+
+// Gérer les erreurs de stockage
+function handleStorageError(error) {
+  // QuotaExceededError - stockage plein
+  if (error.name === 'QuotaExceededError') {
+    console.warn('Stockage plein, nettoyage...');
+    // Supprimer les anciennes conversations (garder les 5 dernières)
+    if (conversations.length > 5) {
+      conversations = conversations.slice(0, 5);
+      saveData('qwen_conversations', conversations);
+    }
+    alert('Stockage plein. Les anciennes conversations ont été supprimées.');
+  }
+  // Autres erreurs
+  else {
+    console.error('Erreur stockage:', error);
+  }
+}
+
+// Charger les conversations au démarrage
+async function loadConversationsFromStorage() {
+  conversations = await loadData('qwen_conversations', []);
+  return conversations;
+}
+
+// Sauvegarder les conversations automatiquement
+function autoSaveConversations() {
+  saveData('qwen_conversations', conversations).then(() => {
+    console.log('Conversations sauvegardées automatiquement');
+  }).catch(e => {
+    console.error('Erreur sauvegarde automatique:', e);
+  });
+}
 
 // === USER FUNCTIONS ===
 function saveUserName(name) {
@@ -838,9 +1013,15 @@ function updateWelcomeMessage() {
 // Run maintenance check immediately (before DOMContentLoaded)
 checkMaintenanceEnd();
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // Initialiser IndexedDB d'abord
+  await initIndexedDB();
+  
   // Re-check maintenance status after DOM is ready
   checkMaintenanceEnd();
+  
+  // Charger le prénom depuis localStorage
+  userName = localStorage.getItem('qwen_username') || '';
   
   // Update welcome message with greeting and user name
   updateWelcomeMessage();
@@ -857,12 +1038,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   updateStatus('ready', 'Propulsé par Qwen3 Max');
   
-  // Load conversations from localStorage
-  const saved = localStorage.getItem('qwen_conversations');
-  if (saved) {
-    conversations = JSON.parse(saved);
-    loadConversations();
-  }
+  // Charger les conversations depuis le stockage
+  await loadConversationsFromStorage();
+  loadConversations();
   
   // Auto-load last conversation if exists
   if (conversations.length > 0 && localStorage.getItem('qwen_last_conv_id')) {
@@ -888,8 +1066,11 @@ function saveConversation() {
   conversations.unshift(conv);
   // Keep only last 20
   if (conversations.length > 20) conversations = conversations.slice(0, 20);
-  localStorage.setItem('qwen_conversations', JSON.stringify(conversations));
+  
+  // Sauvegarder avec le système robuste (IndexedDB + localStorage)
+  saveData('qwen_conversations', conversations);
   localStorage.setItem('qwen_last_conv_id', conv.id.toString());
+  
   loadConversations();
 }
 
@@ -932,7 +1113,8 @@ function loadConversation(id) {
 
 function deleteConversation(id) {
   conversations = conversations.filter(c => c.id !== id);
-  localStorage.setItem('qwen_conversations', JSON.stringify(conversations));
+  // Sauvegarder avec le système robuste
+  saveData('qwen_conversations', conversations);
   loadConversations();
 }
 
