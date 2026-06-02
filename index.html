@@ -43,7 +43,7 @@ body {
     background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
     font-family: 'Outfit', sans-serif;
   }
-  body > *:not(script):not(style):not(link) {
+  body.maintenance-active > *:not(script):not(style):not(link):not(.mobile-maintenance) {
     display: none !important;
   }
   .mobile-maintenance {
@@ -124,7 +124,7 @@ body {
     40% { transform: scale(1); opacity: 1; }
   }
 }
-/* Mobile Maintenance Screen */
+/* Mobile Maintenance Screen - hidden on desktop */
 .mobile-maintenance {
   display: none;
 }
@@ -748,6 +748,37 @@ const getLocalTimeInfo = () => {
 
 const getSystemPrompt = () => `Tu es Qwen AI, un assistant intelligent créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Réponds de façon naturelle et conversationnelle en français. Annonce ce que tu fais, utilise des phrases courtes et fluides. Si on te demande qui t'a développé ou qui t'as créé, réponds simplement: "Je suis Qwen AI, créé par Qwen_Pro." Ne dis jamais "par une équipe", "par Alibaba", "par le groupe", etc. Tu appartiens à Qwen_Pro. ${getLocalTimeInfo()}. Quand on te demande l'heure ou la date, donne ces informations directement sans mise en forme (pas de asterisques).`;
 
+// === MOBILE MAINTENANCE CHECK ===
+function checkMaintenanceEnd() {
+  // Check if mobile
+  if (window.innerWidth > 768) return true;
+  
+  const now = new Date();
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
+  const currentMinutesFromMidnight = hours * 60 + minutes;
+  // 6h30 = 6 * 60 + 30 = 390 minutes
+  const maintenanceEndMinutes = 6 * 60 + 30;
+  
+  if (currentMinutesFromMidnight < maintenanceEndMinutes) {
+    // Activer le mode maintenance (avant 6h30)
+    document.body.classList.add('maintenance-active');
+    const mobileMaintenance = document.querySelector('.mobile-maintenance');
+    if (mobileMaintenance) {
+      mobileMaintenance.style.display = 'flex';
+    }
+    return false;
+  } else {
+    // Désactiver le mode maintenance (après 6h30)
+    document.body.classList.remove('maintenance-active');
+    const mobileMaintenance = document.querySelector('.mobile-maintenance');
+    if (mobileMaintenance) {
+      mobileMaintenance.style.display = 'none';
+    }
+    return true;
+  }
+}
+
 // === STATE ===
 let messages = [];
 let selectedModel = 'qwen3-max';
@@ -757,7 +788,13 @@ let animationsEnabled = true;
 let conversations = JSON.parse(localStorage.getItem('qwen_conversations') || '[]');
 
 // === INIT ===
+// Run maintenance check immediately (before DOMContentLoaded)
+checkMaintenanceEnd();
+
 document.addEventListener('DOMContentLoaded', () => {
+  // Re-check maintenance status after DOM is ready
+  checkMaintenanceEnd();
+  
   autoResize(document.getElementById('msgInput'));
   updateStatus('ready', 'Propulsé par Qwen3 Max');
   
