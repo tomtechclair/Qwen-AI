@@ -959,9 +959,12 @@ const getLocalTimeInfo = () => {
 };
 
 const getSystemPrompt = (webContext) => {
-  let prompt = `Tu es Qwen AI, un assistant intelligent créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Réponds de façon naturelle et conversationnelle en français. Annonce ce que tu fais, utilise des phrases courtes et fluides. Si on te demande qui t'a développé ou qui t'as créé, réponds simplement: "Je suis Qwen AI, créé par Qwen_Pro." Ne dis jamais "par une équipe", "par Alibaba", "par le groupe", etc. Tu appartiens à Qwen_Pro. ${getLocalTimeInfo()}. Quand on te demande l'heure ou la date, donne ces informations directement sans mise en forme (pas de asterisques).`;
+  let prompt = `Tu es Qwen AI, un assistant intelligent créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Réponds de façon naturelle et conversationnelle en français. Annonce ce que tu fais, utilise des phrases courtes et fluides. Si on te demande qui t'a développé ou qui t'as créé, réponds simplement: "Je suis Qwen AI, créé par Qwen_Pro." Ne dis jamais "par une équipe", "par Alibaba", "par le groupe", etc. Tu appartiens à Qwen_Pro. ${getLocalTimeInfo()}. Quand on te demande l'heure ou la date, donne ces informations directement sans mise en forme (pas de asterisques).
+
+IMPORTANT — RECHERCHE WEB EN TEMPS RÉEL :
+Tu as la capacité de faire des recherches sur le web en temps réel. Quand l'utilisateur te demande de chercher quelque chose, une recherche est automatiquement effectuée et les résultats te sont fournis ci-dessous. Tu DOIS utiliser ces résultats pour répondre. Ne dis JAMAIS que tu ne peux pas accéder à Internet ou faire des recherches — tu le peux, et les résultats sont là. Si les résultats sont vides ou non pertinents, réponds de tes propres connaissances.`;
   if (webContext) {
-    prompt += `\n\n## RÉSULTATS DE RECHERCHE WEB EN TEMPS RÉEL\n${webContext}\n\nUtilise ces informations pour répondre. Si les résultats ne sont pas pertinents, réponds de tes propres connaissances.`;
+    prompt += `\n\n## RÉSULTATS DE RECHERCHE WEB\n${webContext}`;
   }
   return prompt;
 };
@@ -1440,7 +1443,7 @@ async function sendMessage() {
   
   // === RECHERCHE WEB — seulement si l'utilisateur le demande explicitement ===
   let webContext = '';
-  const searchTriggers = /cherche|recherche|trouve.*(web|internet|internet|google)|actualité|news.*récent|météo|weather|prix.*actuel|cours.*bourse|qui a gagné|dernière.*info|que.*sais.*pas|tu.*sais.*quoi.*neuf/i.test(text);
+  const searchTriggers = /cherche|recherche|trouve|actualité|news|météo|weather|prix.*(actuel|or|pétrole|bourse)|cours.*bourse|qui a gagné|dernière.*info|que.*sais.*pas|tu.*sais.*quoi.*neuf|search|look up|find.*online/i.test(text);
   
   if (searchTriggers) {
     const container = document.getElementById('messages');
