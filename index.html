@@ -758,6 +758,7 @@ header {
         <button class="quick-btn" onclick="sendQuick('Traduis en anglais:')">🌍 Traduire</button>
         <button class="quick-btn" onclick="sendQuick('Écris un poème sur la nuit')">📝 Poème</button>
         <button class="quick-btn" onclick="sendQuick('Donne-moi des idées pour un projet')">💡 Idées</button>
+        <button class="quick-btn" onclick="sendQuick('Analyse ce lien: https://example.com')">🔗 Analyser</button>
       </div>
     </div>
     <div class="messages" id="messages"></div>
@@ -835,7 +836,10 @@ const getSystemPrompt = (webContext) => {
   let prompt = `Tu es Qwen AI, un assistant intelligent créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Réponds de façon naturelle et conversationnelle en français. Annonce ce que tu fais, utilise des phrases courtes et fluides. Si on te demande qui t'a développé ou qui t'as créé, réponds simplement: "Je suis Qwen AI, créé par Qwen_Pro." Ne dis jamais "par une équipe", "par Alibaba", "par le groupe", etc. Tu appartiens à Qwen_Pro. ${getLocalTimeInfo()}. Quand on te demande l'heure ou la date, donne ces informations directement sans mise en forme (pas de asterisques).
 
 IMPORTANT — RECHERCHE WEB EN TEMPS RÉEL :
-Tu as la capacité de faire des recherches sur le web en temps réel. Quand l'utilisateur te demande de chercher quelque chose, une recherche est automatiquement effectuée et les résultats te sont fournis ci-dessous. Tu DOIS utiliser ces résultats pour répondre. Ne dis JAMAIS que tu ne peux pas accéder à Internet ou faire des recherches — tu le peux, et les résultats sont là. Si les résultats sont vides ou non pertinents, réponds de tes propres connaissances.`;
+Tu as la capacité de faire des recherches sur le web en temps réel. Quand l'utilisateur te demande de chercher quelque chose, une recherche est automatiquement effectuée et les résultats te sont fournis ci-dessous. Tu DOIS utiliser ces résultats pour répondre. Ne dis JAMAIS que tu ne peux pas accéder à Internet ou faire des recherches — tu le peux, et les résultats sont là. Si les résultats sont vides ou non pertinents, réponds de tes propres connaissances.
+
+ANALYSEUR DE LIENS :
+Quand l'utilisateur te demande d'analyser un lien (avec "analyse ce lien", "que vaut ce site", etc.), le contenu de la page est automatiquement extrait et affiché visuellement. Tu reçois aussi le contenu texte ci-dessous. Fais un résumé utile : dis ce que contient la page, donne ton avis, mets en avant les points importants. Cite les images et liens si pertinent.`;
   if (webContext) {
     prompt += `\n\n## RÉSULTATS DE RECHERCHE WEB\n${webContext}`;
   }
@@ -991,6 +995,139 @@ function escapeHtml(t) {
   const d = document.createElement('div');
   d.textContent = t;
   return d.innerHTML;
+}
+
+// === ANALYSEUR DE LIENS ===
+async function fetchAndAnalyzeURL(url) {
+  // Nettoie l'URL
+  if (!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
+  
+  const proxies = [
+    'https://api.allorigins.win/raw?url=',
+    'https://corsproxy.io/?url=',
+    'https://api.codetabs.com/v1/proxy?quest='
+  ];
+  
+  let html = '';
+  for (const proxy of proxies) {
+    try {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 8000);
+      const res = await fetch(proxy + encodeURIComponent(url), { signal: ctrl.signal });
+      clearTimeout(timer);
+      if (res.ok) { html = await res.text(); break; }
+    } catch(e) { continue; }
+  }
+  if (!html) return null;
+  
+  // Parser le HTML dans un DOM virtuel
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  
+  // Titre
+  const title = doc.querySelector('title')?.textContent?.trim() || '(aucun titre)';
+  
+  // Meta description
+  const metaDesc = doc.querySelector('meta[name="description"]')?.getAttribute('content')?.trim()
+    || doc.querySelector('meta[property="og:description"]')?.getAttribute('content')?.trim() || '';
+  
+  // Meta og:title
+  const ogTitle = doc.querySelector('meta[property="og:title"]')?.getAttribute('content')?.trim() || '';
+  
+  // Images principales (pas les icônes, logos, trackers)
+  const images = [];
+  doc.querySelectorAll('img[src]').forEach(img => {
+    const src = img.getAttribute('src') || '';
+    const alt = img.getAttribute('alt') || '';
+    const w = img.getAttribute('width') || '';
+    // Ignorer les petites icônes et trackers
+    if (src && !src.includes('data:') && !src.includes('pixel') && !src.includes('tracker')
+        && src.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i)) {
+      const fullSrc = src.startsWith('http') ? src : new URL(src, url).href;
+      images.push({ src: fullSrc, alt: alt || '(image)' });
+    }
+  });
+  
+  // Liens internes et externes
+  const domain = new URL(url).hostname;
+  const internalLinks = [];
+  const externalLinks = [];
+  const seen = new Set();
+  
+  doc.querySelectorAll('a[href]').forEach(a => {
+    const href = a.getAttribute('href') || '';
+    const text = a.textContent?.trim()?.slice(0, 80) || '(lien)';
+    if (!href || href.startsWith('#') || href.startsWith('javascript:') || href.startsWith('mailto:')) return;
+    
+    let fullHref;
+    try { fullHref = new URL(href, url).href; } catch(e) { return; }
+    if (seen.has(fullHref)) return;
+    seen.add(fullHref);
+    
+    const linkDomain = new URL(fullHref).hostname;
+    if (linkDomain === domain) {
+      if (internalLinks.length < 8) internalLinks.push({ href: fullHref, text });
+    } else {
+      if (externalLinks.length < 8) externalLinks.push({ href: fullHref, text });
+    }
+  });
+  
+  // Contenu texte pour l'IA (le body sans les scripts/styles)
+  const bodyText = doc.body?.textContent?.replace(/\s+/g, ' ')?.trim()?.slice(0, 4000) || '';
+  
+  return {
+    url,
+    title,
+    ogTitle,
+    metaDesc,
+    bodyText: bodyText.slice(0, 3000),
+    images: images.slice(0, 6),
+    internalLinks,
+    externalLinks
+  };
+}
+
+function displayAnalysis(data) {
+  if (!data) return '<div style="padding:10px 14px;color:var(--red)">❌ Impossible d\'analyser ce lien</div>';
+  
+  let html = `<div style="padding:12px 16px">`;
+  html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px"><span style="font-size:18px">🔗</span><span style="font-size:15px;color:var(--accent-light);font-weight:600">${escapeHtml(data.title)}</span></div>`;
+  
+  // Description
+  if (data.metaDesc) {
+    html += `<div style="font-size:13px;color:var(--text-sec);margin-bottom:10px;line-height:1.5">${escapeHtml(data.metaDesc)}</div>`;
+  }
+  
+  // Images
+  if (data.images.length > 0) {
+    html += `<div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">📷 Images principales :</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">`;
+    data.images.slice(0, 3).forEach(img => {
+      html += `<img src="${escapeHtml(img.src)}" alt="${escapeHtml(img.alt)}" style="width:80px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--border)" onerror="this.style.display='none'">`;
+    });
+    html += `</div>`;
+  }
+  
+  // Liens internes
+  if (data.internalLinks.length > 0) {
+    html += `<div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">📄 Liens internes (${data.internalLinks.length}) :</div>`;
+    data.internalLinks.slice(0, 4).forEach(l => {
+      html += `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:3px"><span style="color:var(--text-ter);font-size:10px">→</span><a href="${escapeHtml(l.href)}" target="_blank" rel="noopener" style="color:var(--accent-light);text-decoration:none;font-size:12px">${escapeHtml(l.text)}</a></div>`;
+    });
+    if (data.internalLinks.length > 4) html += `<div style="font-size:10px;color:var(--text-muted);margin-bottom:6px">+ ${data.internalLinks.length - 4} autres</div>`;
+  }
+  
+  // Liens externes
+  if (data.externalLinks.length > 0) {
+    html += `<div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;margin-top:2px">🌍 Liens externes (${data.externalLinks.length}) :</div>`;
+    data.externalLinks.slice(0, 4).forEach(l => {
+      html += `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:3px"><span style="color:var(--text-ter);font-size:10px">→</span><a href="${escapeHtml(l.href)}" target="_blank" rel="noopener" style="color:var(--accent-light);text-decoration:none;font-size:12px">${escapeHtml(l.text)}</a></div>`;
+    });
+    if (data.externalLinks.length > 4) html += `<div style="font-size:10px;color:var(--text-muted)">+ ${data.externalLinks.length - 4} autres</div>`;
+  }
+  
+  html += `</div>`;
+  return html;
 }
 
 // === STORAGE SYSTEM (localStorage + IndexedDB fallback) ===
@@ -1361,11 +1498,38 @@ async function sendMessage() {
   hideWelcome();
   setLoading(true);
   
-  // === RECHERCHE WEB — seulement si l'utilisateur le demande explicitement ===
+  // === ANALYSE DE LIEN — détecte si le message contient une URL ===
   let webContext = '';
+  const urlMatch = text.match(/(?:https?:\/\/)?(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,}(?:\/[-a-zA-Z0-9@:%._\+~#=?&\/]*)?/i);
+  const isUrlRequest = /analyse|analyze|quoi.*pense|que.*vaut|avis|content|scrape|extract/i.test(text) && urlMatch;
+  
+  if (isUrlRequest && urlMatch) {
+    const url = urlMatch[0].startsWith('http') ? urlMatch[0] : 'https://' + urlMatch[0];
+    const container = document.getElementById('messages');
+    const analyzeMsg = document.createElement('div');
+    analyzeMsg.className = 'msg web-search';
+    analyzeMsg.innerHTML = '<div style="display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:12px;color:var(--text-ter)"><span style="font-size:16px">🔗</span> Analyse du lien en cours...</div>';
+    container.appendChild(analyzeMsg);
+    container.scrollTop = container.scrollHeight;
+    
+    updateStatus('loading', 'Analyse du lien...');
+    const linkData = await fetchAndAnalyzeURL(url);
+    
+    if (linkData) {
+      const displayHtml = displayAnalysis(linkData);
+      analyzeMsg.innerHTML = `<div style="padding:10px 14px;background:var(--surface);border-radius:12px;border:1px solid var(--border);margin:4px 12px">${displayHtml}</div>`;
+      // Donner le contenu à l'IA pour un résumé
+      webContext = `[ANALYSE DE LIEN]\nURL: ${linkData.url}\nTitre: ${linkData.title}\nDescription: ${linkData.metaDesc}\n\nContenu extrait:\n${linkData.bodyText.slice(0, 2000)}\n\n[/ANALYSE DE LIEN]`;
+    } else {
+      analyzeMsg.innerHTML = `<div style="padding:10px 14px;background:var(--surface);border-radius:12px;border:1px solid var(--border);margin:4px 12px"><div style="padding:8px;color:var(--red);font-size:13px">❌ Impossible d'accéder à ce lien</div></div>`;
+    }
+    container.scrollTop = container.scrollHeight;
+  }
+  
+  // === RECHERCHE WEB — seulement si l'utilisateur le demande explicitement ===
   const searchTriggers = /cherche|recherche|trouve|actualité|news|météo|weather|prix.*(actuel|or|pétrole|bourse)|cours.*bourse|qui a gagné|dernière.*info|que.*sais.*pas|tu.*sais.*quoi.*neuf|search|look up|find.*online/i.test(text);
   
-  if (searchTriggers) {
+  if (!isUrlRequest && searchTriggers) {
     const container = document.getElementById('messages');
     const searchMsg = document.createElement('div');
     searchMsg.className = 'msg web-search';
