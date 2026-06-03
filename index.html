@@ -541,6 +541,105 @@ header {
   background: #6d28d9;
 }
 
+/* === ANALYSEUR DE LIENS — animation type Mistral === */
+@keyframes spin-slow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+@keyframes spin-reverse { 0% { transform: rotate(360deg); } 100% { transform: rotate(0deg); } }
+@keyframes float-particle {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
+  50% { transform: translateY(-8px) scale(1.2); opacity: 1; }
+}
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(139,92,246,0.3), 0 0 40px rgba(139,92,246,0.1); }
+  50% { box-shadow: 0 0 30px rgba(139,92,246,0.5), 0 0 60px rgba(139,92,246,0.2); }
+}
+@keyframes shimmer {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+.analyze-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 28px 20px;
+  gap: 16px;
+  position: relative;
+}
+.analyze-loader .ring-container {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.analyze-loader .ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid transparent;
+}
+.analyze-loader .ring-1 {
+  border-top-color: var(--accent);
+  border-right-color: rgba(139,92,246,0.3);
+  animation: spin-slow 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+.analyze-loader .ring-2 {
+  inset: 8px;
+  border-bottom-color: #7c3aed;
+  border-left-color: rgba(124,58,237,0.3);
+  animation: spin-reverse 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+.analyze-loader .ring-3 {
+  inset: 16px;
+  border-top-color: #a78bfa;
+  border-right-color: rgba(167,139,250,0.2);
+  animation: spin-slow 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+.analyze-loader .center-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #7c3aed);
+  z-index: 2;
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+.analyze-loader .particles {
+  position: absolute;
+  inset: -10px;
+  pointer-events: none;
+}
+.analyze-loader .particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0.5;
+}
+.analyze-loader .particle:nth-child(1) { top: 10%; left: 50%; animation: float-particle 2.5s ease-in-out 0s infinite; }
+.analyze-loader .particle:nth-child(2) { top: 50%; right: 5%; animation: float-particle 3s ease-in-out 0.5s infinite; }
+.analyze-loader .particle:nth-child(3) { bottom: 15%; left: 30%; animation: float-particle 2.8s ease-in-out 1s infinite; }
+.analyze-loader .particle:nth-child(4) { top: 20%; right: 25%; animation: float-particle 3.2s ease-in-out 0.3s infinite; }
+.analyze-loader .particle:nth-child(5) { bottom: 30%; left: 15%; animation: float-particle 2.2s ease-in-out 0.8s infinite; }
+.analyze-loader .analyze-text {
+  font-size: 14px;
+  font-weight: 600;
+  background: linear-gradient(90deg, var(--text-sec), var(--accent-light), var(--text-sec));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 2.5s linear infinite;
+  text-align: center;
+}
+.analyze-loader .analyze-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: -8px;
+}
+
 /* === RESPONSIVE MOBILE STYLES === */
 @media (max-width: 768px) {
   /* ===== RESET FULL SCREEN ===== */
@@ -1507,7 +1606,23 @@ async function sendMessage() {
     const container = document.getElementById('messages');
     const analyzeMsg = document.createElement('div');
     analyzeMsg.className = 'msg web-search';
-    analyzeMsg.innerHTML = '<div style="display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:12px;color:var(--text-ter)"><span style="font-size:16px">🔗</span> Analyse du lien en cours...</div>';
+    analyzeMsg.innerHTML = `<div class="analyze-loader">
+      <div class="ring-container">
+        <div class="ring ring-1"></div>
+        <div class="ring ring-2"></div>
+        <div class="ring ring-3"></div>
+        <div class="center-dot"></div>
+        <div class="particles">
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+          <div class="particle"></div>
+        </div>
+      </div>
+      <div class="analyze-text">Analyse du lien en cours</div>
+      <div class="analyze-sub">Connexion au serveur · Récupération du contenu</div>
+    </div>`;
     container.appendChild(analyzeMsg);
     container.scrollTop = container.scrollHeight;
     
