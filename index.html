@@ -3,29 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>Qwen AI – Assistant Intelligent</title>
+<title>Qwen AI Ã”Ã‡Ã´ Assistant Intelligent</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #05050a;
-  --surface: #0d0d14;
-  --card: #1a1d28;
-  --hover: #252a3a;
-  --border: rgba(255,255,255,0.04);
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --card: #1a1a25;
+  --hover: #222235;
+  --border: rgba(255,255,255,0.06);
   --text: #f0f0f5;
-  --muted: #6b7094;
-  --accent: #577fe4;
-  --accent-light: #8aabff;
-  --accent-dim: rgba(87,127,228,0.15);
-  --sidebar-bg: #1e2c52;
-  --sidebar-hover: #0a0f1e;
-  --sidebar-active: #030307;
-  --chat-bg: #282c3a;
-  --input-bg: #3c5596;
-  --input-field: #3354ab;
-  --send-btn: #645d4d;
-  --chip-bg: #577fe4;
+  --muted: #6b6b80;
+  --accent: #7c3aed;
+  --accent-light: #a78bfa;
+  --accent-dim: rgba(124,58,237,0.15);
   --success: #10b981;
   --error: #ef4444;
   --radius: 16px;
@@ -35,14 +27,13 @@
 html { min-height: -webkit-fill-available; overflow-x: hidden; }
 body {
   font-family: 'Outfit', sans-serif;
-  background: #05050a;
+  background: var(--bg);
   color: var(--text);
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
   overflow-y: hidden;
-  min-height: 100vh;
-  min-height: -webkit-fill-available;
+  background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(124,58,237,0.05) 0%, transparent 60%);
   -webkit-text-size-adjust: 100%;
   -moz-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -54,7 +45,7 @@ header {
   align-items: center;
   justify-content: space-between;
   padding: clamp(10px, 1.5vw, 16px) clamp(12px, 2vw, 24px);
-  background: #030307;
+  background: var(--surface);
   border-bottom: 1px solid var(--border);
   position: relative;
   z-index: 100;
@@ -69,7 +60,7 @@ header {
 .logo-icon {
   width: clamp(32px, 3.5vw, 42px);
   height: clamp(32px, 3.5vw, 42px);
-  background: linear-gradient(135deg, var(--accent), #6b93f7);
+  background: linear-gradient(135deg, var(--accent), #ec4899);
   border-radius: clamp(8px, 1vw, 12px);
   display: flex;
   align-items: center;
@@ -87,7 +78,7 @@ header {
   height: 44px;
   border-radius: 12px;
   background: var(--card);
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
   color: var(--muted);
   cursor: pointer;
   display: flex;
@@ -118,8 +109,8 @@ header {
 /* Sidebar */
 .sidebar {
   width: clamp(180px, 20vw, 280px);
-  background: var(--sidebar-bg);
-  border-right: 1px solid rgba(255,255,255,0.03);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   padding: 16px;
@@ -153,7 +144,7 @@ header {
   transition: all 0.2s;
 }
 .new-chat-btn:hover {
-  background: #6b93f7;
+  background: #6d28d9;
   transform: translateY(-1px);
 }
 .conv-list {
@@ -176,11 +167,11 @@ header {
   gap: 10px;
 }
 .conv-item:hover {
-  background: var(--sidebar-hover);
+  background: var(--hover);
   color: var(--text);
 }
 .conv-item.active {
-  background: var(--sidebar-active);
+  background: var(--accent-dim);
   color: var(--accent-light);
 }
 /* Chat Area */
@@ -192,7 +183,6 @@ header {
   margin: 0 auto;
   width: 100%;
   padding: 0 clamp(8px, 2vw, 24px);
-  background: var(--chat-bg);
 }
 /* Welcome */
 .welcome {
@@ -204,7 +194,6 @@ header {
   text-align: center;
   padding: 40px;
   min-height: 0;
-  background: var(--chat-bg);
 }
 .welcome h1 {
   font-size: clamp(24px, 3.5vw, 40px);
@@ -230,9 +219,9 @@ header {
   min-height: 44px;
   padding: clamp(10px, 1.2vw, 14px) clamp(14px, 2vw, 20px);
   border-radius: 24px;
-  background: var(--chip-bg);
-  border: 1px solid rgba(255,255,255,0.08);
-  color: white;
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
   font-family: inherit;
   font-size: clamp(13px, 1.1vw, 14px);
   cursor: pointer;
@@ -240,13 +229,11 @@ header {
   align-items: center;
   gap: 8px;
   transition: all 0.2s;
-  opacity: 0.9;
 }
 .quick-btn:hover {
-  background: #6b93f7;
-  border-color: rgba(255,255,255,0.15);
+  background: var(--hover);
+  border-color: var(--accent);
   transform: translateY(-2px);
-  opacity: 1;
 }
 /* Messages */
 .messages {
@@ -275,17 +262,15 @@ header {
 }
 .msg.user {
   align-self: flex-end;
-  background: #000004;
-  color: var(--text);
+  background: var(--accent);
+  color: white;
   border-bottom-right-radius: 4px;
-  border: 1px solid rgba(255,255,255,0.04);
 }
 .msg.assistant {
   align-self: flex-start;
-  background: #1d1d20;
-  border: 1px solid rgba(255,255,255,0.04);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-bottom-left-radius: 4px;
-  color: var(--text);
 }
 .msg.assistant pre {
   background: var(--surface);
@@ -295,7 +280,7 @@ header {
   margin: 12px 0;
   font-family: 'Space Mono', monospace;
   font-size: 13px;
-}
+  padding: 20px clamp(16px, 3vw, 40px);
 .msg.assistant code {
   background: var(--surface);
   padding: 2px 6px;
@@ -310,23 +295,25 @@ header {
   border-radius: 12px;
   animation: fadeIn 0.3s ease;
 }
-.msg.web-search a { color: var(--accent-light); text-decoration: none; }
+.msg.web-search a { color: var(--accent); text-decoration: none; }
 .msg.web-search a:hover { text-decoration: underline; }
-.msg.web-search .no-results { color: var(--muted); font-size: 12px; padding: 6px 14px; }
+.msg.web-search .no-results { color: var(--text-muted); font-size: 12px; padding: 6px 14px; }
 /* Input Area */
 .input-area {
-  padding: clamp(8px, 1.5vw, 16px) clamp(8px, 1.5vw, 16px) clamp(12px, 2vw, 24px);
+  padding: clamp(12px, 1.5vw, 18px) 0;
+  padding-bottom: calc(clamp(12px, 1.5vw, 18px) + env(safe-area-inset-bottom, 0px));
+  background: var(--surface);
+  border-top: 1px solid var(--border);
   display: flex;
   gap: clamp(8px, 1vw, 12px);
   align-items: flex-end;
-  background: var(--input-bg);
 }
 .msg-input {
   flex: 1;
   padding: clamp(12px, 1.5vw, 16px) clamp(14px, 2vw, 20px);
   border-radius: clamp(12px, 1.5vw, 16px);
-  background: var(--input-field);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--card);
+  border: 1px solid var(--border);
   color: var(--text);
   font-family: inherit;
   font-size: clamp(15px, 1.2vw, 16px);
@@ -348,9 +335,9 @@ header {
   width: clamp(44px, 5vw, 56px);
   height: clamp(44px, 5vw, 56px);
   border-radius: clamp(12px, 1.5vw, 16px);
-  background: var(--send-btn);
+  background: var(--accent);
   border: none;
-  color: #d4cfc5;
+  color: white;
   cursor: pointer;
   font-size: clamp(18px, 2vw, 22px);
   display: flex;
@@ -359,7 +346,7 @@ header {
   transition: all 0.2s;
 }
 .send-btn:hover {
-  background: #7a6f5a;
+  background: #6d28d9;
   transform: scale(1.05);
 }
 .send-btn:disabled {
@@ -372,11 +359,12 @@ header {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 10px;
-  font-size: 12px;
+  padding: 8px 16px;
+  font-size: 11px;
   color: var(--muted);
-  gap: 8px;
-  background: #030307;
+  gap: 6px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
 }
 .status-dot {
   width: 8px;
@@ -398,7 +386,7 @@ header {
   padding: clamp(6px, 0.8vw, 8px) clamp(10px, 1.5vw, 16px);
   border-radius: 20px;
   background: var(--card);
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
   color: var(--text);
   font-family: inherit;
   font-size: clamp(12px, 1vw, 13px);
@@ -434,8 +422,8 @@ header {
   align-items: center;
   gap: 8px;
   padding: clamp(12px, 1.5vw, 16px) clamp(14px, 2vw, 20px);
-  background: #1d1d20;
-  border: 1px solid rgba(255,255,255,0.04);
+  background: var(--card);
+  border: 1px solid var(--border);
   border-radius: clamp(12px, 1.5vw, 16px);
   border-bottom-left-radius: 4px;
   align-self: flex-start;
@@ -473,8 +461,8 @@ header {
   display: flex;
 }
 .settings-panel {
-  background: var(--sidebar-bg);
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--surface);
+  border: 1px solid var(--border);
   border-radius: clamp(16px, 2vw, 20px);
   padding: clamp(16px, 3vw, 30px);
   max-width: min(92%, 450px);
@@ -574,10 +562,10 @@ header {
   margin-top: 10px;
 }
 .close-settings:hover {
-  background: #4a6fc9;
+  background: #6d28d9;
 }
 
-/* === ANALYSEUR DE LIENS — animation type Mistral === */
+/* === ANALYSEUR DE LIENS Ã”Ã‡Ã¶ animation type Mistral === */
 @keyframes spin-slow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 @keyframes spin-reverse { 0% { transform: rotate(360deg); } 100% { transform: rotate(0deg); } }
 @keyframes float-particle {
@@ -585,8 +573,8 @@ header {
   50% { transform: translateY(-8px) scale(1.2); opacity: 1; }
 }
 @keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(87,127,228,0.3), 0 0 40px rgba(87,127,228,0.1); }
-  50% { box-shadow: 0 0 30px rgba(87,127,228,0.5), 0 0 60px rgba(87,127,228,0.2); }
+  0%, 100% { box-shadow: 0 0 20px rgba(139,92,246,0.3), 0 0 40px rgba(139,92,246,0.1); }
+  50% { box-shadow: 0 0 30px rgba(139,92,246,0.5), 0 0 60px rgba(139,92,246,0.2); }
 }
 @keyframes shimmer {
   0% { background-position: 200% center; }
@@ -623,21 +611,21 @@ header {
 }
 .analyze-loader .ring-2 {
   inset: 8px;
-  border-bottom-color: #4a6fc9;
-  border-left-color: rgba(74,111,201,0.3);
+  border-bottom-color: #7c3aed;
+  border-left-color: rgba(124,58,237,0.3);
   animation: spin-reverse 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 .analyze-loader .ring-3 {
   inset: 16px;
-  border-top-color: #8aabff;
-  border-right-color: rgba(138,171,255,0.2);
+  border-top-color: #a78bfa;
+  border-right-color: rgba(167,139,250,0.2);
   animation: spin-slow 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 .analyze-loader .center-dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), #4a6fc9);
+  background: linear-gradient(135deg, var(--accent), #7c3aed);
   z-index: 2;
   animation: glow-pulse 2s ease-in-out infinite;
 }
@@ -677,7 +665,7 @@ header {
 }
 
 /* ==========================================
-   TABLETTE (≤1024px)
+   TABLETTE (Ã”Ã«Ã±1024px)
    ========================================== */
 @media (max-width: 1024px) {
   /* Sidebar devient slide-in comme sur mobile */
@@ -692,8 +680,8 @@ header {
     padding: clamp(12px, 2vw, 16px);
     padding-top: calc(8px + env(safe-area-inset-top, 0px));
     padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-    background: var(--sidebar-bg);
-    border-right: 1px solid rgba(255,255,255,0.03);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -714,7 +702,7 @@ header {
   }
   .sidebar-overlay.open { display: block; }
 
-  /* Header légèrement compact */
+  /* Header l+Â®g+Â¿rement compact */
   header {
     padding: clamp(8px, 1.5vw, 12px) clamp(12px, 2vw, 20px);
   }
@@ -728,13 +716,13 @@ header {
   /* Messages plus larges */
   .msg { max-width: min(92%, 700px); }
 
-  /* Welcome ajusté */
+  /* Welcome ajust+Â® */
   .welcome { padding: clamp(20px, 4vw, 32px); }
   .welcome h1 { font-size: clamp(24px, 4vw, 30px); }
 }
 
 /* ==========================================
-   MOBILE — Design façon ChatGPT
+   MOBILE Ã”Ã‡Ã¶ Design fa+Âºon ChatGPT
    ========================================== */
 @media (max-width: 768px) {
   /* ---- Reset ---- */
@@ -803,7 +791,7 @@ header {
     position: relative;
   }
 
-  /* ---- Sidebar slide-in ---- */
+  /* ---- Sidebar slide-in (fa+Âºon ChatGPT) ---- */
   .sidebar {
     position: fixed;
     top: 0;
@@ -815,8 +803,8 @@ header {
     padding: 16px;
     padding-top: calc(8px + env(safe-area-inset-top, 0px));
     padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-    background: var(--sidebar-bg);
-    border-right: 1px solid rgba(255,255,255,0.03);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -839,7 +827,7 @@ header {
     font-size: 14px;
     font-weight: 600;
     border-radius: 12px;
-    background: linear-gradient(135deg, var(--accent), #4a6fc9);
+    background: linear-gradient(135deg, var(--accent), #6d28d9);
     color: white;
     border: none;
     cursor: pointer;
@@ -904,7 +892,6 @@ header {
     justify-content: center;
     text-align: center;
     padding: 32px 20px;
-    background: var(--chat-bg);
   }
   .welcome h1 {
     font-size: 22px;
@@ -926,15 +913,14 @@ header {
     padding: clamp(12px, 3vw, 16px) clamp(10px, 2vw, 14px);
     font-size: clamp(12px, 3.5vw, 14px);
     border-radius: 12px;
-    background: var(--chip-bg);
-    border: 1px solid rgba(255,255,255,0.08);
-    color: white;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
     cursor: pointer;
     font-family: inherit;
-    opacity: 0.9;
     -webkit-tap-highlight-color: transparent;
   }
-  .quick-btn:active { background: #6b93f7; opacity: 1; transform: scale(0.97); }
+  .quick-btn:active { background: var(--hover); border-color: var(--accent); transform: scale(0.97); }
 
   /* ---- Messages ---- */
   .messages {
@@ -1003,8 +989,8 @@ header {
     display: flex;
     gap: 8px;
     align-items: flex-end;
-    background: var(--input-bg);
-    border-top: 1px solid rgba(255,255,255,0.04);
+    background: var(--surface);
+    border-top: 1px solid var(--border);
   }
   .msg-input {
     flex: 1;
@@ -1014,8 +1000,8 @@ header {
     min-height: 44px;
     max-height: 120px;
     resize: none;
-    background: var(--input-field);
-    border: 1px solid rgba(255,255,255,0.06);
+    background: var(--card);
+    border: 1px solid var(--border);
     color: var(--text);
     font-family: inherit;
     line-height: 1.4;
@@ -1028,8 +1014,8 @@ header {
     height: 44px;
     font-size: 18px;
     border-radius: 12px;
-    background: var(--send-btn);
-    color: #d4cfc5;
+    background: var(--accent);
+    color: white;
     border: none;
     cursor: pointer;
     flex-shrink: 0;
@@ -1051,6 +1037,8 @@ header {
     gap: 6px;
     flex-shrink: 0;
     justify-content: center;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
   }
   .status-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
   .status-dot.loading { background: var(--accent); animation: pulse 1s infinite; }
@@ -1085,7 +1073,7 @@ header {
   .settings-panel { background: var(--surface); border-radius: 20px; padding: 24px; width: 92%; max-width: 400px; max-height: 80vh; overflow-y: auto; margin: 10px; }
 }
 
-/* ---- Très petits écrans (<400px) ---- */
+/* ---- Tr+Â¿s petits +Â®crans (<400px) ---- */
 @media (max-width: 400px) {
   body { overflow-x: hidden; }
   .menu-btn { min-width: 40px; min-height: 40px; width: 40px; height: 40px; }
@@ -1124,7 +1112,7 @@ header {
       <option value="qwen3-max">Qwen3 Max</option>
       <option value="qwen3.7-max">Qwen3 7B Max</option>
     </select>
-    <button class="icon-btn" onclick="toggleSettings()" title="Paramètres">
+    <button class="icon-btn" onclick="toggleSettings()" title="Param+Â¿tres">
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="9" cy="9" r="3"/><path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.3 3.3l1.4 1.4M13.3 13.3l1.4 1.4M3.3 14.7l1.4-1.4M13.3 4.7l1.4-1.4"/></svg>
     </button>
     <button class="icon-btn" onclick="clearChat()" title="Nouvelle discussion">
@@ -1139,12 +1127,12 @@ header {
   <div class="sidebar" id="sidebar">
     <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
       <div style="font-size:16px;font-weight:700">Qwen AI</div>
-      <button onclick="closeSidebar()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px">✕</button>
+      <button onclick="closeSidebar()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px">Ã”Â£Ã²</button>
     </div>
-    <button class="new-chat-btn" onclick="clearChat()">✨ Nouvelle discussion</button>
-    <div class="sidebar-title">Conversations récentes</div>
+    <button class="new-chat-btn" onclick="clearChat()">Ã”Â£Â¿ Nouvelle discussion</button>
+    <div class="sidebar-title">Conversations r+Â®centes</div>
     <div class="conv-list" id="convList"></div>
-    <button class="new-chat-btn" onclick="closeSidebar();toggleSettings()" style="background:var(--card);color:var(--text);border:1px solid var(--border);margin-top:auto;font-size:13px">⚙️ Paramètres</button>
+    <button class="new-chat-btn" onclick="closeSidebar();toggleSettings()" style="background:var(--card);color:var(--text);border:1px solid var(--border);margin-top:auto;font-size:13px">Ã”ÃœÃ–Â´Â©Ã… Param+Â¿tres</button>
   </div>
 
   <div class="chat-area">
@@ -1152,21 +1140,21 @@ header {
       <h1>Bienvenue sur Qwen AI</h1>
       <p>Votre assistant intelligent. Posez vos questions, demandez du code, des traductions, ou juste une conversation !</p>
       <div class="quick-actions">
-        <button class="quick-btn" onclick="sendQuick('Écris du code Python pour une fonction de tri')">💻 Code</button>
-        <button class="quick-btn" onclick="sendQuick('Explique le machine learning en termes simples')">🧠 Expliquer</button>
-        <button class="quick-btn" onclick="sendQuick('Traduis en anglais:')">🌍 Traduire</button>
-        <button class="quick-btn" onclick="sendQuick('Écris un poème sur la nuit')">📝 Poème</button>
-        <button class="quick-btn" onclick="sendQuick('Donne-moi des idées pour un projet')">💡 Idées</button>
+        <button class="quick-btn" onclick="sendQuick('+Ã«cris du code Python pour une fonction de tri')">Â­Æ’Ã†+ Code</button>
+        <button class="quick-btn" onclick="sendQuick('Explique le machine learning en termes simples')">Â­Æ’ÂºÃ¡ Expliquer</button>
+        <button class="quick-btn" onclick="sendQuick('Traduis en anglais:')">Â­Æ’Ã®Ã¬ Traduire</button>
+        <button class="quick-btn" onclick="sendQuick('+Ã«cris un po+Â¿me sur la nuit')">Â­Æ’Ã´Ã˜ Po+Â¿me</button>
+        <button class="quick-btn" onclick="sendQuick('Donne-moi des id+Â®es pour un projet')">Â­Æ’Ã†Ã­ Id+Â®es</button>
       </div>
     </div>
     <div class="messages" id="messages"></div>
     <div class="input-area">
       <textarea class="msg-input" id="msgInput" placeholder="Posez votre question..." rows="1" onkeydown="handleKey(event)"></textarea>
-      <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()">Ã”Ã—Ã±</button>
     </div>
     <div class="status-bar">
       <div class="status-dot" id="statusDot"></div>
-      <span id="statusTxt">Propulsé par Qwen3 Max</span>
+      <span id="statusTxt">Propuls+Â® par Qwen3 Max</span>
     </div>
   </div>
 </div>
@@ -1174,10 +1162,10 @@ header {
 <!-- Settings Panel -->
 <div class="settings-overlay" id="settingsOverlay">
   <div class="settings-panel">
-    <h2>⚙️ Paramètres</h2>
+    <h2>Ã”ÃœÃ–Â´Â©Ã… Param+Â¿tres</h2>
     
     <div class="settings-section">
-      <label>Modèle IA</label>
+      <label>Mod+Â¿le IA</label>
       <select id="settingsModel">
         <option value="qwen3-max">Qwen3 Max</option>
         <option value="qwen3.7-max">Qwen3 7B Max</option>
@@ -1185,12 +1173,12 @@ header {
     </div>
     
     <div class="settings-section">
-      <label>Température (créativité)</label>
+      <label>Temp+Â®rature (cr+Â®ativit+Â®)</label>
       <input type="range" id="settingsTemp" min="0" max="100" value="70">
     </div>
     
     <div class="settings-section">
-      <label>Longueur réponse</label>
+      <label>Longueur r+Â®ponse</label>
       <select id="settingsLength">
         <option value="500">Courte</option>
         <option value="1000" selected>Moyenne</option>
@@ -1231,25 +1219,25 @@ const getLocalTimeInfo = () => {
 };
 
 const getSystemPrompt = (webContext) => {
-  let prompt = `Tu es Qwen AI, un assistant intelligent créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Réponds de façon naturelle et conversationnelle en français. Annonce ce que tu fais, utilise des phrases courtes et fluides. Si on te demande qui t'a développé ou qui t'as créé, réponds simplement: "Je suis Qwen AI, créé par Qwen_Pro." Ne dis jamais "par une équipe", "par Alibaba", "par le groupe", etc. Tu appartiens à Qwen_Pro. ${getLocalTimeInfo()}. Quand on te demande l'heure ou la date, donne ces informations directement sans mise en forme (pas de asterisques).
+  let prompt = `Tu es Qwen AI, un assistant intelligent cr+Â®+Â® par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. R+Â®ponds de fa+Âºon naturelle et conversationnelle en fran+Âºais. Annonce ce que tu fais, utilise des phrases courtes et fluides. Si on te demande qui t'a d+Â®velopp+Â® ou qui t'as cr+Â®+Â®, r+Â®ponds simplement: "Je suis Qwen AI, cr+Â®+Â® par Qwen_Pro." Ne dis jamais "par une +Â®quipe", "par Alibaba", "par le groupe", etc. Tu appartiens +Ã¡ Qwen_Pro. ${getLocalTimeInfo()}. Quand on te demande l'heure ou la date, donne ces informations directement sans mise en forme (pas de asterisques).
 
-IMPORTANT — RECHERCHE WEB EN TEMPS RÉEL :
-Tu as la capacité de faire des recherches sur le web en temps réel. Quand l'utilisateur te demande de chercher quelque chose, une recherche est automatiquement effectuée et les résultats te sont fournis ci-dessous. Tu DOIS utiliser ces résultats pour répondre. Ne dis JAMAIS que tu ne peux pas accéder à Internet ou faire des recherches — tu le peux, et les résultats sont là. Si les résultats sont vides ou non pertinents, réponds de tes propres connaissances.
+IMPORTANT Ã”Ã‡Ã¶ RECHERCHE WEB EN TEMPS R+Ã«EL :
+Tu as la capacit+Â® de faire des recherches sur le web en temps r+Â®el. Quand l'utilisateur te demande de chercher quelque chose, une recherche est automatiquement effectu+Â®e et les r+Â®sultats te sont fournis ci-dessous. Tu DOIS utiliser ces r+Â®sultats pour r+Â®pondre. Ne dis JAMAIS que tu ne peux pas acc+Â®der +Ã¡ Internet ou faire des recherches Ã”Ã‡Ã¶ tu le peux, et les r+Â®sultats sont l+Ã¡. Si les r+Â®sultats sont vides ou non pertinents, r+Â®ponds de tes propres connaissances.
 
 ANALYSEUR DE LIENS :
-Quand l'utilisateur te demande d'analyser un lien (avec "analyse ce lien", "que vaut ce site", etc.), le contenu de la page est automatiquement extrait et affiché visuellement. Tu reçois aussi le contenu texte ci-dessous. Fais un résumé utile : dis ce que contient la page, donne ton avis, mets en avant les points importants. Cite les images et liens si pertinent.`;
+Quand l'utilisateur te demande d'analyser un lien (avec "analyse ce lien", "que vaut ce site", etc.), le contenu de la page est automatiquement extrait et affich+Â® visuellement. Tu re+Âºois aussi le contenu texte ci-dessous. Fais un r+Â®sum+Â® utile : dis ce que contient la page, donne ton avis, mets en avant les points importants. Cite les images et liens si pertinent.`;
   if (webContext) {
-    prompt += `\n\n## RÉSULTATS DE RECHERCHE WEB\n${webContext}`;
+    prompt += `\n\n## R+Ã«SULTATS DE RECHERCHE WEB\n${webContext}`;
   }
   return prompt;
 };
 
 // === MOBILE MAINTENANCE CHECK ===
 function checkMaintenanceEnd() {
-  // Maintenance désactivée - le site fonctionne sur tous les appareils
+  // Maintenance d+Â®sactiv+Â®e - le site fonctionne sur tous les appareils
   return true;
   
-  // Code commenté pour reactivé la maintenance si nécessaire :
+  // Code comment+Â® pour reactiv+Â® la maintenance si n+Â®cessaire :
   /*
   // Check if mobile
   if (window.innerWidth > 768) return true;
@@ -1301,7 +1289,7 @@ async function performWebSearch(query) {
   const encodedQuery = encodeURIComponent(query);
   const ddgUrl = `https://api.duckduckgo.com/?q=${encodedQuery}&format=json&no_html=1&skip_disambig=1`;
   
-  // Essayer plusieurs proxies CORS (le premier qui répond)
+  // Essayer plusieurs proxies CORS (le premier qui r+Â®pond)
   const proxies = [
     'https://api.allorigins.win/raw?url=',
     'https://corsproxy.io/?url=',
@@ -1323,22 +1311,22 @@ async function performWebSearch(query) {
   }
   if (!data) return { text: '', html: '', hasResults: false };
   
-  // Extraire TOUS les résultats
+  // Extraire TOUS les r+Â®sultats
   let textParts = [];
   let htmlParts = [];
   
-  // 1. Abstract (résumé direct)
+  // 1. Abstract (r+Â®sum+Â® direct)
   if (data.AbstractText) {
-    textParts.push(`Source: ${data.AbstractURL || 'Web'} — ${data.AbstractText}`);
-    htmlParts.push(`<div style="color:var(--accent-light);margin-bottom:6px">📌 ${escapeHtml(data.AbstractText)}</div>`);
+    textParts.push(`Source: ${data.AbstractURL || 'Web'} Ã”Ã‡Ã¶ ${data.AbstractText}`);
+    htmlParts.push(`<div style="color:var(--accent-light);margin-bottom:6px">Â­Æ’Ã´Ã® ${escapeHtml(data.AbstractText)}</div>`);
   }
-  // 2. Answer (réponse directe)
+  // 2. Answer (r+Â®ponse directe)
   if (data.Answer && !data.AbstractText) {
-    textParts.push(`Réponse: ${data.Answer}`);
-    htmlParts.push(`<div style="color:var(--accent-light);margin-bottom:6px">📌 ${escapeHtml(data.Answer)}</div>`);
+    textParts.push(`R+Â®ponse: ${data.Answer}`);
+    htmlParts.push(`<div style="color:var(--accent-light);margin-bottom:6px">Â­Æ’Ã´Ã® ${escapeHtml(data.Answer)}</div>`);
   }
   
-  // 3. Résultats web directs (Results array)
+  // 3. R+Â®sultats web directs (Results array)
   const results = data.Results || [];
   results.slice(0, 5).forEach(r => {
     const title = r.Text || '';
@@ -1349,18 +1337,18 @@ async function performWebSearch(query) {
     if (url) {
       textParts.push(`- ${title} (${url})`);
       htmlParts.push(`<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:5px">
-        <span style="color:var(--text-ter);flex-shrink:0;font-size:12px">🔗</span>
+        <span style="color:var(--text-ter);flex-shrink:0;font-size:12px">Â­Æ’Ã¶Ã¹</span>
         <div><a href="${url}" target="_blank" rel="noopener" style="color:var(--accent-light);text-decoration:none;font-size:13px;font-weight:500">${escapeHtml(cleanTitle)}</a>
         ${parts[1] ? `<div style="color:var(--text-muted);font-size:11px;margin-top:1px">${escapeHtml(parts.slice(1).join(' - '))}</div>` : ''}</div>
       </div>`);
     }
   });
   
-  // 4. RelatedTopics (y compris les catégories imbriquées)
+  // 4. RelatedTopics (y compris les cat+Â®gories imbriqu+Â®es)
   const allTopics = [];
   (data.RelatedTopics || []).forEach(t => {
     if (t.Topics) {
-      // C'est une catégorie avec des sous-sujets
+      // C'est une cat+Â®gorie avec des sous-sujets
       t.Topics.forEach(sub => allTopics.push(sub));
     } else if (t.Text && t.FirstURL) {
       allTopics.push(t);
@@ -1375,7 +1363,7 @@ async function performWebSearch(query) {
     if (url) {
       textParts.push(`- ${title} (${url})`);
       htmlParts.push(`<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:5px">
-        <span style="color:var(--text-ter);flex-shrink:0;font-size:12px">🔗</span>
+        <span style="color:var(--text-ter);flex-shrink:0;font-size:12px">Â­Æ’Ã¶Ã¹</span>
         <div><a href="${url}" target="_blank" rel="noopener" style="color:var(--accent-light);text-decoration:none;font-size:13px;font-weight:500">${escapeHtml(cleanTitle)}</a>
         ${parts[1] ? `<div style="color:var(--text-muted);font-size:11px;margin-top:1px">${escapeHtml(parts.slice(1).join(' - '))}</div>` : ''}</div>
       </div>`);
@@ -1432,13 +1420,13 @@ async function fetchAndAnalyzeURL(url) {
   // Meta og:title
   const ogTitle = doc.querySelector('meta[property="og:title"]')?.getAttribute('content')?.trim() || '';
   
-  // Images principales (pas les icônes, logos, trackers)
+  // Images principales (pas les ic+Â¦nes, logos, trackers)
   const images = [];
   doc.querySelectorAll('img[src]').forEach(img => {
     const src = img.getAttribute('src') || '';
     const alt = img.getAttribute('alt') || '';
     const w = img.getAttribute('width') || '';
-    // Ignorer les petites icônes et trackers
+    // Ignorer les petites ic+Â¦nes et trackers
     if (src && !src.includes('data:') && !src.includes('pixel') && !src.includes('tracker')
         && src.match(/\.(jpg|jpeg|png|gif|webp|svg)(\?|$)/i)) {
       const fullSrc = src.startsWith('http') ? src : new URL(src, url).href;
@@ -1486,10 +1474,10 @@ async function fetchAndAnalyzeURL(url) {
 }
 
 function displayAnalysis(data) {
-  if (!data) return '<div style="padding:10px 14px;color:var(--red)">❌ Impossible d\'analyser ce lien</div>';
+  if (!data) return '<div style="padding:10px 14px;color:var(--red)">Ã”Ã˜Ã® Impossible d\'analyser ce lien</div>';
   
   let html = `<div style="padding:12px 16px">`;
-  html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px"><span style="font-size:18px">🔗</span><span style="font-size:15px;color:var(--accent-light);font-weight:600">${escapeHtml(data.title)}</span></div>`;
+  html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px"><span style="font-size:18px">Â­Æ’Ã¶Ã¹</span><span style="font-size:15px;color:var(--accent-light);font-weight:600">${escapeHtml(data.title)}</span></div>`;
   
   // Description
   if (data.metaDesc) {
@@ -1498,7 +1486,7 @@ function displayAnalysis(data) {
   
   // Images
   if (data.images.length > 0) {
-    html += `<div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">📷 Images principales :</div>
+    html += `<div style="font-size:11px;color:var(--text-muted);margin-bottom:6px">Â­Æ’Ã´Ã€ Images principales :</div>
     <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">`;
     data.images.slice(0, 3).forEach(img => {
       html += `<img src="${escapeHtml(img.src)}" alt="${escapeHtml(img.alt)}" style="max-width:100%;width:clamp(60px,20vw,100px);height:auto;aspect-ratio:4/3;object-fit:cover;border-radius:8px;border:1px solid var(--border)" onerror="this.style.display='none'" loading="lazy">`;
@@ -1508,18 +1496,18 @@ function displayAnalysis(data) {
   
   // Liens internes
   if (data.internalLinks.length > 0) {
-    html += `<div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">📄 Liens internes (${data.internalLinks.length}) :</div>`;
+    html += `<div style="font-size:11px;color:var(--text-muted);margin-bottom:4px">Â­Æ’Ã´Ã¤ Liens internes (${data.internalLinks.length}) :</div>`;
     data.internalLinks.slice(0, 4).forEach(l => {
-      html += `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:3px"><span style="color:var(--text-ter);font-size:10px">→</span><a href="${escapeHtml(l.href)}" target="_blank" rel="noopener" style="color:var(--accent-light);text-decoration:none;font-size:12px">${escapeHtml(l.text)}</a></div>`;
+      html += `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:3px"><span style="color:var(--text-ter);font-size:10px">Ã”Ã¥Ã†</span><a href="${escapeHtml(l.href)}" target="_blank" rel="noopener" style="color:var(--accent-light);text-decoration:none;font-size:12px">${escapeHtml(l.text)}</a></div>`;
     });
     if (data.internalLinks.length > 4) html += `<div style="font-size:10px;color:var(--text-muted);margin-bottom:6px">+ ${data.internalLinks.length - 4} autres</div>`;
   }
   
   // Liens externes
   if (data.externalLinks.length > 0) {
-    html += `<div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;margin-top:2px">🌍 Liens externes (${data.externalLinks.length}) :</div>`;
+    html += `<div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;margin-top:2px">Â­Æ’Ã®Ã¬ Liens externes (${data.externalLinks.length}) :</div>`;
     data.externalLinks.slice(0, 4).forEach(l => {
-      html += `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:3px"><span style="color:var(--text-ter);font-size:10px">→</span><a href="${escapeHtml(l.href)}" target="_blank" rel="noopener" style="color:var(--accent-light);text-decoration:none;font-size:12px">${escapeHtml(l.text)}</a></div>`;
+      html += `<div style="display:flex;align-items:flex-start;gap:4px;margin-bottom:3px"><span style="color:var(--text-ter);font-size:10px">Ã”Ã¥Ã†</span><a href="${escapeHtml(l.href)}" target="_blank" rel="noopener" style="color:var(--accent-light);text-decoration:none;font-size:12px">${escapeHtml(l.text)}</a></div>`;
     });
     if (data.externalLinks.length > 4) html += `<div style="font-size:10px;color:var(--text-muted)">+ ${data.externalLinks.length - 4} autres</div>`;
   }
@@ -1537,7 +1525,7 @@ const STORE_SETTINGS = 'settings';
 // Initialiser IndexedDB
 function initIndexedDB() {
   return new Promise((resolve, reject) => {
-    // Vérifier si IndexedDB est disponible
+    // V+Â®rifier si IndexedDB est disponible
     if (!window.indexedDB) {
       console.warn('IndexedDB non disponible, utilisation de localStorage');
       resolve(null);
@@ -1554,13 +1542,13 @@ function initIndexedDB() {
     
     request.onsuccess = (e) => {
       db = e.target.result;
-      console.log('IndexedDB initialisé avec succès');
+      console.log('IndexedDB initialis+Â® avec succ+Â¿s');
       resolve(db);
     };
     
     request.onupgradeneeded = (e) => {
       const database = e.target.result;
-      // Créer les stores si nécessaire
+      // Cr+Â®er les stores si n+Â®cessaire
       if (!database.objectStoreNames.contains(STORE_CONVERSATIONS)) {
         database.createObjectStore(STORE_CONVERSATIONS, { keyPath: 'id' });
       }
@@ -1575,7 +1563,7 @@ function initIndexedDB() {
 function saveToIndexedDB(storeName, data) {
   return new Promise((resolve, reject) => {
     if (!db) {
-      reject(new Error('IndexedDB non initialisé'));
+      reject(new Error('IndexedDB non initialis+Â®'));
       return;
     }
     
@@ -1598,7 +1586,7 @@ function saveToIndexedDB(storeName, data) {
 function loadFromIndexedDB(storeName) {
   return new Promise((resolve, reject) => {
     if (!db) {
-      reject(new Error('IndexedDB non initialisé'));
+      reject(new Error('IndexedDB non initialis+Â®'));
       return;
     }
     
@@ -1621,20 +1609,20 @@ async function saveData(key, data) {
     // Essayer IndexedDB d'abord
     if (db) {
       await saveToIndexedDB(STORE_CONVERSATIONS, data);
-      console.log('Sauvegarde IndexedDB réussie');
+      console.log('Sauvegarde IndexedDB r+Â®ussie');
     }
   } catch (e) {
-    console.warn('IndexedDB échoué, fallback localStorage:', e);
+    console.warn('IndexedDB +Â®chou+Â®, fallback localStorage:', e);
   }
   
   // Toujours sauvegarder dans localStorage comme backup
   try {
     localStorage.setItem(key, JSON.stringify(data));
-    console.log('Sauvegarde localStorage réussie');
+    console.log('Sauvegarde localStorage r+Â®ussie');
     return true;
   } catch (e) {
-    // Si localStorage échoue (quota exceeded, etc.)
-    console.error('localStorage échoué:', e);
+    // Si localStorage +Â®choue (quota exceeded, etc.)
+    console.error('localStorage +Â®chou+Â®:', e);
     handleStorageError(e);
     return false;
   }
@@ -1647,19 +1635,19 @@ async function loadData(key, defaultValue = null) {
     if (db) {
       const data = await loadFromIndexedDB(STORE_CONVERSATIONS);
       if (data) {
-        console.log('Chargement IndexedDB réussi');
+        console.log('Chargement IndexedDB r+Â®ussi');
         return data;
       }
     }
   } catch (e) {
-    console.warn('IndexedDB échoué, fallback localStorage:', e);
+    console.warn('IndexedDB +Â®chou+Â®, fallback localStorage:', e);
   }
   
   // Fallback vers localStorage
   try {
     const saved = localStorage.getItem(key);
     if (saved) {
-      console.log('Chargement localStorage réussi');
+      console.log('Chargement localStorage r+Â®ussi');
       return JSON.parse(saved);
     }
   } catch (e) {
@@ -1669,17 +1657,17 @@ async function loadData(key, defaultValue = null) {
   return defaultValue;
 }
 
-// Gérer les erreurs de stockage
+// G+Â®rer les erreurs de stockage
 function handleStorageError(error) {
   // QuotaExceededError - stockage plein
   if (error.name === 'QuotaExceededError') {
     console.warn('Stockage plein, nettoyage...');
-    // Supprimer les anciennes conversations (garder les 5 dernières)
+    // Supprimer les anciennes conversations (garder les 5 derni+Â¿res)
     if (conversations.length > 5) {
       conversations = conversations.slice(0, 5);
       saveData('qwen_conversations', conversations);
     }
-    alert('Stockage plein. Les anciennes conversations ont été supprimées.');
+    alert('Stockage plein. Les anciennes conversations ont +Â®t+Â® supprim+Â®es.');
   }
   // Autres erreurs
   else {
@@ -1687,7 +1675,7 @@ function handleStorageError(error) {
   }
 }
 
-// Charger les conversations au démarrage
+// Charger les conversations au d+Â®marrage
 async function loadConversationsFromStorage() {
   conversations = await loadData('qwen_conversations', []);
   return conversations;
@@ -1696,7 +1684,7 @@ async function loadConversationsFromStorage() {
 // Sauvegarder les conversations automatiquement
 function autoSaveConversations() {
   saveData('qwen_conversations', conversations).then(() => {
-    console.log('Conversations sauvegardées automatiquement');
+    console.log('Conversations sauvegard+Â®es automatiquement');
   }).catch(e => {
     console.error('Erreur sauvegarde automatique:', e);
   });
@@ -1712,7 +1700,7 @@ function getGreeting() {
   const hour = new Date().getHours();
   if (hour < 6) return 'Bonne nuit';
   if (hour < 12) return 'Bonjour';
-  if (hour < 18) return 'Bon après-midi';
+  if (hour < 18) return 'Bon apr+Â¿s-midi';
   return 'Bonsoir';
 }
 
@@ -1738,7 +1726,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Re-check maintenance status after DOM is ready
   checkMaintenanceEnd();
   
-  // Charger le prénom depuis localStorage
+  // Charger le pr+Â®nom depuis localStorage
   userName = localStorage.getItem('qwen_username') || '';
   
   // Update welcome message with greeting and user name
@@ -1747,14 +1735,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Ask for name if not set
   if (!userName) {
     setTimeout(() => {
-      const name = prompt('Comment puis-je vous appeler ? (Votre prénom)');
+      const name = prompt('Comment puis-je vous appeler ? (Votre pr+Â®nom)');
       if (name && name.trim()) {
         saveUserName(name.trim());
         updateWelcomeMessage();
       }
     }, 500);
   }
-  updateStatus('ready', 'Propulsé par Qwen3 Max');
+  updateStatus('ready', 'Propuls+Â® par Qwen3 Max');
   
   // Charger les conversations depuis le stockage
   await loadConversationsFromStorage();
@@ -1785,7 +1773,7 @@ function saveConversation() {
   // Keep only last 20
   if (conversations.length > 20) conversations = conversations.slice(0, 20);
   
-  // Sauvegarder avec le système robuste (IndexedDB + localStorage)
+  // Sauvegarder avec le syst+Â¿me robuste (IndexedDB + localStorage)
   saveData('qwen_conversations', conversations);
   localStorage.setItem('qwen_last_conv_id', conv.id.toString());
   
@@ -1805,7 +1793,7 @@ function loadConversations() {
   conversations.forEach((conv, i) => {
     const div = document.createElement('div');
     div.className = 'conv-item' + (i === 0 ? ' active' : '');
-    div.innerHTML = `<span>💬</span><span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${conv.title}</span><button onclick="event.stopPropagation(); deleteConversation(${conv.id})" style="background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px;">✕</button>`;
+    div.innerHTML = `<span>Â­Æ’Ã†Â¼</span><span style="flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${conv.title}</span><button onclick="event.stopPropagation(); deleteConversation(${conv.id})" style="background: none; border: none; color: var(--muted); cursor: pointer; padding: 4px;">Ã”Â£Ã²</button>`;
     div.onclick = () => loadConversation(conv.id);
     list.appendChild(div);
   });
@@ -1832,7 +1820,7 @@ function loadConversation(id) {
 
 function deleteConversation(id) {
   conversations = conversations.filter(c => c.id !== id);
-  // Sauvegarder avec le système robuste
+  // Sauvegarder avec le syst+Â¿me robuste
   saveData('qwen_conversations', conversations);
   loadConversations();
 }
@@ -1854,7 +1842,7 @@ function autoResize(el) {
 function changeModel(model) {
   selectedModel = model;
   document.getElementById('settingsModel').value = model;
-  updateStatus('ready', 'Propulsé par ' + model.replace('qwen3-', 'Qwen3 '));
+  updateStatus('ready', 'Propuls+Â® par ' + model.replace('qwen3-', 'Qwen3 '));
 }
 
 function toggleSettings() {
@@ -1867,7 +1855,7 @@ function closeSettings() {
   selectedModel = document.getElementById('settingsModel').value;
   temperature = document.getElementById('settingsTemp').value / 100;
   maxTokens = parseInt(document.getElementById('settingsLength').value);
-  updateStatus('ready', 'Propulsé par ' + selectedModel.replace('qwen3-', 'Qwen3 '));
+  updateStatus('ready', 'Propuls+Â® par ' + selectedModel.replace('qwen3-', 'Qwen3 '));
 }
 
 function toggleDark() {
@@ -1896,7 +1884,7 @@ async function sendMessage() {
   hideWelcome();
   setLoading(true);
   
-  // === ANALYSE DE LIEN — détecte si le message contient une URL ===
+  // === ANALYSE DE LIEN Ã”Ã‡Ã¶ d+Â®tecte si le message contient une URL ===
   let webContext = '';
   const urlMatch = text.match(/(?:https?:\/\/)?(?:www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,}(?:\/[-a-zA-Z0-9@:%._\+~#=?&\/]*)?/i);
   const isUrlRequest = /analyse|analyze|quoi.*pense|que.*vaut|avis|content|scrape|extract/i.test(text) && urlMatch;
@@ -1921,7 +1909,7 @@ async function sendMessage() {
         </div>
       </div>
       <div class="analyze-text">Analyse du lien en cours</div>
-      <div class="analyze-sub">Connexion au serveur · Récupération du contenu</div>
+      <div class="analyze-sub">Connexion au serveur -Ã€ R+Â®cup+Â®ration du contenu</div>
     </div>`;
     container.appendChild(analyzeMsg);
     container.scrollTop = container.scrollHeight;
@@ -1932,23 +1920,23 @@ async function sendMessage() {
     if (linkData) {
       const displayHtml = displayAnalysis(linkData);
       analyzeMsg.innerHTML = `<div style="padding:10px 14px;background:var(--surface);border-radius:12px;border:1px solid var(--border);margin:4px 12px">${displayHtml}</div>`;
-      // Donner le contenu à l'IA pour un résumé
+      // Donner le contenu +Ã¡ l'IA pour un r+Â®sum+Â®
       webContext = `[ANALYSE DE LIEN]\nURL: ${linkData.url}\nTitre: ${linkData.title}\nDescription: ${linkData.metaDesc}\n\nContenu extrait:\n${linkData.bodyText.slice(0, 2000)}\n\n[/ANALYSE DE LIEN]`;
     } else {
-      analyzeMsg.innerHTML = `<div style="padding:10px 14px;background:var(--surface);border-radius:12px;border:1px solid var(--border);margin:4px 12px"><div style="padding:8px;color:var(--red);font-size:13px">❌ Impossible d'accéder à ce lien</div></div>`;
+      analyzeMsg.innerHTML = `<div style="padding:10px 14px;background:var(--surface);border-radius:12px;border:1px solid var(--border);margin:4px 12px"><div style="padding:8px;color:var(--red);font-size:13px">Ã”Ã˜Ã® Impossible d'acc+Â®der +Ã¡ ce lien</div></div>`;
     }
     container.scrollTop = container.scrollHeight;
   }
   
-  // === RECHERCHE WEB — seulement si l'utilisateur le demande explicitement ===
-  const searchTriggers = /cherche|recherche|trouve|actualité|news|météo|weather|prix.*(actuel|or|pétrole|bourse)|cours.*bourse|qui a gagné|dernière.*info|que.*sais.*pas|tu.*sais.*quoi.*neuf|search|look up|find.*online/i.test(text);
+  // === RECHERCHE WEB Ã”Ã‡Ã¶ seulement si l'utilisateur le demande explicitement ===
+  const searchTriggers = /cherche|recherche|trouve|actualit+Â®|news|m+Â®t+Â®o|weather|prix.*(actuel|or|p+Â®trole|bourse)|cours.*bourse|qui a gagn+Â®|derni+Â¿re.*info|que.*sais.*pas|tu.*sais.*quoi.*neuf|search|look up|find.*online/i.test(text);
   
   if (!isUrlRequest && searchTriggers) {
     const container = document.getElementById('messages');
     const searchMsg = document.createElement('div');
     searchMsg.className = 'msg web-search';
     searchMsg.id = 'webSearchMsg';
-    searchMsg.innerHTML = '<div style="display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:12px;color:var(--text-ter)"><span style="font-size:16px">🔍</span> Recherche web en temps réel...</div>';
+    searchMsg.innerHTML = '<div style="display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:12px;color:var(--text-ter)"><span style="font-size:16px">Â­Æ’Ã¶Ã¬</span> Recherche web en temps r+Â®el...</div>';
     container.appendChild(searchMsg);
     container.scrollTop = container.scrollHeight;
     
@@ -1957,19 +1945,19 @@ async function sendMessage() {
     
     if (webResult && webResult.hasResults) {
       searchMsg.innerHTML = `<div style="padding:10px 14px;background:var(--surface);border-radius:12px;border:1px solid var(--border);margin:4px 12px">
-        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span style="font-size:14px">🌐</span><span style="font-size:12px;color:var(--accent-light);font-weight:600">Résultats web</span></div>
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span style="font-size:14px">Â­Æ’Ã®Ã‰</span><span style="font-size:12px;color:var(--accent-light);font-weight:600">R+Â®sultats web</span></div>
         ${webResult.html}
-        <div style="font-size:9px;color:var(--text-muted);margin-top:4px">Source: DuckDuckGo ⚡</div>
+        <div style="font-size:9px;color:var(--text-muted);margin-top:4px">Source: DuckDuckGo Ã”ÃœÃ­</div>
       </div>`;
       webContext = webResult.text;
     } else {
-      searchMsg.innerHTML = `<div style="padding:8px 14px;font-size:12px;color:var(--text-muted)">🌐 Aucun résultat trouvé</div>`;
+      searchMsg.innerHTML = `<div style="padding:8px 14px;font-size:12px;color:var(--text-muted)">Â­Æ’Ã®Ã‰ Aucun r+Â®sultat trouv+Â®</div>`;
     }
     container.scrollTop = container.scrollHeight;
   }
   
   showTypingBubble();
-  updateStatus('loading', 'Qwen AI écrit...');
+  updateStatus('loading', 'Qwen AI +Â®crit...');
 
   try {
     const response = await getAIResponse(text, webContext);
@@ -1981,7 +1969,7 @@ async function sendMessage() {
   }
   
   setLoading(false);
-  updateStatus('ready', 'Propulsé par ' + selectedModel.replace('qwen3-', 'Qwen3 '));
+  updateStatus('ready', 'Propuls+Â® par ' + selectedModel.replace('qwen3-', 'Qwen3 '));
 }
 
 function showTypingBubble() {
@@ -2032,7 +2020,7 @@ async function getAIResponse(userMessage, webContext) {
     }
     
     const data = await resp.json();
-    let text = data.choices?.[0]?.message?.content || 'Pas de réponse';
+    let text = data.choices?.[0]?.message?.content || 'Pas de r+Â®ponse';
     
     // Clean responses - remove asterisks for formatting
     text = text.replace(/\*\*([^*]+)\*\*/g, '$1'); // Remove bold
@@ -2043,7 +2031,7 @@ async function getAIResponse(userMessage, webContext) {
     text = text.replace(/\*/g, '');
     
     // Also clean references to Alibaba
-    text = text.replace(/par (le )?(groupe|laboratoire|entreprise|équipe) alibaba[^.]*\.?/gi, 'par Qwen_Pro');
+    text = text.replace(/par (le )?(groupe|laboratoire|entreprise|+Â®quipe) alibaba[^.]*\.?/gi, 'par Qwen_Pro');
     text = text.replace(/alibaba[^.]*\.?/gi, 'Qwen_Pro');
     text = text.replace(/tongyi[^.]*\.?/gi, 'Qwen_Pro');
     
