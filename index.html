@@ -24,7 +24,7 @@
   --shadow: 0 4px 30px rgba(0,0,0,0.4);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { height: 100%; }
+html, body { height: 100%; margin: 0; padding: 0; }
 body {
   font-family: 'Outfit', sans-serif;
   background: var(--bg);
@@ -32,7 +32,10 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
 }
+html { min-height: -webkit-fill-available; }
 /* Header */
 header {
   display: flex;
@@ -90,11 +93,13 @@ header {
   border-color: var(--accent);
 }
 .menu-btn { display: none; }
+.sidebar-overlay { display: none; }
 /* Main Layout */
 .main-container {
   display: flex;
   flex: 1;
   overflow: hidden;
+  min-height: 0;
 }
 /* Sidebar */
 .sidebar {
@@ -181,6 +186,7 @@ header {
   justify-content: center;
   text-align: center;
   padding: 40px;
+  min-height: 0;
 }
 .welcome h1 {
   font-size: 36px;
@@ -651,8 +657,8 @@ header {
     padding: 0;
   }
   body {
-    padding-top: env(safe-area-inset-top, 0px);
-    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-top: 0;
+    padding-bottom: 0;
   }
   
   /* ===== MENU BUTTON (mobile only) ===== */
@@ -810,13 +816,34 @@ header {
   }
 }
 
+/* Medium screens (tablets) */
+@media (min-width: 401px) and (max-width: 768px) {
+  .sidebar { width: 300px; }
+  .welcome h1 { font-size: 26px; }
+  .msg { max-width: 88%; }
+  .quick-actions { grid-template-columns: repeat(2, 1fr); }
+}
+
 /* Very small screens */
 @media (max-width: 400px) {
   .logo span { display: none; }
-  .model-select { max-width: 90px; font-size: 11px; }
+  .model-select {
+    max-width: 85px; font-size: 11px; padding: 0 6px;
+    text-overflow: ellipsis; overflow: hidden; white-space: nowrap;
+  }
   .quick-actions { grid-template-columns: 1fr; }
-  .msg { max-width: 95%; font-size: 15px; }
-  .msg-input { font-size: 15px; }
+  .msg { max-width: 95%; font-size: 15px; padding: 12px 14px; }
+  .msg-input { font-size: 15px; padding: 12px 14px; min-height: 46px; }
+  .send-btn { width: 46px; height: 46px; font-size: 18px; border-radius: 14px; }
+  .icon-btn { width: 34px; height: 34px; font-size: 14px; }
+  .header-actions { gap: 3px; }
+  .sidebar { width: 100%; }
+  .welcome h1 { font-size: 20px; }
+  .quick-btn { padding: 12px 10px; font-size: 12px; }
+  .analyze-loader .ring-container { width: 56px; height: 56px; }
+  .analyze-loader { padding: 20px 14px; }
+  .analyze-loader .analyze-text { font-size: 13px; }
+  .analyze-loader .analyze-sub { font-size: 10px; }
 }
 </style>
 </head>
