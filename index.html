@@ -8,16 +8,24 @@
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #0a0a0f;
-  --surface: #12121a;
-  --card: #1a1a25;
-  --hover: #222235;
-  --border: rgba(255,255,255,0.06);
+  --bg: #05050a;
+  --surface: #0d0d14;
+  --card: #1a1d28;
+  --hover: #252a3a;
+  --border: rgba(255,255,255,0.04);
   --text: #f0f0f5;
-  --muted: #6b6b80;
-  --accent: #7c3aed;
-  --accent-light: #a78bfa;
-  --accent-dim: rgba(124,58,237,0.15);
+  --muted: #6b7094;
+  --accent: #577fe4;
+  --accent-light: #8aabff;
+  --accent-dim: rgba(87,127,228,0.15);
+  --sidebar-bg: #1e2c52;
+  --sidebar-hover: #0a0f1e;
+  --sidebar-active: #030307;
+  --chat-bg: #282c3a;
+  --input-bg: #3c5596;
+  --input-field: #3354ab;
+  --send-btn: #645d4d;
+  --chip-bg: #577fe4;
   --success: #10b981;
   --error: #ef4444;
   --radius: 16px;
@@ -27,7 +35,7 @@
 html { min-height: -webkit-fill-available; overflow-x: hidden; }
 body {
   font-family: 'Outfit', sans-serif;
-  background: var(--bg);
+  background: #05050a;
   color: var(--text);
   display: flex;
   flex-direction: column;
@@ -46,7 +54,7 @@ header {
   align-items: center;
   justify-content: space-between;
   padding: clamp(10px, 1.5vw, 16px) clamp(12px, 2vw, 24px);
-  background: var(--surface);
+  background: #030307;
   border-bottom: 1px solid var(--border);
   position: relative;
   z-index: 100;
@@ -61,7 +69,7 @@ header {
 .logo-icon {
   width: clamp(32px, 3.5vw, 42px);
   height: clamp(32px, 3.5vw, 42px);
-  background: linear-gradient(135deg, var(--accent), #ec4899);
+  background: linear-gradient(135deg, var(--accent), #6b93f7);
   border-radius: clamp(8px, 1vw, 12px);
   display: flex;
   align-items: center;
@@ -79,7 +87,7 @@ header {
   height: 44px;
   border-radius: 12px;
   background: var(--card);
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255,255,255,0.06);
   color: var(--muted);
   cursor: pointer;
   display: flex;
@@ -110,8 +118,8 @@ header {
 /* Sidebar */
 .sidebar {
   width: clamp(180px, 20vw, 280px);
-  background: var(--surface);
-  border-right: 1px solid var(--border);
+  background: var(--sidebar-bg);
+  border-right: 1px solid rgba(255,255,255,0.03);
   display: flex;
   flex-direction: column;
   padding: 16px;
@@ -145,7 +153,7 @@ header {
   transition: all 0.2s;
 }
 .new-chat-btn:hover {
-  background: #6d28d9;
+  background: #6b93f7;
   transform: translateY(-1px);
 }
 .conv-list {
@@ -168,11 +176,11 @@ header {
   gap: 10px;
 }
 .conv-item:hover {
-  background: var(--hover);
+  background: var(--sidebar-hover);
   color: var(--text);
 }
 .conv-item.active {
-  background: var(--accent-dim);
+  background: var(--sidebar-active);
   color: var(--accent-light);
 }
 /* Chat Area */
@@ -184,6 +192,7 @@ header {
   margin: 0 auto;
   width: 100%;
   padding: 0 clamp(8px, 2vw, 24px);
+  background: var(--chat-bg);
 }
 /* Welcome */
 .welcome {
@@ -195,6 +204,7 @@ header {
   text-align: center;
   padding: 40px;
   min-height: 0;
+  background: var(--chat-bg);
 }
 .welcome h1 {
   font-size: clamp(24px, 3.5vw, 40px);
@@ -220,9 +230,9 @@ header {
   min-height: 44px;
   padding: clamp(10px, 1.2vw, 14px) clamp(14px, 2vw, 20px);
   border-radius: 24px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  color: var(--text);
+  background: var(--chip-bg);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: white;
   font-family: inherit;
   font-size: clamp(13px, 1.1vw, 14px);
   cursor: pointer;
@@ -230,11 +240,13 @@ header {
   align-items: center;
   gap: 8px;
   transition: all 0.2s;
+  opacity: 0.9;
 }
 .quick-btn:hover {
-  background: var(--hover);
-  border-color: var(--accent);
+  background: #6b93f7;
+  border-color: rgba(255,255,255,0.15);
   transform: translateY(-2px);
+  opacity: 1;
 }
 /* Messages */
 .messages {
@@ -263,15 +275,17 @@ header {
 }
 .msg.user {
   align-self: flex-end;
-  background: var(--accent);
-  color: white;
+  background: #000004;
+  color: var(--text);
   border-bottom-right-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.04);
 }
 .msg.assistant {
   align-self: flex-start;
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: #1d1d20;
+  border: 1px solid rgba(255,255,255,0.04);
   border-bottom-left-radius: 4px;
+  color: var(--text);
 }
 .msg.assistant pre {
   background: var(--surface);
@@ -296,22 +310,23 @@ header {
   border-radius: 12px;
   animation: fadeIn 0.3s ease;
 }
-.msg.web-search a { color: var(--accent); text-decoration: none; }
+.msg.web-search a { color: var(--accent-light); text-decoration: none; }
 .msg.web-search a:hover { text-decoration: underline; }
-.msg.web-search .no-results { color: var(--text-muted); font-size: 12px; padding: 6px 14px; }
+.msg.web-search .no-results { color: var(--muted); font-size: 12px; padding: 6px 14px; }
 /* Input Area */
 .input-area {
-  padding: clamp(8px, 1.5vw, 16px) 0 clamp(12px, 2vw, 24px);
+  padding: clamp(8px, 1.5vw, 16px) clamp(8px, 1.5vw, 16px) clamp(12px, 2vw, 24px);
   display: flex;
   gap: clamp(8px, 1vw, 12px);
   align-items: flex-end;
+  background: var(--input-bg);
 }
 .msg-input {
   flex: 1;
   padding: clamp(12px, 1.5vw, 16px) clamp(14px, 2vw, 20px);
   border-radius: clamp(12px, 1.5vw, 16px);
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: var(--input-field);
+  border: 1px solid rgba(255,255,255,0.06);
   color: var(--text);
   font-family: inherit;
   font-size: clamp(15px, 1.2vw, 16px);
@@ -333,9 +348,9 @@ header {
   width: clamp(44px, 5vw, 56px);
   height: clamp(44px, 5vw, 56px);
   border-radius: clamp(12px, 1.5vw, 16px);
-  background: var(--accent);
+  background: var(--send-btn);
   border: none;
-  color: white;
+  color: #d4cfc5;
   cursor: pointer;
   font-size: clamp(18px, 2vw, 22px);
   display: flex;
@@ -344,7 +359,7 @@ header {
   transition: all 0.2s;
 }
 .send-btn:hover {
-  background: #6d28d9;
+  background: #7a6f5a;
   transform: scale(1.05);
 }
 .send-btn:disabled {
@@ -361,6 +376,7 @@ header {
   font-size: 12px;
   color: var(--muted);
   gap: 8px;
+  background: #030307;
 }
 .status-dot {
   width: 8px;
@@ -382,7 +398,7 @@ header {
   padding: clamp(6px, 0.8vw, 8px) clamp(10px, 1.5vw, 16px);
   border-radius: 20px;
   background: var(--card);
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255,255,255,0.06);
   color: var(--text);
   font-family: inherit;
   font-size: clamp(12px, 1vw, 13px);
@@ -418,8 +434,8 @@ header {
   align-items: center;
   gap: 8px;
   padding: clamp(12px, 1.5vw, 16px) clamp(14px, 2vw, 20px);
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: #1d1d20;
+  border: 1px solid rgba(255,255,255,0.04);
   border-radius: clamp(12px, 1.5vw, 16px);
   border-bottom-left-radius: 4px;
   align-self: flex-start;
@@ -457,8 +473,8 @@ header {
   display: flex;
 }
 .settings-panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--sidebar-bg);
+  border: 1px solid rgba(255,255,255,0.06);
   border-radius: clamp(16px, 2vw, 20px);
   padding: clamp(16px, 3vw, 30px);
   max-width: min(92%, 450px);
@@ -558,7 +574,7 @@ header {
   margin-top: 10px;
 }
 .close-settings:hover {
-  background: #6d28d9;
+  background: #4a6fc9;
 }
 
 /* === ANALYSEUR DE LIENS — animation type Mistral === */
@@ -569,8 +585,8 @@ header {
   50% { transform: translateY(-8px) scale(1.2); opacity: 1; }
 }
 @keyframes glow-pulse {
-  0%, 100% { box-shadow: 0 0 20px rgba(139,92,246,0.3), 0 0 40px rgba(139,92,246,0.1); }
-  50% { box-shadow: 0 0 30px rgba(139,92,246,0.5), 0 0 60px rgba(139,92,246,0.2); }
+  0%, 100% { box-shadow: 0 0 20px rgba(87,127,228,0.3), 0 0 40px rgba(87,127,228,0.1); }
+  50% { box-shadow: 0 0 30px rgba(87,127,228,0.5), 0 0 60px rgba(87,127,228,0.2); }
 }
 @keyframes shimmer {
   0% { background-position: 200% center; }
@@ -607,21 +623,21 @@ header {
 }
 .analyze-loader .ring-2 {
   inset: 8px;
-  border-bottom-color: #7c3aed;
-  border-left-color: rgba(124,58,237,0.3);
+  border-bottom-color: #4a6fc9;
+  border-left-color: rgba(74,111,201,0.3);
   animation: spin-reverse 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 .analyze-loader .ring-3 {
   inset: 16px;
-  border-top-color: #a78bfa;
-  border-right-color: rgba(167,139,250,0.2);
+  border-top-color: #8aabff;
+  border-right-color: rgba(138,171,255,0.2);
   animation: spin-slow 2.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 .analyze-loader .center-dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), #7c3aed);
+  background: linear-gradient(135deg, var(--accent), #4a6fc9);
   z-index: 2;
   animation: glow-pulse 2s ease-in-out infinite;
 }
@@ -676,8 +692,8 @@ header {
     padding: clamp(12px, 2vw, 16px);
     padding-top: calc(8px + env(safe-area-inset-top, 0px));
     padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
-    background: var(--surface);
-    border-right: 1px solid var(--border);
+    background: var(--sidebar-bg);
+    border-right: 1px solid rgba(255,255,255,0.03);
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -787,7 +803,7 @@ header {
     position: relative;
   }
 
-  /* ---- Sidebar slide-in (façon ChatGPT) ---- */
+  /* ---- Sidebar slide-in ---- */
   .sidebar {
     position: fixed;
     top: 0;
@@ -799,8 +815,8 @@ header {
     padding: 16px;
     padding-top: calc(8px + env(safe-area-inset-top, 0px));
     padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-    background: var(--surface);
-    border-right: 1px solid var(--border);
+    background: var(--sidebar-bg);
+    border-right: 1px solid rgba(255,255,255,0.03);
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -823,7 +839,7 @@ header {
     font-size: 14px;
     font-weight: 600;
     border-radius: 12px;
-    background: linear-gradient(135deg, var(--accent), #6d28d9);
+    background: linear-gradient(135deg, var(--accent), #4a6fc9);
     color: white;
     border: none;
     cursor: pointer;
@@ -888,6 +904,7 @@ header {
     justify-content: center;
     text-align: center;
     padding: 32px 20px;
+    background: var(--chat-bg);
   }
   .welcome h1 {
     font-size: 22px;
@@ -909,14 +926,15 @@ header {
     padding: clamp(12px, 3vw, 16px) clamp(10px, 2vw, 14px);
     font-size: clamp(12px, 3.5vw, 14px);
     border-radius: 12px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    color: var(--text);
+    background: var(--chip-bg);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: white;
     cursor: pointer;
     font-family: inherit;
+    opacity: 0.9;
     -webkit-tap-highlight-color: transparent;
   }
-  .quick-btn:active { background: var(--hover); border-color: var(--accent); transform: scale(0.97); }
+  .quick-btn:active { background: #6b93f7; opacity: 1; transform: scale(0.97); }
 
   /* ---- Messages ---- */
   .messages {
@@ -985,8 +1003,8 @@ header {
     display: flex;
     gap: 8px;
     align-items: flex-end;
-    background: var(--bg);
-    border-top: 1px solid var(--border);
+    background: var(--input-bg);
+    border-top: 1px solid rgba(255,255,255,0.04);
   }
   .msg-input {
     flex: 1;
@@ -996,8 +1014,8 @@ header {
     min-height: 44px;
     max-height: 120px;
     resize: none;
-    background: var(--card);
-    border: 1px solid var(--border);
+    background: var(--input-field);
+    border: 1px solid rgba(255,255,255,0.06);
     color: var(--text);
     font-family: inherit;
     line-height: 1.4;
@@ -1010,8 +1028,8 @@ header {
     height: 44px;
     font-size: 18px;
     border-radius: 12px;
-    background: var(--accent);
-    color: white;
+    background: var(--send-btn);
+    color: #d4cfc5;
     border: none;
     cursor: pointer;
     flex-shrink: 0;
