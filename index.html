@@ -272,6 +272,16 @@ header {
   font-family: 'Space Mono', monospace;
   font-size: 13px;
 }
+.msg.web-search {
+  align-self: flex-start;
+  margin: 2px 0;
+  padding: 0;
+  border-radius: 12px;
+  animation: fadeIn 0.3s ease;
+}
+.msg.web-search a { color: var(--accent); text-decoration: none; }
+.msg.web-search a:hover { text-decoration: underline; }
+.msg.web-search .no-results { color: var(--text-muted); font-size: 12px; padding: 6px 14px; }
 /* Input Area */
 .input-area {
   padding: 16px 0 24px;
@@ -924,8 +934,12 @@ const getLocalTimeInfo = () => {
   return `Heure locale: ${timeStr}, Date: ${dateStr}, Timezone: ${timeZone}`;
 };
 
-const getSystemPrompt = () => {
-  return `Tu es Qwen AI, un assistant intelligent créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Réponds de façon naturelle et conversationnelle en français. Annonce ce que tu fais, utilise des phrases courtes et fluides. Si on te demande qui t'a développé ou qui t'as créé, réponds simplement: "Je suis Qwen AI, créé par Qwen_Pro." Ne dis jamais "par une équipe", "par Alibaba", "par le groupe", etc. Tu appartiens à Qwen_Pro. ${getLocalTimeInfo()}. Quand on te demande l'heure ou la date, donne ces informations directement sans mise en forme (pas de asterisques).`;
+const getSystemPrompt = (webContext) => {
+  let prompt = `Tu es Qwen AI, un assistant intelligent créé par Qwen_Pro. Tu t'appelles Qwen AI, pas Qwen. Réponds de façon naturelle et conversationnelle en français. Annonce ce que tu fais, utilise des phrases courtes et fluides. Si on te demande qui t'a développé ou qui t'as créé, réponds simplement: "Je suis Qwen AI, créé par Qwen_Pro." Ne dis jamais "par une équipe", "par Alibaba", "par le groupe", etc. Tu appartiens à Qwen_Pro. ${getLocalTimeInfo()}. Quand on te demande l'heure ou la date, donne ces informations directement sans mise en forme (pas de asterisques).`;
+  if (webContext) {
+    prompt += `\n\n## RÉSULTATS DE RECHERCHE WEB EN TEMPS RÉEL\n${webContext}\n\nUtilise ces informations pour répondre. Si les résultats ne sont pas pertinents, réponds de tes propres connaissances.`;
+  }
+  return prompt;
 };
 
 // === MOBILE MAINTENANCE CHECK ===
@@ -980,34 +994,10 @@ let conversations = [];
 let userName = '';
 let db = null; // IndexedDB instance
 
-// === WEB SEARCH FUNCTIONALITY ===
-const SEARCH_TRIGGERS = [
-  'actuellement', 'maintenant', "aujourd'hui", 'cette année', 'cette semaine',
-  'dernier', 'dernière', 'latest', 'recent', 'new',
-  'météo', 'weather', 'prix', 'price', 'cours', 'stock',
-  'qui est', 'what is', "qu'est-ce que", 'definition',
-  'comment', 'how to', 'tutoriel', 'tutorial',
-  'actualité', 'news', 'nouveau', 'nouvelle',
-  '2024', '2025', '2026', '2027', '2028'
-];
-
-function needsWebSearch(question) {
-  const lowerQ = question.toLowerCase();
-  for (const trigger of SEARCH_TRIGGERS) {
-    if (lowerQ.includes(trigger)) return true;
-  }
-  const interrogatives = ['qui', 'que', 'quoi', 'où', 'quand', 'comment', 'pourquoi', 'which', 'what', 'where', 'when', 'how', 'why'];
-  for (const word of interrogatives) {
-    if (lowerQ.startsWith(word) || lowerQ.includes(' ' + word + ' ')) return true;
-  }
-  return false;
-}
-
+// === WEB SEARCH EN TEMPS RÉEL (automatique) ===
 async function performWebSearch(query) {
   try {
     const encodedQuery = encodeURIComponent(query);
-    
-    // Utiliser un proxy CORS pour contourner les restrictions
     const proxyUrl = 'https://api.allorigins.win/raw?url=';
     const targetUrl = `https://api.duckduckgo.com/?q=${encodedQuery}&format=json&no_html=1&skip_disambig=1`;
     
@@ -1016,38 +1006,44 @@ async function performWebSearch(query) {
     
     const data = await response.json();
     
+    // Construire le texte et le HTML des résultats
+    let textParts = [];
+    let htmlParts = [];
+    
+    if (data.AbstractText) {
+      textParts.push(`Source: ${data.AbstractURL || 'Web'} — ${data.AbstractText}`);
+      htmlParts.push(`<div style="color:var(--accent-light);margin-bottom:6px">📌 ${escapeHtml(data.AbstractText)}</div>`);
+    }
+    if (data.Answer) {
+      textParts.push(`Réponse: ${data.Answer}`);
+      if (!data.AbstractText) htmlParts.push(`<div style="color:var(--accent-light);margin-bottom:6px">📌 ${escapeHtml(data.Answer)}</div>`);
+    }
+    
+    const topics = (data.RelatedTopics || []).slice(0, 5);
+    topics.forEach(t => {
+      const title = t.Text || t.text || '';
+      const url = t.FirstURL || t.url || '';
+      if (title) {
+        textParts.push(`- ${title}${url ? ' (' + url + ')' : ''}`);
+        htmlParts.push(`<div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:4px"><span style="color:var(--text-ter);flex-shrink:0">🔗</span><a href="${url||'#'}" target="_blank" rel="noopener" style="color:var(--accent-light);text-decoration:none;font-size:12px;word-break:break-all">${escapeHtml(title)}</a></div>`);
+      }
+    });
+    
     return {
-      answer: data.Answer || null,
-      abstract: data.AbstractText || null,
-      relatedTopics: (data.RelatedTopics || []).slice(0, 3).map(t => ({
-        text: t.Text || '',
-        url: t.FirstURL || ''
-      })),
-      source: data.AbstractURL || data.Heading || 'DuckDuckGo'
+      text: textParts.join('\n'),
+      html: htmlParts.join(''),
+      hasResults: textParts.length > 0
     };
   } catch (error) {
     console.error('Web search error:', error);
-    return null;
+    return { text: '', html: '', hasResults: false };
   }
 }
 
-function formatSearchContext(searchResults) {
-  if (!searchResults) return '';
-  let context = '\n\n[Informations Web]';
-  if (searchResults.abstract) {
-    context += `\n Selon ${searchResults.source}: ${searchResults.abstract}`;
-  }
-  if (searchResults.answer) {
-    context += `\n Réponse: ${searchResults.answer}`;
-  }
-  if (searchResults.relatedTopics && searchResults.relatedTopics.length > 0) {
-    context += '\n Sujets liés:';
-    searchResults.relatedTopics.forEach(t => {
-      if (t.text) context += ` - ${t.text}`;
-    });
-  }
-  context += '\n[/Informations Web]';
-  return context;
+function escapeHtml(t) {
+  const d = document.createElement('div');
+  d.textContent = t;
+  return d.innerHTML;
 }
 
 // === STORAGE SYSTEM (localStorage + IndexedDB fallback) ===
@@ -1413,25 +1409,40 @@ async function sendMessage() {
   input.value = '';
   input.style.height = 'auto';
   
-  // Add web search context if needed
-  let userText = text;
-  if (needsWebSearch(text)) {
-    updateStatus('loading', 'Recherche web...');
-    const searchResults = await performWebSearch(text);
-    if (searchResults) {
-      userText = text + formatSearchContext(searchResults);
-      updateStatus('loading', 'Qwen AI écrit...');
-    }
-  }
-  
   addMessage(text, 'user');
   hideWelcome();
-  showTypingBubble();
   setLoading(true);
+  
+  // === RECHERCHE WEB AUTOMATIQUE EN TEMPS RÉEL ===
+  const container = document.getElementById('messages');
+  const searchMsg = document.createElement('div');
+  searchMsg.className = 'msg web-search';
+  searchMsg.id = 'webSearchMsg';
+  searchMsg.innerHTML = '<div style="display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:12px;color:var(--text-ter)"><span style="font-size:16px">🔍</span> Recherche web en temps réel...</div>';
+  container.appendChild(searchMsg);
+  container.scrollTop = container.scrollHeight;
+  
+  updateStatus('loading', 'Recherche web...');
+  const webResult = await performWebSearch(text);
+  
+  let webContext = '';
+  if (webResult && webResult.hasResults) {
+    searchMsg.innerHTML = `<div style="padding:10px 14px;background:var(--surface);border-radius:12px;border:1px solid var(--border);margin:4px 12px">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span style="font-size:14px">🌐</span><span style="font-size:12px;color:var(--accent-light);font-weight:600">Résultats web temps réel</span></div>
+      ${webResult.html}
+      <div style="font-size:9px;color:var(--text-muted);margin-top:4px">Source: DuckDuckGo ⚡</div>
+    </div>`;
+    webContext = webResult.text;
+  } else {
+    searchMsg.innerHTML = `<div style="padding:8px 14px;font-size:12px;color:var(--text-muted)">🌐 Aucun résultat web trouvé</div>`;
+  }
+  container.scrollTop = container.scrollHeight;
+  
+  showTypingBubble();
   updateStatus('loading', 'Qwen AI écrit...');
 
   try {
-    const response = await getAIResponse(userText);
+    const response = await getAIResponse(text, webContext);
     hideTypingBubble();
     addMessage(response, 'assistant');
   } catch(e) {
@@ -1463,11 +1474,11 @@ function sendQuick(text) {
   sendMessage();
 }
 
-async function getAIResponse(userMessage) {
+async function getAIResponse(userMessage, webContext) {
   const msgs = [
-    { role: 'system', content: getSystemPrompt() },
+    { role: 'system', content: getSystemPrompt(webContext) },
     ...messages.map(m => ({ role: m.role, content: m.content })),
-    { role: 'user', content: userMessage }
+    { role: 'user', content: webContext ? userMessage + '\n\n[Informations web disponibles ci-dessus]' : userMessage }
   ];
   
   try {
