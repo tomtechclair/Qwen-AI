@@ -1439,6 +1439,7 @@ async function sendMessage() {
   setLoading(true);
   
   // === RECHERCHE WEB — seulement si l'utilisateur le demande explicitement ===
+  let webContext = '';
   const searchTriggers = /cherche|recherche|trouve.*(web|internet|internet|google)|actualité|news.*récent|météo|weather|prix.*actuel|cours.*bourse|qui a gagné|dernière.*info|que.*sais.*pas|tu.*sais.*quoi.*neuf/i.test(text);
   
   if (searchTriggers) {
