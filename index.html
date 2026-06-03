@@ -531,180 +531,116 @@ header {
 
 /* === RESPONSIVE MOBILE STYLES === */
 @media (max-width: 768px) {
+  /* Reset et full screen */
   html, body {
     height: 100%;
+    width: 100%;
     overflow: hidden;
+    margin: 0;
+    padding: 0;
   }
   
-  /* Header - full width, compact */
+  /* Header - compact, full width */
   header {
-    padding: 6px 8px;
-    min-height: 48px;
+    padding: 8px 10px;
+    min-height: 50px;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+    flex-shrink: 0;
   }
   .logo {
-    font-size: 14px;
-    gap: 6px;
+    font-size: 15px;
+    gap: 8px;
   }
   .logo-icon {
-    width: 28px;
-    height: 28px;
-    font-size: 12px;
-    border-radius: 6px;
-  }
-  .header-actions {
-    margin-left: auto;
-    gap: 4px;
-  }
-  .icon-btn {
-    width: 32px;
-    height: 32px;
+    width: 30px;
+    height: 30px;
     font-size: 14px;
     border-radius: 8px;
   }
+  .header-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 6px;
+  }
+  .icon-btn {
+    width: 34px;
+    height: 34px;
+    font-size: 15px;
+    border-radius: 8px;
+  }
   .model-select {
-    height: 32px;
+    height: 34px;
     font-size: 11px;
     padding: 0 6px;
     border-radius: 8px;
   }
   
-  /* Main container - FULL CHAT on mobile */
-  .main-container {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-    flex-direction: row;
-  }
-  
-  /* Sidebar - HIDDEN by default, slide from left when needed */
-  .sidebar {
-    position: fixed;
-    top: 48px;
-    left: -220px;
-    width: 200px;
-    height: calc(100vh - 48px - 24px);
-    background: var(--surface);
-    z-index: 1000;
-    padding: 10px;
-    transition: left 0.3s ease;
-    border-right: 1px solid var(--border);
-    box-shadow: 2px 0 10px rgba(0,0,0,0.3);
-  }
-  .sidebar.open {
-    left: 0;
-  }
-  .sidebar-title {
-    font-size: 10px;
-    padding: 0 4px;
-    margin-bottom: 8px;
-  }
-  .new-chat-btn {
-    padding: 10px;
-    font-size: 12px;
-    border-radius: 10px;
-    margin-bottom: 8px;
-    width: 100%;
-  }
-  .conv-list {
-    gap: 4px;
-  }
-  .conv-item {
-    padding: 8px 10px;
-    font-size: 11px;
-    border-radius: 8px;
-  }
-  
-  /* Sidebar toggle button - ALWAYS visible */
+  /* Sidebar toggle button */
   .sidebar-toggle {
     display: flex !important;
   }
   
-  /* Chat area - FULL width on mobile */
-  .chat-area {
+  /* Main container */
+  .main-container {
+    display: flex;
     flex: 1;
+    overflow: hidden;
+    height: calc(100vh - 50px - 28px);
+  }
+  
+  /* Sidebar - hidden by default */
+  .sidebar {
+    position: fixed;
+    top: 50px;
+    left: 0;
+    width: 220px;
+    height: calc(100vh - 50px - 28px);
+    background: var(--surface);
+    z-index: 1000;
+    padding: 12px;
+    transition: transform 0.3s ease;
+    transform: translateX(-100%);
+    border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
-    padding: 10px;
-    overflow: hidden;
   }
-  
-  /* Welcome */
-  .welcome {
-    padding: 12px;
-    flex-shrink: 0;
+  .sidebar.open {
+    transform: translateX(0);
   }
-  .welcome h1 {
-    font-size: 18px;
+  .sidebar-title {
+    font-size: 10px;
+    color: var(--muted);
+    padding: 0 4px;
     margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
   }
-  .welcome p {
-    font-size: 12px;
-    margin-bottom: 12px;
-    line-height: 1.4;
-  }
-  .quick-actions {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-  }
-  .quick-btn {
-    padding: 10px 12px;
-    font-size: 12px;
+  .new-chat-btn {
+    padding: 12px;
+    font-size: 13px;
     border-radius: 10px;
+    margin-bottom: 10px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: 100%;
   }
-  
-  /* Messages */
-  .messages {
+  .conv-list {
     flex: 1;
     overflow-y: auto;
-    padding: 8px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
-  .message {
+  .conv-item {
     padding: 10px 12px;
-    margin-bottom: 8px;
-    border-radius: 12px;
-  }
-  .message.user {
-    max-width: 85%;
-  }
-  .message.assistant {
-    max-width: 90%;
-  }
-  .message-content {
-    font-size: 14px;
-    line-height: 1.5;
-  }
-  .msg-time {
-    font-size: 10px;
-    margin-top: 4px;
-  }
-  
-  /* Input area */
-  .input-area {
-    padding: 8px 0;
-    flex-shrink: 0;
-  }
-  .msg-input {
-    padding: 10px 14px;
-    font-size: 15px;
-    border-radius: 12px;
-    min-height: 44px;
-  }
-  .send-btn {
-    width: 44px;
-    height: 44px;
-    font-size: 18px;
-    border-radius: 12px;
-  }
-  
-  /* Status bar */
-  .status-bar {
-    padding: 4px 10px;
-    font-size: 10px;
-    min-height: 24px;
+    font-size: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    color: var(--muted);
   }
   
   /* Sidebar overlay */
@@ -715,28 +651,174 @@ header {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0,0,0,0.6);
     z-index: 999;
   }
   .sidebar-overlay.open {
     display: block;
   }
+  
+  /* Chat area - FULL width */
+  .chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 12px;
+    overflow: hidden;
+    width: 100%;
+  }
+  
+  /* Welcome screen */
+  .welcome {
+    padding: 16px;
+    flex-shrink: 0;
+  }
+  .welcome h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .welcome p {
+    font-size: 14px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .quick-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  .quick-btn {
+    padding: 14px 16px;
+    font-size: 13px;
+    border-radius: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .quick-btn:hover {
+    background: var(--hover);
+    border-color: var(--accent);
+  }
+  
+  /* Messages */
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 0;
+  }
+  .message {
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    border-radius: 14px;
+    max-width: 88%;
+  }
+  .message.user {
+    margin-left: auto;
+  }
+  .message-content {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .msg-time {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 6px;
+  }
+  
+  /* Input area */
+  .input-area {
+    padding: 10px 0;
+    flex-shrink: 0;
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+  }
+  .msg-input {
+    flex: 1;
+    padding: 12px 16px;
+    font-size: 15px;
+    border-radius: 14px;
+    min-height: 48px;
+    max-height: 120px;
+    resize: none;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .msg-input:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+  .send-btn {
+    width: 48px;
+    height: 48px;
+    font-size: 20px;
+    border-radius: 14px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  
+  /* Status bar */
+  .status-bar {
+    padding: 6px 10px;
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--success);
+  }
+  
+  /* Settings modal */
+  .settings-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 2000;
+    align-items: center;
+    justify-content: center;
+  }
+  .settings-overlay.open {
+    display: flex;
+  }
+  .settings-panel {
+    background: var(--surface);
+    border-radius: 16px;
+    padding: 20px;
+    width: 90%;
+    max-width: 400px;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
 }
 
-/* Sidebar toggle button - hidden by default */
-.sidebar-toggle {
-  display: none;
-}
-
-/* Settings modal */
-.settings-overlay {
-  padding: 10px;
-}
-.settings-panel {
-  width: 95%;
-  max-width: 380px;
-  padding: 16px;
-  border-radius: 16px;
+/* Very small screens */
+@media (max-width: 400px) {
+  .logo span {
+    display: none;
+  }
+  .quick-actions {
+    grid-template-columns: 1fr;
+  }
+  .message {
+    max-width: 92%;
+  }
 }
 </style>
 </head>
