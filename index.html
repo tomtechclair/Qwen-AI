@@ -991,6 +991,70 @@ let conversations = [];
 let userName = '';
 let db = null; // IndexedDB instance
 
+// === WEB SEARCH FUNCTIONALITY ===
+const SEARCH_TRIGGERS = [
+  'actuellement', 'maintenant', "aujourd'hui", 'cette année', 'cette semaine',
+  'dernier', 'dernière', 'latest', 'recent', 'new',
+  'météo', 'weather', 'prix', 'price', 'cours', 'stock',
+  'qui est', 'what is', "qu'est-ce que", 'definition',
+  'comment', 'how to', 'tutoriel', 'tutorial',
+  'actualité', 'news', 'nouveau', 'nouvelle',
+  '2024', '2025', '2026', '2027', '2028'
+];
+
+function needsWebSearch(question) {
+  const lowerQ = question.toLowerCase();
+  for (const trigger of SEARCH_TRIGGERS) {
+    if (lowerQ.includes(trigger)) return true;
+  }
+  const interrogatives = ['qui', 'que', 'quoi', 'où', 'quand', 'comment', 'pourquoi', 'which', 'what', 'where', 'when', 'how', 'why'];
+  for (const word of interrogatives) {
+    if (lowerQ.startsWith(word) || lowerQ.includes(' ' + word + ' ')) return true;
+  }
+  return false;
+}
+
+async function performWebSearch(query) {
+  try {
+    const encodedQuery = encodeURIComponent(query);
+    const url = `https://api.duckduckgo.com/?q=${encodedQuery}&format=json&no_html=1&skip_disambig=1`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Search API error');
+    const data = await response.json();
+    return {
+      answer: data.Answer || null,
+      abstract: data.AbstractText || null,
+      relatedTopics: (data.RelatedTopics || []).slice(0, 3).map(t => ({
+        text: t.Text || '',
+        url: t.FirstURL || ''
+      })),
+      source: data.AbstractURL || 'DuckDuckGo'
+    };
+  } catch (error) {
+    console.error('Web search error:', error);
+    return null;
+  }
+}
+
+function formatSearchContext(searchResults) {
+  if (!searchResults) return '';
+  let context = '\n\n[Informations Web]';
+  if (searchResults.abstract) {
+    context += `\n Selon ${searchResults.source}: ${searchResults.abstract}`;
+  }
+  if (searchResults.answer) {
+    context += `\n Réponse: ${searchResults.answer}`;
+  }
+  if (searchResults.relatedTopics && searchResults.relatedTopics.length > 0) {
+    context += '\n Sujets liés:';
+    searchResults.relatedTopics.forEach(t => {
+      if (t.text) context += ` - ${t.text}`;
+    });
+  }
+  context += '\n[/Informations Web]';
+  return context;
+}
+
 // === STORAGE SYSTEM (localStorage + IndexedDB fallback) ===
 const DB_NAME = 'QwenAIDB';
 const DB_VERSION = 1;
@@ -1354,6 +1418,17 @@ async function sendMessage() {
   input.value = '';
   input.style.height = 'auto';
   
+  // Add web search context if needed
+  let userText = text;
+  if (needsWebSearch(text)) {
+    updateStatus('loading', 'Recherche web...');
+    const searchResults = await performWebSearch(text);
+    if (searchResults) {
+      userText = text + formatSearchContext(searchResults);
+      updateStatus('loading', 'Qwen AI écrit...');
+    }
+  }
+  
   addMessage(text, 'user');
   hideWelcome();
   showTypingBubble();
@@ -1361,7 +1436,7 @@ async function sendMessage() {
   updateStatus('loading', 'Qwen AI écrit...');
 
   try {
-    const response = await getAIResponse(text);
+    const response = await getAIResponse(userText);
     hideTypingBubble();
     addMessage(response, 'assistant');
   } catch(e) {
@@ -1486,16 +1561,11 @@ function closeSidebar() {
 
 function clearChat() {
   // Close sidebar if open on mobile
-  const sidebar = document.querySelector('.sidebar');
-  if (window.innerWidth <= 768 && sidebar.classList.contains('open')) {
-    toggleSidebar();
-  }
-  // Save current conversation before clearing
+  closeSidebar();
   if (messages.length > 0) saveConversation();
   messages = [];
   document.getElementById('messages').innerHTML = '';
   document.getElementById('welcome').style.display = 'flex';
-  // Update welcome message with current greeting
   updateWelcomeMessage();
   document.getElementById('msgInput').focus();
 }
