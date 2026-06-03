@@ -1017,10 +1017,16 @@ function needsWebSearch(question) {
 async function performWebSearch(query) {
   try {
     const encodedQuery = encodeURIComponent(query);
-    const url = `https://api.duckduckgo.com/?q=${encodedQuery}&format=json&no_html=1&skip_disambig=1`;
-    const response = await fetch(url);
+    
+    // Utiliser un proxy CORS pour contourner les restrictions
+    const proxyUrl = 'https://api.allorigins.win/raw?url=';
+    const targetUrl = `https://api.duckduckgo.com/?q=${encodedQuery}&format=json&no_html=1&skip_disambig=1`;
+    
+    const response = await fetch(proxyUrl + encodeURIComponent(targetUrl));
     if (!response.ok) throw new Error('Search API error');
+    
     const data = await response.json();
+    
     return {
       answer: data.Answer || null,
       abstract: data.AbstractText || null,
@@ -1028,7 +1034,7 @@ async function performWebSearch(query) {
         text: t.Text || '',
         url: t.FirstURL || ''
       })),
-      source: data.AbstractURL || 'DuckDuckGo'
+      source: data.AbstractURL || data.Heading || 'DuckDuckGo'
     };
   } catch (error) {
     console.error('Web search error:', error);
