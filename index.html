@@ -242,6 +242,163 @@ const getLocalTimeInfo=()=>{const now=new Date(),tz=Intl.DateTimeFormat().resolv
 const getSystemPrompt=webContext=>`Tu es Qwen AI, un assistant intelligent créé par Qwen_Pro. Réponds naturellement en français. ${getLocalTimeInfo()}. Recherche web et analyse de liens disponibles sur demande.`;
 async function performWebSearch(q){const enc=encodeURIComponent(q),url=`https://api.duckduckgo.com/?q=${enc}&format=json&no_html=1`,proxies=['https://api.allorigins.win/raw?url=','https://corsproxy.io/?url=','https://api.codetabs.com/v1/proxy?quest='];for(const p of proxies){try{const c=new AbortController(),t=setTimeout(()=>c.abort(),4000),r=await fetch(p+encodeURIComponent(url),{signal:c});clearTimeout(t);if(r.ok){const d=await r.json();return{text:d.AbstractText||'',html:'',hasResults:!!d.AbstractText}}catch(e){continue}}return{text:'',html:'',hasResults:false}}
 function escapeHtml(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+
+async function fetchAndAnalyze(url){
+    try{
+        const proxies = ['https://api.allorigins.win/raw?url=','https://corsproxy.io/?url=','https://api.codetabs.com/v1/proxy?quest='];
+        for(const p of proxies){
+            try{
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 8000);
+                const response = await fetch(p + encodeURIComponent(url), { 
+                    signal: controller.signal,
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    }
+                });
+                clearTimeout(timeout);
+                if(response.ok){
+                    const html = await response.text();
+                    return parseAndAnalyzeHTML(html, url);
+                }
+            }catch(e){
+                continue;
+            }
+        }
+        return null;
+    }catch(e){
+        console.error('Error fetching and analyzing URL:', e);
+        return null;
+    }
+}
+
+function parseAndAnalyzeHTML(html, url){
+    try{
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        
+        // Remove script and style elements
+        doc.querySelectorAll('script, style').forEach(el => el.remove());
+        
+        // Get title
+        const titleElement = doc.querySelector('title');
+        const title = titleElement ? titleElement.textContent.trim() : 'Sans titre';
+        
+        // Get description from meta tags
+        let description = '';
+        const descSelectors = [
+            'meta[name="description"]',
+            'meta[property="og:description"]',
+            'meta[name="twitter:description"]'
+        ];
+        for(const selector of descSelectors){
+            const meta = doc.querySelector(selector);
+            if(meta && meta.content){
+                description = meta.content.trim();
+                break;
+            }
+        }
+        
+        // Get main image
+        let imageUrl = '';
+        const imgSelectors = [
+            'meta[property="og:image"]',
+            'meta[name="twitter:image"]',
+            'link[rel="image_src"]'
+        ];
+        for(const selector of imgSelectors){
+            const el = doc.querySelector(selector);
+            if(el && (el.content || el.href)){
+                imageUrl = el.content || el.href;
+                // Make URL absolute if needed
+                try{
+                    const urlObj = new URL(imageUrl, url);
+                    imageUrl = urlObj.toString();
+                }catch(e){
+                    // If URL is invalid, try to make it relative to base
+                    if(imageUrl.startsWith('//')){
+                        imageUrl = 'https:' + imageUrl;
+                    }else if(imageUrl.startsWith('/')){
+                        try{
+                            const urlObj = new URL(url);
+                            imageUrl = urlObj.origin + imageUrl;
+                        }catch(e){}
+                    }
+                }
+                break;
+            }
+        }
+        
+        // Extract text content
+        const mainContent = doc.querySelector('main, article, .content, #content, .post, .entry') || doc.body;
+        let textContent = mainContent ? mainContent.textContent : doc.body.textContent;
+        textContent = textContent.replace(/\s+/g, ' ').trim();
+        
+        // Limit text for analysis
+        const analysisText = textContent.substring(0, 1000);
+        
+        return {
+            title: title,
+            description: description,
+            imageUrl: imageUrl,
+            url: url,
+            textContent: analysisText,
+            domain: new URL(url).hostname
+        };
+    }catch(e){
+        console.error('Error parsing HTML:', e);
+        return {
+            title: 'Erreur d\'analyse',
+            description: 'Impossible d\'analyser le contenu de cette page.',
+            url: url
+        };
+    }
+}
+
+function displayAnalysis(data){
+    if(!data) return '<div style="padding:10px;color:var(--error)">❌ Impossible d\'analyser ce lien</div>';
+    
+    let html = `
+        <div style="padding:12px;">
+            <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;">
+    `;
+    
+    if(data.imageUrl){
+        html += `<img src="${data.imageUrl}" alt="${data.title}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;">`;
+    }else{
+        html += `<div style="width:80px;height:80px;background:var(--card);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;">📄</div>`;
+    }
+    
+    html += `
+                <div style="flex:1;">
+                    <div style="font-weight:600;margin-bottom:4px;">${escapeHtml(data.title)}</div>
+                    <div style="color:var(--muted);font-size:14px;margin-bottom:8px;">${escapeHtml(data.description || 'Aucune description disponible')}</div>
+                    <div style="font-size:13px;color:var(--text-2);">
+                        <span>Domaine: ${escapeHtml(data.domain)}</span>
+                    </div>
+                </div>
+            </div>
+    `;
+    
+    if(data.textContent && data.textContent.length > 50){
+        html += `
+            <div style="background:var(--card);border-radius:8px;padding:12px;margin-top:8px;border:1px solid var(--border);">
+                <div style="font-weight:600;margin-bottom:8px;">Résumé du contenu:</div>
+                <p style="color:var(--text);line-height:1.5;margin:0;">${escapeHtml(data.textContent.substring(0, 300))}${data.textContent.length > 300 ? '...' : ''}</p>
+            </div>
+        `;
+    }
+    
+    html += `</div>`;
+    return html;
+}
+
+function saveUserName(name){
+    if(name && name.trim()){
+        localStorage.setItem('qwen_username', name.trim());
+        updateWelcomeMessage();
+    }
+}
 async function sendMessage(){const input=document.getElementById('msgInput'),text=input.value.trim();if(!text||window.isLoading)return;input.value='';input.style.height='auto';addMessage(text,'user');hideWelcome();setLoading(true);let webCtx='';const urlMatch=text.match(/https?:\/\/[^\s]+/i),isUrlReq=/analyse|que.*vaut/i.test(text)&&urlMatch;if(isUrlReq){const url=urlMatch[0],c=document.getElementById('messages'),m=document.createElement('div');m.className='msg web-search';m.innerHTML='<div style="padding:10px">Analyse...<\/div>';c.appendChild(m);c.scrollTop=c.scrollHeight;const d=await fetchAndAnalyze(url);if(d)m.innerHTML=displayAnalysis(d);else m.innerHTML='❌ Échec analyse';c.scrollTop=c.scrollHeight}showTypingBubble();try{const r=await getAIResponse(text,webCtx);hideTypingBubble();addMessage(r,'assistant')}catch(e){hideTypingBubble();addMessage('Erreur: '+e.message,'assistant')}setLoading(false)}
 function addMessage(text,role){messages.push({role,content:text});const c=document.getElementById('messages'),div=document.createElement('div');div.className='msg '+role;div.innerHTML=text.replace(/\n/g,'<br>');c.appendChild(div);c.scrollTop=c.scrollHeight}
 function hideWelcome(){const w=document.getElementById('welcome');if(w)w.style.display='none'}
