@@ -55,10 +55,10 @@ header {
 .icon-btn:hover { background: var(--hover); color: var(--text); border-color: var(--accent); }
 .menu-btn { display: none; }
 .sidebar-overlay { display: none; }
-.main-container { display: flex; flex: 1; overflow: hidden; min-height: 0; }
+.main-container { display: flex; flex: 1; min-height: 0; }
 .sidebar {
   width: clamp(180px, 20vw, 280px); background: var(--surface); border-right: 1px solid var(--border);
-  display: flex; flex-direction: column; padding: 16px; gap: 12px; overflow: hidden;
+  display: flex; flex-direction: column; padding: 16px; gap: 12px;
 }
 .sidebar-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); padding: 0 8px; }
 .new-chat-btn {
@@ -236,7 +236,7 @@ header {
 <script>
 const API_URL='https://api.mulerouter.ai/vendors/openai/v1/chat/completions';
 const API_KEY='sk-mr-a32a7cf0ae2b1ef610f64c038429b9b6ea4a5575312c8e8899576ce39e446f1d';
-let messages=[],selectedModel='qwen3-max',temperature=0.7,maxTokens=1000,animationsEnabled=true,conversations=[],userName='',db=null;
+let messages=[],selectedModel='qwen3-max',temperature=0.7,maxTokens=1000,animationsEnabled=true,conversations=[],userName='',db=null,isLoading=false;
 const getLocalTimeInfo=()=>{const now=new Date(),tz=Intl.DateTimeFormat().resolvedOptions().timeZone;return`Heure locale: ${now.toLocaleTimeString('fr-FR')}, Date: ${now.toLocaleDateString('fr-FR')}, Timezone: ${tz}`};
 const getSystemPrompt=webContext=>`Tu es Qwen AI, un assistant intelligent créé par Qwen_Pro. Réponds naturellement en français. ${getLocalTimeInfo()}. Recherche web et analyse de liens disponibles sur demande.`;
 async function performWebSearch(q){const enc=encodeURIComponent(q),url=`https://api.duckduckgo.com/?q=${enc}&format=json&no_html=1`,proxies=['https://api.allorigins.win/raw?url=','https://corsproxy.io/?url=','https://api.codetabs.com/v1/proxy?quest='];for(const p of proxies){try{const c=new AbortController(),t=setTimeout(()=>c.abort(),4000),r=await fetch(p+encodeURIComponent(url),{signal:c});clearTimeout(t);if(r.ok){const d=await r.json();return{text:d.AbstractText||'',html:'',hasResults:!!d.AbstractText}}catch(e){continue}}return{text:'',html:'',hasResults:false}}
