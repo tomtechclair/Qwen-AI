@@ -153,7 +153,7 @@ header {
   .sidebar-overlay.open { display: block; }
 }
 @media (max-width: 768px) {
-  html, body { height: 100%; width: 100%; overflow: hidden; }
+  html, body { height: 100%; width: 100%; }
   header { padding: 8px 12px; min-height: 52px; }
   .menu-btn { display: flex; min-width: 44px; min-height: 44px; width: 44px; height: 44px; font-size: 18px; border: none; background: transparent; }
   .menu-btn:active { background: var(--hover); }
@@ -448,7 +448,7 @@ function showTypingBubble(){const c=document.getElementById('messages'),b=docume
 function hideTypingBubble(){const b=document.getElementById('typingBubble');if(b)b.remove()}
 function sendQuick(t){document.getElementById('msgInput').value=t;sendMessage()}
 async function getAIResponse(msg,ctx){const msgs=[{role:'system',content:getSystemPrompt(ctx)},...messages.map(m=>({role:m.role,content:m.content})),{role:'user',content:msg}];const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},body:JSON.stringify({model:selectedModel,messages:msgs,temperature,max_tokens:maxTokens})});if(!r.ok)throw new Error(r.status);const d=await r.json();return d.choices[0].message.content.replace(/\*\*/g,'').replace(/\*/g,'')}
-function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage()}autoResize(e.target)}
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();autoResize(e.target)}}
 function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,200)+'px'}
 function changeModel(m){selectedModel=m;updateStatus('ready','Propulsé par '+m.replace('qwen3-','Qwen3 '))}
 function toggleSidebar(){const s=document.querySelector('.sidebar'),o=document.getElementById('sidebarOverlay');s.classList.toggle('open');o.classList.toggle('open')}
