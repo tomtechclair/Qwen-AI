@@ -399,7 +399,50 @@ function saveUserName(name){
         updateWelcomeMessage();
     }
 }
-async function sendMessage(){const input=document.getElementById('msgInput'),text=input.value.trim();if(!text||window.isLoading)return;input.value='';input.style.height='auto';addMessage(text,'user');hideWelcome();setLoading(true);let webCtx='';const urlMatch=text.match(/https?:\/\/[^\s]+/i),isUrlReq=/analyse|que.*vaut/i.test(text)&&urlMatch;if(isUrlReq){const url=urlMatch[0],c=document.getElementById('messages'),m=document.createElement('div');m.className='msg web-search';m.innerHTML='<div style="padding:10px">Analyse...<\/div>';c.appendChild(m);c.scrollTop=c.scrollHeight;const d=await fetchAndAnalyze(url);if(d)m.innerHTML=displayAnalysis(d);else m.innerHTML='❌ Échec analyse';c.scrollTop=c.scrollHeight}showTypingBubble();try{const r=await getAIResponse(text,webCtx);hideTypingBubble();addMessage(r,'assistant')}catch(e){hideTypingBubble();addMessage('Erreur: '+e.message,'assistant')}setLoading(false)}
+async function sendMessage() {
+    const input = document.getElementById('msgInput');
+    const text = input.value.trim();
+    if (!text || window.isLoading) return;
+    
+    input.value = '';
+    input.style.height = 'auto';
+    addMessage(text, 'user');
+    hideWelcome();
+    setLoading(true);
+    
+    let webCtx = '';
+    const urlMatch = text.match(/https?:\/\/[^\s]+/i);
+    const isUrlReq = /analyse|que.*vaut/i.test(text) && urlMatch;
+    
+    if (isUrlReq) {
+        const url = urlMatch[0];
+        const c = document.getElementById('messages');
+        const m = document.createElement('div');
+        m.className = 'msg web-search';
+        m.innerHTML = '<div style="padding:10px">Analyse...</div>';
+        c.appendChild(m);
+        c.scrollTop = c.scrollHeight;
+        
+        const d = await fetchAndAnalyze(url);
+        if (d) {
+            m.innerHTML = displayAnalysis(d);
+        } else {
+            m.innerHTML = '❌ Échec analyse';
+        }
+        c.scrollTop = c.scrollHeight;
+    }
+    
+    showTypingBubble();
+    try {
+        const r = await getAIResponse(text, webCtx);
+        hideTypingBubble();
+        addMessage(r, 'assistant');
+    } catch (e) {
+        hideTypingBubble();
+        addMessage('Erreur: ' + e.message, 'assistant');
+    }
+    setLoading(false);
+}
 function addMessage(text,role){messages.push({role,content:text});const c=document.getElementById('messages'),div=document.createElement('div');div.className='msg '+role;div.innerHTML=text.replace(/\n/g,'<br>');c.appendChild(div);c.scrollTop=c.scrollHeight}
 function hideWelcome(){const w=document.getElementById('welcome');if(w)w.style.display='none'}
 function showTypingBubble(){const c=document.getElementById('messages'),b=document.createElement('div');b.className='typing-bubble';b.id='typingBubble';b.innerHTML='<span class="dot"></span><span class="dot"></span><span class="dot"></span>';c.appendChild(b);c.scrollTop=c.scrollHeight}
