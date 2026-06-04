@@ -22,7 +22,7 @@
   --error: #ef4444;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { min-height: -webkit-fill-available; overflow-x: hidden; }
+html, body { min-height: 100%; min-height: -webkit-fill-available; height: 100%; overflow-x: hidden; }
 body {
   font-family: 'Outfit', sans-serif;
   background: var(--bg);
@@ -30,8 +30,8 @@ body {
   color: var(--text);
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
   min-height: 100vh;
+  height: 100%;
 }
 img { max-width: 100%; height: auto; }
 header {
@@ -77,7 +77,7 @@ header {
 .chat-area { flex: 1; display: flex; flex-direction: column; width: 100%; height: 100%; }
 .welcome {
   flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-align: center; padding: 40px; min-height: 0;
+  text-align: center; padding: 40px; min-height: 100px;
 }
 .welcome h1 { font-size: clamp(24px, 3.5vw, 40px); font-weight: 700; margin-bottom: 12px;
   background: linear-gradient(135deg, var(--text), var(--accent-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
@@ -422,11 +422,15 @@ async function sendMessage() {
         c.appendChild(m);
         c.scrollTop = c.scrollHeight;
         
-        const d = await fetchAndAnalyze(url);
-        if (d) {
-            m.innerHTML = displayAnalysis(d);
-        } else {
-            m.innerHTML = '❌ Échec analyse';
+        try {
+            const d = await fetchAndAnalyze(url);
+            if (d) {
+                m.innerHTML = displayAnalysis(d);
+            } else {
+                m.innerHTML = '❌ Échec analyse - URL inaccessible';
+            }
+        } catch(err) {
+            m.innerHTML = '❌ Erreur: ' + err.message;
         }
         c.scrollTop = c.scrollHeight;
     }
@@ -438,7 +442,7 @@ async function sendMessage() {
         addMessage(r, 'assistant');
     } catch (e) {
         hideTypingBubble();
-        addMessage('Erreur: ' + e.message, 'assistant');
+        addMessage('Erreur API: ' + e.message, 'assistant');
     }
     setLoading(false);
 }
