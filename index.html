@@ -123,7 +123,20 @@ header {
 <script>
 const API_URL='https://api.mulerouter.ai/vendors/openai/v1/chat/completions';
 const API_KEY='sk-mr-a32a7cf0ae2b1ef610f64c038429b9b6ea4a5575312c8e8899576ce39e446f1d';
-let messages=[], selectedModel='qwen3-max', isLoading=false;
+let messages=[], selectedModel='qwen3-max', isLoading=false, userName='';
+
+function getGreeting() {
+  const h = new Date().getHours();
+  if(h < 6) return 'Bonne nuit';
+  if(h < 12) return 'Bonjour';
+  if(h < 18) return 'Bon après-midi';
+  return 'Bonsoir';
+}
+
+function updateWelcome() {
+  const h1 = document.querySelector('#welcome h1');
+  h1.textContent = userName ? `${getGreeting()} ${userName} 👋` : `${getGreeting()} 👋`;
+}
 
 function getLocalTimeInfo() {
   const now = new Date();
@@ -236,6 +249,14 @@ function toggleSettings() {
   document.getElementById('settings').classList.toggle('open');
 }
 
+function saveName(name) {
+  if(name && name.trim()) {
+    userName = name.trim();
+    localStorage.setItem('qwen_name', userName);
+    updateWelcome();
+  }
+}
+
 function closeSettings() {
   document.getElementById('settings').classList.remove('open');
 }
@@ -250,9 +271,18 @@ function clearChat() {
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('modelSelect').value = selectedModel;
+  userName = localStorage.getItem('qwen_name') || '';
+  updateWelcome();
   let vh = window.innerHeight * 0.01;
   document.documentElement.style.setProperty('--vh', `${vh}px`);
 });
+
+function askName() {
+  const name = prompt('Comment vous appelez-vous ?');
+  if(name) saveName(name);
+}
+
+setTimeout(askName, 500);
 </script>
 </body>
 </html>
