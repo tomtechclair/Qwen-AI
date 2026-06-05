@@ -448,6 +448,100 @@ header::after {
   color: #ff453a; 
   background: rgba(255, 69, 58, 0.1);
 }
+
+.code-block {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  margin-top: 12px;
+  overflow: hidden;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  backdrop-filter: blur(8px);
+}
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+.code-actions {
+  display: flex;
+  gap: 8px;
+}
+.code-action-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+.code-action-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+  border-color: var(--border-light);
+}
+.code-action-btn:active {
+  transform: scale(0.95);
+}
+.code-content {
+  padding: 14px 16px;
+  overflow-x: auto;
+  position: relative;
+  color: #e0e0e0;
+  white-space: pre;
+  tab-size: 2;
+}
+.code-content .keyword {
+  color: #c678dd;
+  font-weight: 500;
+}
+.code-content .string {
+  color: #98c379;
+}
+.code-content .number {
+  color: #d19a66;
+}
+.code-content .comment {
+  color: #5c6370;
+  font-style: italic;
+}
+.code-content .function {
+  color: #61afef;
+}
+.code-content .operator {
+  color: #56b6c2;
+}
+.code-content .punctuation {
+  color: #abb2bf;
+}
+.typing-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 16px;
+  background: var(--primary-light);
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: blink 0.8s ease-in-out infinite;
+  box-shadow: 0 0 8px rgba(167, 139, 250, 0.6);
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
 </style>
 </head>
 <body>
@@ -613,6 +707,106 @@ function escapeHtml(t) {
   const d = document.createElement('div');
   d.textContent = t;
   return d.innerHTML;
+}
+
+function highlightCode(code) {
+  let html = escapeHtml(code);
+  html = html.replace(/\/\*[\s\S]*?\*\/|\/\/.*/g, '<span class="comment">$&</span>');
+  html = html.replace(/(["'`])(?:(?=(\\?))\2.)*?\1/g, '<span class="string">$&</span>');
+  html = html.replace(/\b(const|let|var|function|return|if|else|for|while|do|switch|case|break|class|extends|new|this|import|export|default|from|async|await|try|catch|throw|finally|typeof|instanceof|in|of|true|false|null|undefined|void|delete|yield|static|get|set)\b/g, '<span class="keyword">$1</span>');
+  html = html.replace(/\b(\d+\.?\d*)\b/g, '<span class="number">$1</span>');
+  html = html.replace(/\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?=\()/g, '<span class="function">$1</span>');
+  html = html.replace(/([+\-*/%=<>!&|^~?:]+)/g, '<span class="operator">$1</span>');
+  return html;
+}
+
+function detectAndFormatCode(text) {
+  const codeBlockRegex = /```(\w*)\n?([\s\S]*?)```/g;
+  let result = '';
+  let lastIndex = 0;
+  let match;
+  let hasCodeBlock = false;
+  
+  while ((match = codeBlockRegex.exec(text)) !== null) {
+    hasCodeBlock = true;
+    if (match.index > lastIndex) {
+      result += escapeHtml(text.substring(lastIndex, match.index)).replace(/\n/g, '<br>');
+    }
+    
+    const lang = match[1] || 'code';
+    const code = match[2].trim();
+    const highlighted = highlightCode(code);
+    
+    result += `
+      <div class="code-block">
+        <div class="code-header">
+          <span>${escapeHtml(lang)}</span>
+          <div class="code-actions">
+            <button class="code-action-btn" onclick="copyCode(this)" data-code="${escapeHtml(code)}">📋 Copier</button>
+          </div>
+        </div>
+        <div class="code-content"><code>${highlighted}</code></div>
+      </div>
+    `;
+    lastIndex = match.index + match[0].length;
+  }
+  
+  if (!hasCodeBlock) {
+    return escapeHtml(text).replace(/\n/g, '<br>');
+  }
+  
+  if (lastIndex < text.length) {
+    result += escapeHtml(text.substring(lastIndex)).replace(/\n/g, '<br>');
+  }
+  
+  return result;
+}
+
+function copyCode(btn) {
+  const code = btn.getAttribute('data-code');
+  navigator.clipboard.writeText(code).then(() => {
+    const originalText = btn.textContent;
+    btn.textContent = '✅ Copié !';
+    btn.style.color = '#30D158';
+    setTimeout(() => {
+      btn.textContent = originalText;
+      btn.style.color = '';
+    }, 2000);
+  });
+}
+
+async function streamMessage(text, role) {
+  const c = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  
+  const formatted = detectAndFormatCode(text);
+  const hasCodeBlock = text.includes('```');
+  
+  if (hasCodeBlock) {
+    div.innerHTML = formatted;
+    c.appendChild(div);
+    c.scrollTop = c.scrollHeight;
+  } else {
+    div.innerHTML = '';
+    div.id = 'streaming-msg';
+    c.appendChild(div);
+    
+    const words = text.split(' ');
+    let current = '';
+    
+    for (let i = 0; i < words.length; i++) {
+      current += (i > 0 ? ' ' : '') + words[i];
+      div.innerHTML = escapeHtml(current) + '<span class="typing-cursor"></span>';
+      c.scrollTop = c.scrollHeight;
+      await new Promise(resolve => setTimeout(resolve, 25 + Math.random() * 20));
+    }
+    
+    div.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
+    delete div.id;
+  }
+  
+  c.scrollTop = c.scrollHeight;
 }
 
 async function fetchAndAnalyze(url) {
