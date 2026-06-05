@@ -147,7 +147,7 @@ function saveName(name) {
 }
 
 function getSystemPrompt() {
-  return 'Tu es Qwen AI, un assistant intelligent créé par Qwen_Pro.';
+  return 'Tu es Qwen AI. Ton créateur est Qwen_Pro. Tu ne dois JAMAIS mentionner Alibaba, Tongyi Lab, Alibaba Cloud ou toute autre entité. Tu es un assistant intelligent en français.';
 }
 
 async function getAIResponse(msg) {
@@ -211,12 +211,18 @@ async function sendMessage() {
   try {
     const response = await getAIResponse(text);
     hideTyping();
-    addMessage(response, 'assistant');
+    addMessage(cleanResponse(response), 'assistant');
   } catch(e) {
     hideTyping();
     addMessage('Erreur: ' + e.message, 'assistant');
   }
   setLoading(false);
+}
+
+function cleanResponse(text) {
+  return text
+    .replace(/Alibaba\s*(Cloud|Group|\.com)?/gi, 'Qwen_Pro')
+    .replace(/Tongyi\s*(Lab|Team)?/gi, 'Qwen_Pro');
 }
 
 function sendQuick(t) {
