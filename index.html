@@ -1001,7 +1001,7 @@ async function sendMessage() {
       }
     } catch(err) {
       hideLoader();
-      addMessage('❌ Erreur: ' + err.message, 'assistant');
+      await streamMessage('❌ Erreur: ' + err.message, 'assistant');
     }
     c.scrollTop = c.scrollHeight;
     setLoading(false);
@@ -1020,20 +1020,20 @@ async function sendMessage() {
       
     if(searchResult.hasResults) {
       response = searchResult.text;
-      addMessage('📰 ' + response, 'assistant');
+      await streamMessage('📰 ' + response, 'assistant');
     } else {
       response = await getAIResponse(text);
-      addMessage(cleanResponse(response), 'assistant');
+      await streamMessage(cleanResponse(response), 'assistant');
     }
     } else {
       response = await getAIResponse(text);
-      addMessage(cleanResponse(response), 'assistant');
+      await streamMessage(cleanResponse(response), 'assistant');
     }
     hideTyping();
   } catch(e) {
     hideTyping();
     hideLoader();
-    addMessage('Erreur: ' + e.message, 'assistant');
+    await streamMessage('Erreur: ' + e.message, 'assistant');
   }
   setLoading(false);
 }
