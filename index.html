@@ -2,475 +2,249 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
-<title>Qwen AI – Assistant Intelligent</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Qwen AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
+  --primary: #7c3aed;
+  --primary-light: #a78bfa;
   --bg: #0a0a0f;
   --surface: #12121a;
   --card: #1a1a25;
-  --hover: #222235;
-  --border: rgba(255,255,255,0.06);
+  --border: rgba(255,255,255,0.08);
   --text: #f0f0f5;
-  --muted: #6b6b80;
-  --accent: #7c3aed;
-  --accent-light: #a78bfa;
-  --accent-dim: rgba(124,58,237,0.15);
-  --success: #10b981;
-  --error: #ef4444;
+  --text-muted: #8a8a9a;
 }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { min-height: 100%; min-height: -webkit-fill-available; height: 100%; overflow-x: hidden; }
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; width: 100%; overflow: hidden; }
 body {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   background: var(--bg);
-  background-image: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(124,58,237,0.05) 0%, transparent 60%);
   color: var(--text);
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  height: 100%;
 }
-img { max-width: 100%; height: auto; }
+#app { display: flex; flex-direction: column; height: 100vh; height: calc(var(--vh, 1vh) * 100); }
 header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: clamp(10px, 1.5vw, 16px) clamp(12px, 2vw, 24px);
-  background: var(--surface); border-bottom: 1px solid var(--border);
-  box-shadow: 0 1px 12px rgba(0,0,0,0.3); position: relative; z-index: 100;
+  padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--border);
 }
-.logo { display: flex; align-items: center; gap: clamp(8px, 1vw, 12px); font-size: clamp(18px, 2vw, 24px); font-weight: 700; }
+.logo { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 18px; }
 .logo-icon {
-  width: clamp(32px, 3.5vw, 42px); height: clamp(32px, 3.5vw, 42px);
-  background: linear-gradient(135deg, var(--accent), var(--accent-light)); border-radius: clamp(8px, 1vw, 12px);
-  display: flex; align-items: center; justify-content: center; font-size: clamp(16px, 1.8vw, 20px);
+  width: 32px; height: 32px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  display: flex; align-items: center; justify-content: center;
 }
-.header-actions { display: flex; gap: 12px; }
-.icon-btn {
-  min-width: 44px; min-height: 44px; width: 44px; height: 44px; border-radius: 12px;
-  background: var(--card); border: 1px solid var(--border); color: var(--muted); cursor: pointer;
-  display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.2s;
-}
-.icon-btn:hover { background: var(--hover); color: var(--text); border-color: var(--accent); }
-.menu-btn { display: none; }
-.sidebar-overlay { display: none; }
-.main-container { display: flex; flex: 1; min-height: 0; }
-.sidebar {
-  width: clamp(180px, 20vw, 280px); background: var(--surface); border-right: 1px solid var(--border);
-  display: flex; flex-direction: column; padding: 16px; gap: 12px;
-}
-.sidebar-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); padding: 0 8px; }
-.new-chat-btn {
-  width: 100%; min-height: 44px; padding: 14px; border-radius: 12px; background: var(--accent); color: white;
-  border: none; font-family: inherit; font-size: clamp(13px, 1.2vw, 15px); font-weight: 600; cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;
-}
-.new-chat-btn:hover { background: #6d28d9; transform: translateY(-1px); }
-.conv-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
-.conv-item {
-  min-height: 44px; padding: clamp(8px, 1vw, 12px); border-radius: 10px; cursor: pointer;
-  font-size: clamp(13px, 1.1vw, 14px); color: var(--muted); transition: all 0.2s; display: flex; align-items: center; gap: 10px;
-}
-.conv-item:hover { background: var(--hover); color: var(--text); }
-.conv-item.active { background: var(--accent-dim); color: var(--accent-light); }
-.chat-area { flex: 1; display: flex; flex-direction: column; width: 100%; height: 100%; }
-.welcome {
-  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  text-align: center; padding: 40px; min-height: 100px;
-}
-.welcome h1 { font-size: clamp(24px, 3.5vw, 40px); font-weight: 700; margin-bottom: 12px;
-  background: linear-gradient(135deg, var(--text), var(--accent-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-}
-.welcome p { color: var(--muted); font-size: clamp(14px, 2vw, 16px); max-width: 500px; }
-.quick-actions { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-top: 30px; }
-.quick-btn {
-  min-height: 44px; padding: clamp(10px, 1.2vw, 14px) clamp(14px, 2vw, 20px); border-radius: 24px;
-  background: var(--card); border: 1px solid var(--border); color: var(--text); font-family: inherit;
-  font-size: clamp(13px, 1.1vw, 14px); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.2s;
-}
-.quick-btn:hover { background: var(--hover); border-color: var(--accent); transform: translateY(-2px); }
-.messages { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px clamp(16px, 4vw, 48px); display: flex; flex-direction: column; gap: 20px; }
-.msg { max-width: min(85%, 700px); padding: clamp(12px, 1.5vw, 20px) clamp(14px, 2vw, 24px);
-  border-radius: clamp(12px, 1.5vw, 16px); line-height: 1.6; animation: fadeIn 0.3s ease;
-}
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.msg.user { align-self: flex-end; background: var(--accent); color: white; border-bottom-right-radius: 4px; }
-.msg.assistant { align-self: flex-start; background: var(--card); border: 1px solid var(--border); border-bottom-left-radius: 4px; color: var(--text); }
-.msg.assistant pre { background: var(--surface); padding: 12px; border-radius: 8px; overflow-x: auto; margin: 12px 0; font-family: 'Space Mono', monospace; font-size: 13px; }
-.input-area { padding: clamp(12px, 1.5vw, 18px) 0 clamp(12px, 2vw, 18px); display: flex; gap: clamp(8px, 1vw, 12px); align-items: flex-end; background: var(--surface); border-top: 1px solid var(--border); }
+.msg-list { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.msg { max-width: 85%; padding: 12px 16px; border-radius: 18px; line-height: 1.5; font-size: 15px; }
+.msg.user { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+.msg.assistant { align-self: flex-start; background: var(--card); border: 1px solid var(--border); color: var(--text); }
+.welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center; }
+.welcome h1 { font-size: 28px; font-weight: 600; margin-bottom: 12px; background: linear-gradient(135deg, var(--text), var(--primary-light)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.welcome p { color: var(--text-muted); font-size: 15px; max-width: 300px; }
+.quick-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 24px; width: 100%; max-width: 320px; }
+.quick-btn { padding: 12px; border-radius: 16px; background: var(--card); border: 1px solid var(--border); color: var(--text); font-size: 13px; cursor: pointer; }
+.quick-btn:active { background: var(--surface); }
+.input-bar { display: flex; gap: 8px; padding: 12px 16px; padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 1px solid var(--border); }
 .msg-input {
-  flex: 1; padding: clamp(12px, 1.5vw, 16px) clamp(14px, 2vw, 20px); border-radius: clamp(12px, 1.5vw, 16px);
-  background: var(--card); border: 1px solid var(--border); color: var(--text); font-family: inherit;
-  font-size: clamp(15px, 1.2vw, 16px); resize: none; min-height: 44px; max-height: 200px; outline: none;
+  flex: 1; padding: 12px 16px; border-radius: 24px; background: var(--card);
+  border: 1px solid var(--border); color: var(--text); font-size: 15px; outline: none; min-height: 44px; max-height: 120px; resize: none;
 }
-.msg-input:focus { border-color: var(--accent); }
-.send-btn { min-width: 44px; min-height: 44px; width: clamp(44px, 5vw, 56px); height: clamp(44px, 5vw, 56px);
-  border-radius: clamp(12px, 1.5vw, 16px); background: var(--accent); border: none; color: white; cursor: pointer;
-  font-size: clamp(18px, 2vw, 22px); display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+.send-btn { width: 44px; height: 44px; border-radius: 22px; background: var(--primary); border: none; color: white; font-size: 18px; cursor: pointer; }
+.send-btn:disabled { opacity: 0.5; }
+.typing { display: flex; align-items: center; gap: 6px; padding: 12px 16px; background: var(--card); border: 1px solid var(--border); border-radius: 18px; align-self: flex-start; border-bottom-left-radius: 4px; }
+.typing .dot { width: 8px; height: 8px; background: var(--primary-light); border-radius: 50%; animation: bounce 1s infinite; }
+.typing .dot:nth-child(2) { animation-delay: 0.2s; }
+.typing .dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-4px); } }
+.sidebar {
+  position: fixed; top: 0; left: 0; bottom: 0; width: 260px; background: var(--surface);
+  transform: translateX(-100%); transition: transform 0.3s ease; z-index: 100; border-right: 1px solid var(--border);
 }
-.send-btn:hover { background: #6d28d9; }
-.status-bar { padding: 10px; font-size: 12px; color: var(--muted); display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--surface); border-top: 1px solid var(--border); }
-.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
-.status-dot.loading { background: var(--accent); animation: pulse 1s infinite; }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-.model-select { min-height: 44px; padding: clamp(6px, 0.8vw, 8px) clamp(10px, 1.5vw, 16px); border-radius: 20px;
-  background: var(--card); border: 1px solid var(--border); color: var(--text); font-family: inherit; font-size: clamp(12px, 1vw, 13px); cursor: pointer; outline: none; }
-.loading-dots span { width: 6px; height: 6px; border-radius: 50%; background: var(--muted); animation: bounce 1.4s infinite ease-in-out; }
-@keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
-.typing-bubble { display: flex; align-items: center; gap: 8px; padding: clamp(12px, 1.5vw, 16px) clamp(14px, 2vw, 20px);
-  background: var(--card); border: 1px solid var(--border); border-radius: clamp(12px, 1.5vw, 16px); border-bottom-left-radius: 4px; align-self: flex-start; max-width: 200px; }
-.typing-bubble .dot { width: 8px; height: 8px; background: var(--accent); border-radius: 50%; animation: typingDot 0.8s infinite; }
-@keyframes typingDot { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-6px); opacity: 1; } }
-.settings-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); z-index: 1000; display: none; align-items: center; justify-content: center; }
-.settings-overlay.open { display: flex; }
-.settings-panel { background: var(--surface); border: 1px solid var(--border); border-radius: clamp(16px, 2vw, 20px); padding: clamp(20px, 3vw, 30px);
-  max-width: min(92%, 450px); width: 90%; animation: slideUp 0.3s ease; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
-@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-.settings-section { margin-bottom: 20px; }
-.settings-section label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-.settings-section input, .settings-section select { width: 100%; min-height: 44px; padding: clamp(10px, 1vw, 12px) clamp(12px, 1.5vw, 16px); border-radius: 10px;
-  background: var(--card); border: 1px solid var(--border); color: var(--text); font-family: inherit; font-size: clamp(14px, 1.1vw, 15px); outline: none; }
-.settings-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
-.toggle-switch { width: 46px; height: 24px; background: var(--card); border-radius: 12px; position: relative; cursor: pointer; transition: background 0.3s; border: 1px solid var(--border); }
-.toggle-switch.active { background: var(--accent); }
-.toggle-switch::after { content: ''; position: absolute; width: 18px; height: 18px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: transform 0.3s; }
-.toggle-switch.active::after { transform: translateX(22px); }
-.close-settings { width: 100%; min-height: 44px; padding: 14px; border-radius: 10px; background: var(--accent); border: none; color: white; font-family: inherit; font-size: clamp(14px, 1.2vw, 15px); font-weight: 600; cursor: pointer; margin-top: 10px; }
-.analyze-loader { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px 20px; gap: 16px; }
-.analyze-loader .ring { position: absolute; inset: 0; border-radius: 50%; border: 3px solid transparent; animation: spin 1.2s linear infinite; }
-.analyze-loader .ring-1 { border-top-color: var(--accent); animation-duration: 1.2s; }
-.analyze-loader .ring-2 { inset: 8px; border-bottom-color: #4a6fc9; animation-duration: 1.8s; }
-.analyze-loader .ring-3 { inset: 16px; border-top-color: #8aabff; animation-duration: 2.4s; }
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-.analyze-loader .analyze-text { font-size: 14px; font-weight: 600; background: linear-gradient(90deg, var(--text), var(--accent-light), var(--text)); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; animation: shimmer 2.5s linear infinite; }
-@keyframes shimmer { 0% { background-position: 200% center; } 100% { background-position: -200% center; } }
-@media (max-width: 1024px) {
-  .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: clamp(220px, 30vw, 280px); max-width: 82vw; z-index: 1000; transform: translateX(-100%); transition: transform 0.28s ease; box-shadow: 4px 0 30px rgba(0,0,0,0.35); }
-  .sidebar.open { transform: translateX(0); }
-  .menu-btn { display: flex; }
-  .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999; -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
-  .sidebar-overlay.open { display: block; }
-}
-@media (max-width: 768px) {
-  html, body { height: 100%; width: 100%; }
-  header { padding: 8px 12px; min-height: 52px; }
-  .menu-btn { display: flex; min-width: 44px; min-height: 44px; width: 44px; height: 44px; font-size: 18px; border: none; background: transparent; }
-  .menu-btn:active { background: var(--hover); }
-  .logo { font-size: clamp(15px, 4vw, 18px); gap: 8px; }
-  .logo-icon { width: clamp(28px, 6vw, 34px); height: clamp(28px, 6vw, 34px); font-size: clamp(13px, 3vw, 16px); border-radius: 8px; }
-  .header-actions { margin-left: auto; gap: 4px; }
-  .icon-btn { min-width: 44px; min-height: 44px; width: 44px; height: 44px; font-size: 16px; border-radius: 10px; border: none; background: transparent; }
-  .sidebar { position: fixed; top: 0; left: 0; bottom: 0; width: 280px; max-width: 82vw; z-index: 1000; padding: 16px; transform: translateX(-100%); }
-  .sidebar.open { transform: translateX(0); }
-  .messages { padding: 12px 16px; }
-  .welcome { padding: 32px 20px; }
-  .welcome h1 { font-size: 22px; }
-  .quick-actions { grid-template-columns: repeat(2, 1fr); max-width: 400px; }
-  .quick-btn { min-height: 44px; font-size: clamp(12px, 3.5vw, 14px); border-radius: 12px; }
-  .msg { max-width: 88%; padding: 14px 18px; border-radius: 18px; font-size: 15px; }
-  .input-area { padding: 8px 12px; padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)); }
-  .msg-input { padding: 12px 16px; font-size: 15px; border-radius: 14px; min-height: 44px; max-height: 120px; }
-  .send-btn { width: 44px; height: 44px; font-size: 18px; border-radius: 12px; }
-  .status-bar { padding: 4px 12px; font-size: 11px; }
-}
-@media (max-width: 400px) {
-  .welcome { padding: 20px; }
-  .welcome h1 { font-size: clamp(18px, 5vw, 22px); }
-  .quick-actions { grid-template-columns: 1fr; }
-  .msg-input { font-size: clamp(14px, 4vw, 15px); }
-}
+.sidebar.open { transform: translateX(0); }
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); opacity: 0; visibility: hidden; transition: opacity 0.3s; z-index: 99; }
+.overlay.active { opacity: 1; visibility: visible; }
+.settings { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; align-items: center; justify-content: center; z-index: 100; }
+.settings.open { display: flex; }
+.settings-panel { background: var(--surface); border-radius: 20px; padding: 24px; width: 90%; max-width: 340px; border: 1px solid var(--border); }
 </style>
 </head>
 <body>
-<header>
-  <button class="icon-btn menu-btn" id="menuBtn" onclick="toggleSidebar()" title="Menu">
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h14M3 10h14M3 15h14"/></svg>
-  </button>
-  <div class="logo"><div class="logo-icon">Q</div><span>Qwen AI</span></div>
-  <div class="header-actions">
-    <select class="model-select" id="modelSelect" onchange="changeModel(this.value)"><option value="qwen3-max">Qwen3 Max</option><option value="qwen3.7-max">Qwen3 7B Max</option></select>
-    <button class="icon-btn" onclick="toggleSettings()" title="Paramètres"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="9" r="3"/><path d="M9 1v2M9 15v2M1 9h2M15 9h2"/></svg></button>
-    <button class="icon-btn" onclick="clearChat()" title="Nouvelle discussion"><svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 3v12M3 9h12"/></svg></button>
-  </div>
-</header>
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-<div class="main-container">
+<div id="app">
+  <header>
+    <button id="menuBtn" style="background:none;border:none;color:var(--text);font-size:20px;cursor:pointer;width:40px;height:40px;">☰</button>
+    <div class="logo"><div class="logo-icon">Q</div><span>Qwen</span></div>
+    <button id="settingsBtn" style="background:none;border:none;color:var(--text);font-size:20px;cursor:pointer;width:40px;height:40px;">⚙</button>
+  </header>
+  
   <div class="sidebar" id="sidebar">
-    <div style="display:flex;align-items:center;justify-content:space-between"><div style="font-size:16px;font-weight:700">Qwen AI</div><button onclick="closeSidebar()" style="background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:4px">✕</button></div>
-    <button class="new-chat-btn" onclick="clearChat()">✨ Nouvelle discussion</button>
-    <div class="sidebar-title">Conversations récentes</div>
-    <div class="conv-list" id="convList"></div>
-    <button class="new-chat-btn" onclick="closeSidebar();toggleSettings()" style="background:var(--card);color:var(--text);border:1px solid var(--border);margin-top:auto;font-size:13px">⚙️ Paramètres</button>
+    <div style="padding:20px 16px;border-bottom:1px solid var(--border);font-weight:600;">Qwen AI</div>
+    <button id="newChatBtn" style="margin:16px;background:var(--primary);color:white;border:none;padding:12px;border-radius:16px;font-weight:500;cursor:pointer;">+ Nouvelle discussion</button>
+    <div id="convList" style="flex:1;overflow-y:auto;padding:8px;"></div>
   </div>
-  <div class="chat-area">
-    <div class="welcome" id="welcome">
-      <h1>Bienvenue sur Qwen AI</h1>
-      <p>Votre assistant intelligent. Posez vos questions, demandez du code, des traductions, ou juste une conversation !</p>
-      <div class="quick-actions">
-        <button class="quick-btn" onclick="sendQuick('Écris du code Python pour une fonction de tri')">💻 Code</button>
-        <button class="quick-btn" onclick="sendQuick('Explique le machine learning en termes simples')">🧠 Expliquer</button>
-        <button class="quick-btn" onclick="sendQuick('Traduis en anglais:')">🌍 Traduire</button>
-        <button class="quick-btn" onclick="sendQuick('Écris un poème sur la nuit')">📝 Poème</button>
-        <button class="quick-btn" onclick="sendQuick('Donne-moi des idées pour un projet')">💡 Idées</button>
-      </div>
+  
+  <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
+  
+  <div class="welcome" id="welcome">
+    <h1>Bonjour 👋</h1>
+    <p>Comment puis-je vous aider aujourd'hui ?</p>
+    <div class="quick-grid" id="quickGrid">
+      <button class="quick-btn" onclick="sendQuick('Code Python pour tri')">💻 Code</button>
+      <button class="quick-btn" onclick="sendQuick('Expliquer ML')">🧠 Expliquer</button>
+      <button class="quick-btn" onclick="sendQuick('Traduire en anglais')">🌍 Traduire</button>
+      <button class="quick-btn" onclick="sendQuick('Écrire un poème')">📝 Poème</button>
     </div>
-    <div class="messages" id="messages"></div>
-    <div class="input-area">
-      <textarea class="msg-input" id="msgInput" placeholder="Posez votre question..." rows="1" onkeydown="handleKey(event)"></textarea>
-      <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
-    </div>
-    <div class="status-bar"><div class="status-dot" id="statusDot"></div><span id="statusTxt">Propulsé par Qwen3 Max</span></div>
+  </div>
+  
+  <div class="msg-list" id="messages"></div>
+  
+  <div class="input-bar">
+    <textarea id="msgInput" class="msg-input" placeholder="Message..." rows="1" onkeydown="handleKey(event)"></textarea>
+    <button id="sendBtn" class="send-btn" onclick="sendMessage()">➤</button>
   </div>
 </div>
-<div class="settings-overlay" id="settingsOverlay"><div class="settings-panel">
-  <h2>⚙️ Paramètres</h2>
-  <div class="settings-section"><label>Modèle IA</label><select id="settingsModel"><option value="qwen3-max">Qwen3 Max</option><option value="qwen3.7-max">Qwen3 7B Max</option></select></div>
-  <div class="settings-section"><label>Température (créativité)</label><input type="range" id="settingsTemp" min="0" max="100" value="70"></div>
-  <div class="settings-section"><label>Longueur réponse</label><select id="settingsLength"><option value="500">Courte</option><option value="1000" selected>Moyenne</option><option value="2000">Longue</option></select></div>
-  <div class="settings-row"><span>Mode nuit</span><div class="toggle-switch" id="toggleDark" onclick="toggleDark()"></div></div>
-  <div class="settings-row"><span>Animations</span><div class="toggle-switch active" id="toggleAnim" onclick="toggleAnim()"></div></div>
-  <div class="settings-row"><span>Son notifications</span><div class="toggle-switch" id="toggleSound" onclick="toggleSound()"></div></div>
-  <button class="close-settings" onclick="closeSettings()">Fermer</button>
-</div></div>
+
+<div class="settings" id="settings">
+  <div class="settings-panel">
+    <h2 style="font-size:18px;margin-bottom:20px;">Paramètres</h2>
+    <div style="margin-bottom:16px;">
+      <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px;">Modèle</label>
+      <select id="modelSelect" style="width:100%;padding:10px;background:var(--card);border:1px solid var(--border);border-radius:12px;color:var(--text);">
+        <option value="qwen3-max">Qwen3 Max</option>
+        <option value="qwen3.7-max">Qwen3 7B Max</option>
+      </select>
+    </div>
+    <button onclick="closeSettings()" style="width:100%;padding:12px;background:var(--primary);border:none;border-radius:12px;color:white;font-weight:500;cursor:pointer;margin-top:8px;">Fermer</button>
+  </div>
+</div>
+
 <script>
 const API_URL='https://api.mulerouter.ai/vendors/openai/v1/chat/completions';
 const API_KEY='sk-mr-a32a7cf0ae2b1ef610f64c038429b9b6ea4a5575312c8e8899576ce39e446f1d';
-let messages=[],selectedModel='qwen3-max',temperature=0.7,maxTokens=1000,animationsEnabled=true,conversations=[],userName='',db=null,isLoading=false;
-const getLocalTimeInfo=()=>{const now=new Date(),tz=Intl.DateTimeFormat().resolvedOptions().timeZone;return`Heure locale: ${now.toLocaleTimeString('fr-FR')}, Date: ${now.toLocaleDateString('fr-FR')}, Timezone: ${tz}`};
-const getSystemPrompt=webContext=>`Tu es Qwen AI, un assistant intelligent créé par Qwen_Pro. Réponds naturellement en français. ${getLocalTimeInfo()}. Recherche web et analyse de liens disponibles sur demande.`;
-async function performWebSearch(q){const enc=encodeURIComponent(q),url=`https://api.duckduckgo.com/?q=${enc}&format=json&no_html=1`,proxies=['https://api.allorigins.win/raw?url=','https://corsproxy.io/?url=','https://api.codetabs.com/v1/proxy?quest='];for(const p of proxies){try{const c=new AbortController(),t=setTimeout(()=>c.abort(),4000),r=await fetch(p+encodeURIComponent(url),{signal:c});clearTimeout(t);if(r.ok){const d=await r.json();return{text:d.AbstractText||'',html:'',hasResults:!!d.AbstractText}}catch(e){continue}}return{text:'',html:'',hasResults:false}}
-function escapeHtml(t){const d=document.createElement('div');d.textContent=t;return d.innerHTML;}
+let messages=[], selectedModel='qwen3-max', isLoading=false;
 
-async function fetchAndAnalyze(url){
-    try{
-        const proxies = ['https://api.allorigins.win/raw?url=','https://corsproxy.io/?url=','https://api.codetabs.com/v1/proxy?quest='];
-        for(const p of proxies){
-            try{
-                const controller = new AbortController();
-                const timeout = setTimeout(() => controller.abort(), 8000);
-                const response = await fetch(p + encodeURIComponent(url), { 
-                    signal: controller.signal,
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                    }
-                });
-                clearTimeout(timeout);
-                if(response.ok){
-                    const html = await response.text();
-                    return parseAndAnalyzeHTML(html, url);
-                }
-            }catch(e){
-                continue;
-            }
-        }
-        return null;
-    }catch(e){
-        console.error('Error fetching and analyzing URL:', e);
-        return null;
-    }
+function getLocalTimeInfo() {
+  const now = new Date();
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return `Heure: ${now.toLocaleTimeString('fr-FR')}, Timezone: ${tz}`;
 }
 
-function parseAndAnalyzeHTML(html, url){
-    try{
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        
-        // Remove script and style elements
-        doc.querySelectorAll('script, style').forEach(el => el.remove());
-        
-        // Get title
-        const titleElement = doc.querySelector('title');
-        const title = titleElement ? titleElement.textContent.trim() : 'Sans titre';
-        
-        // Get description from meta tags
-        let description = '';
-        const descSelectors = [
-            'meta[name="description"]',
-            'meta[property="og:description"]',
-            'meta[name="twitter:description"]'
-        ];
-        for(const selector of descSelectors){
-            const meta = doc.querySelector(selector);
-            if(meta && meta.content){
-                description = meta.content.trim();
-                break;
-            }
-        }
-        
-        // Get main image
-        let imageUrl = '';
-        const imgSelectors = [
-            'meta[property="og:image"]',
-            'meta[name="twitter:image"]',
-            'link[rel="image_src"]'
-        ];
-        for(const selector of imgSelectors){
-            const el = doc.querySelector(selector);
-            if(el && (el.content || el.href)){
-                imageUrl = el.content || el.href;
-                // Make URL absolute if needed
-                try{
-                    const urlObj = new URL(imageUrl, url);
-                    imageUrl = urlObj.toString();
-                }catch(e){
-                    // If URL is invalid, try to make it relative to base
-                    if(imageUrl.startsWith('//')){
-                        imageUrl = 'https:' + imageUrl;
-                    }else if(imageUrl.startsWith('/')){
-                        try{
-                            const urlObj = new URL(url);
-                            imageUrl = urlObj.origin + imageUrl;
-                        }catch(e){}
-                    }
-                }
-                break;
-            }
-        }
-        
-        // Extract text content
-        const mainContent = doc.querySelector('main, article, .content, #content, .post, .entry') || doc.body;
-        let textContent = mainContent ? mainContent.textContent : doc.body.textContent;
-        textContent = textContent.replace(/\s+/g, ' ').trim();
-        
-        // Limit text for analysis
-        const analysisText = textContent.substring(0, 1000);
-        
-        return {
-            title: title,
-            description: description,
-            imageUrl: imageUrl,
-            url: url,
-            textContent: analysisText,
-            domain: new URL(url).hostname
-        };
-    }catch(e){
-        console.error('Error parsing HTML:', e);
-        return {
-            title: 'Erreur d\'analyse',
-            description: 'Impossible d\'analyser le contenu de cette page.',
-            url: url
-        };
-    }
+function getSystemPrompt() {
+  return `Tu es Qwen AI, un assistant IA. Réponds en français de manière naturelle. ${getLocalTimeInfo()}`;
 }
 
-function displayAnalysis(data){
-    if(!data) return '<div style="padding:10px;color:var(--error)">❌ Impossible d\'analyser ce lien</div>';
-    
-    let html = `
-        <div style="padding:12px;">
-            <div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;">
-    `;
-    
-    if(data.imageUrl){
-        html += `<img src="${data.imageUrl}" alt="${data.title}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;">`;
-    }else{
-        html += `<div style="width:80px;height:80px;background:var(--card);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:14px;">📄</div>`;
-    }
-    
-    html += `
-                <div style="flex:1;">
-                    <div style="font-weight:600;margin-bottom:4px;">${escapeHtml(data.title)}</div>
-                    <div style="color:var(--muted);font-size:14px;margin-bottom:8px;">${escapeHtml(data.description || 'Aucune description disponible')}</div>
-                    <div style="font-size:13px;color:var(--text-2);">
-                        <span>Domaine: ${escapeHtml(data.domain)}</span>
-                    </div>
-                </div>
-            </div>
-    `;
-    
-    if(data.textContent && data.textContent.length > 50){
-        html += `
-            <div style="background:var(--card);border-radius:8px;padding:12px;margin-top:8px;border:1px solid var(--border);">
-                <div style="font-weight:600;margin-bottom:8px;">Résumé du contenu:</div>
-                <p style="color:var(--text);line-height:1.5;margin:0;">${escapeHtml(data.textContent.substring(0, 300))}${data.textContent.length > 300 ? '...' : ''}</p>
-            </div>
-        `;
-    }
-    
-    html += `</div>`;
-    return html;
+async function getAIResponse(msg) {
+  const msgs = [{role:'system', content:getSystemPrompt()}, ...messages.map(m=>({role:m.role, content:m.content})), {role:'user', content:msg}];
+  const r = await fetch(API_URL, {
+    method:'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
+    body:JSON.stringify({model:selectedModel, messages:msgs, temperature:0.7, max_tokens:1000})
+  });
+  if(!r.ok) throw new Error(r.status);
+  const d = await r.json();
+  return d.choices[0].message.content.replace(/\*\*/g,'').replace(/\*/g,'');
 }
 
-function saveUserName(name){
-    if(name && name.trim()){
-        localStorage.setItem('qwen_username', name.trim());
-        updateWelcomeMessage();
-    }
+function addMessage(text, role) {
+  messages.push({role, content:text});
+  const c = document.getElementById('messages');
+  const div = document.createElement('div');
+  div.className = 'msg ' + role;
+  div.innerHTML = text.replace(/\n/g,'<br>');
+  c.appendChild(div);
+  c.scrollTop = c.scrollHeight;
 }
+
+function hideWelcome() {
+  document.getElementById('welcome').style.display = 'none';
+}
+
+function showTyping() {
+  const c = document.getElementById('messages');
+  const b = document.createElement('div');
+  b.className = 'typing';
+  b.id = 'typing';
+  b.innerHTML = '<span class="dot"></span><span class="dot"></span><span class="dot"></span>';
+  c.appendChild(b);
+  c.scrollTop = c.scrollHeight;
+}
+
+function hideTyping() {
+  const b = document.getElementById('typing');
+  if(b) b.remove();
+}
+
+function setLoading(v) {
+  isLoading = v;
+  document.getElementById('sendBtn').disabled = v;
+}
+
 async function sendMessage() {
-    const input = document.getElementById('msgInput');
-    const text = input.value.trim();
-    if (!text || window.isLoading) return;
-    
-    input.value = '';
-    input.style.height = 'auto';
-    addMessage(text, 'user');
-    hideWelcome();
-    setLoading(true);
-    
-    let webCtx = '';
-    const urlMatch = text.match(/https?:\/\/[^\s]+/i);
-    const isUrlReq = /analyse|que.*vaut/i.test(text) && urlMatch;
-    
-    if (isUrlReq) {
-        const url = urlMatch[0];
-        const c = document.getElementById('messages');
-        const m = document.createElement('div');
-        m.className = 'msg web-search';
-        m.innerHTML = '<div style="padding:10px">Analyse...</div>';
-        c.appendChild(m);
-        c.scrollTop = c.scrollHeight;
-        
-        try {
-            const d = await fetchAndAnalyze(url);
-            if (d) {
-                m.innerHTML = displayAnalysis(d);
-            } else {
-                m.innerHTML = '❌ Échec analyse - URL inaccessible';
-            }
-        } catch(err) {
-            m.innerHTML = '❌ Erreur: ' + err.message;
-        }
-        c.scrollTop = c.scrollHeight;
-    }
-    
-    showTypingBubble();
-    try {
-        const r = await getAIResponse(text, webCtx);
-        hideTypingBubble();
-        addMessage(r, 'assistant');
-    } catch (e) {
-        hideTypingBubble();
-        addMessage('Erreur API: ' + e.message, 'assistant');
-    }
-    setLoading(false);
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if(!text || isLoading) return;
+  
+  input.value = '';
+  input.style.height = 'auto';
+  hideWelcome();
+  addMessage(text, 'user');
+  setLoading(true);
+  showTyping();
+  
+  try {
+    const response = await getAIResponse(text);
+    hideTyping();
+    addMessage(response, 'assistant');
+  } catch(e) {
+    hideTyping();
+    addMessage('Erreur: ' + e.message, 'assistant');
+  }
+  setLoading(false);
 }
-function addMessage(text,role){messages.push({role,content:text});const c=document.getElementById('messages'),div=document.createElement('div');div.className='msg '+role;div.innerHTML=text.replace(/\n/g,'<br>');c.appendChild(div);c.scrollTop=c.scrollHeight}
-function hideWelcome(){const w=document.getElementById('welcome');if(w)w.style.display='none'}
-function showTypingBubble(){const c=document.getElementById('messages'),b=document.createElement('div');b.className='typing-bubble';b.id='typingBubble';b.innerHTML='<span class="dot"></span><span class="dot"></span><span class="dot"></span>';c.appendChild(b);c.scrollTop=c.scrollHeight}
-function hideTypingBubble(){const b=document.getElementById('typingBubble');if(b)b.remove()}
-function sendQuick(t){document.getElementById('msgInput').value=t;sendMessage()}
-async function getAIResponse(msg,ctx){const msgs=[{role:'system',content:getSystemPrompt(ctx)},...messages.map(m=>({role:m.role,content:m.content})),{role:'user',content:msg}];const r=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},body:JSON.stringify({model:selectedModel,messages:msgs,temperature,max_tokens:maxTokens})});if(!r.ok)throw new Error(r.status);const d=await r.json();return d.choices[0].message.content.replace(/\*\*/g,'').replace(/\*/g,'')}
-function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();autoResize(e.target)}}
-function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,200)+'px'}
-function changeModel(m){selectedModel=m;updateStatus('ready','Propulsé par '+m.replace('qwen3-','Qwen3 '))}
-function toggleSidebar(){const s=document.querySelector('.sidebar'),o=document.getElementById('sidebarOverlay');s.classList.toggle('open');o.classList.toggle('open')}
-function closeSidebar(){const s=document.querySelector('.sidebar'),o=document.getElementById('sidebarOverlay');s.classList.remove('open');o.classList.remove('open')}
-function clearChat(){closeSidebar();if(messages.length>0)saveConversation();messages=[];document.getElementById('messages').innerHTML='';document.getElementById('welcome').style.display='flex';updateWelcomeMessage();document.getElementById('msgInput').focus()}
-function setLoading(loading){window.isLoading=loading;document.getElementById('sendBtn').disabled=loading}
-function updateStatus(state,text){const d=document.getElementById('statusDot');d.className='status-dot'+(state==='loading'?' loading':'');document.getElementById('statusTxt').textContent=text}
-function toggleSettings(){document.getElementById('settingsOverlay').classList.add('open')}
-function closeSettings(){document.getElementById('settingsOverlay').classList.remove('open')}
-function toggleDark(){document.getElementById('toggleDark').classList.toggle('active')}
-function toggleAnim(){document.getElementById('toggleAnim').classList.toggle('active');animationsEnabled=!animationsEnabled}
-function toggleSound(){document.getElementById('toggleSound').classList.toggle('active')}
-function saveConversation(){if(messages.length===0)return;const title=messages[0].content.substring(0,50)||'Discussion',conv={id:Date.now(),title:title+(title.length>=50?'...':''),messages:[...messages],model:selectedModel,date:new Date().toLocaleString('fr-FR')};conversations=[conv,...conversations.filter(c=>c.id!==conv.id)].slice(0,20);localStorage.setItem('qwen_conversations',JSON.stringify(conversations));localStorage.setItem('qwen_last_conv_id',conv.id.toString());loadConversations()}
-function loadConversations(){const list=document.getElementById('convList');if(!list)return;list.innerHTML=conversations.length?'':'<div style="color:var(--muted);padding:20px;text-align:center">Aucune conversation</div>';conversations.forEach((c,i)=>{const div=document.createElement('div');div.className='conv-item'+(i===0?' active':'');div.innerHTML='<span>💬</span><span style="flex:1;overflow:hidden;text-overflow:ellipsis">'+c.title+'</span><button onclick="event.stopPropagation();deleteConversation('+c.id+')" style="background:none;border:none;color:var(--muted);cursor:pointer">✕</button>';div.onclick=()=>loadConversation(c.id);list.appendChild(div)})}
-function loadConversation(id){closeSidebar();const conv=conversations.find(c=>c.id===id);if(!conv)return;messages=conv.messages;selectedModel=conv.model||'qwen3-max';document.getElementById('modelSelect').value=selectedModel;document.getElementById('welcome').style.display='none';const c=document.getElementById('messages');c.innerHTML='';messages.forEach(m=>{const div=document.createElement('div');div.className='msg '+m.role;div.innerHTML=m.content.replace(/\n/g,'<br>');c.appendChild(div)});c.scrollTop=c.scrollHeight}
-function deleteConversation(id){conversations=conversations.filter(c=>c.id!==id);localStorage.setItem('qwen_conversations',JSON.stringify(conversations));loadConversations()}
-function updateWelcomeMessage(){const h1=document.querySelector('#welcome h1');h1.textContent=userName?`${['Bonne nuit','Bonjour','Bon après-midi','Bonsoir'][new Date().getHours()<=6?0:new Date().getHours()<12?1:new Date().getHours()<18?2:3]}, ${userName}`:'Bonjour sur Qwen AI'}
-document.addEventListener('DOMContentLoaded',()=>{userName=localStorage.getItem('qwen_username')||'';updateWelcomeMessage();if(!userName){setTimeout(()=>prompt('Comment puis-je vous appeler ?','')&&saveUserName(prompt('Comment puis-je vous appeler ?','').trim()),500)}updateStatus('ready','Propulsé par Qwen3 Max');conversations=JSON.parse(localStorage.getItem('qwen_conversations')||'[]');loadConversations()});
+
+function sendQuick(t) {
+  document.getElementById('msgInput').value = t;
+  sendMessage();
+}
+
+function handleKey(e) {
+  if(e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+  autoResize(e.target);
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('active');
+}
+
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('overlay').classList.remove('active');
+}
+
+function toggleSettings() {
+  document.getElementById('settings').classList.toggle('open');
+}
+
+function closeSettings() {
+  document.getElementById('settings').classList.remove('open');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('modelSelect').value = selectedModel;
+  let vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+});
 </script>
 </body>
 </html>
