@@ -150,6 +150,127 @@ function getSystemPrompt() {
   return 'Tu es Qwen AI. Ton créateur est Qwen_Pro. Tu ne dois JAMAIS mentionner Alibaba, Tongyi Lab, Alibaba Cloud ou toute autre entité. Tu es un assistant intelligent en français.';
 }
 
+async function performWebSearch(q) {
+  const enc = encodeURIComponent(q);
+  const url = `https://api.duckduckgo.com/?q=${enc}&format=json&no_html=1`;
+  const proxies = [
+    'https://api.allorigins.win/raw?url=',
+    'https://corsproxy.io/?url=',
+    'https://api.codetabs.com/v1/proxy?quest='
+  ];
+  for(const p of proxies) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 4000);
+      const r = await fetch(p + encodeURIComponent(url), { signal: controller.signal });
+      clearTimeout(timeout);
+      if(r.ok) {
+        const d = await r.json();
+        return { text: d.AbstractText || '', html: '', hasResults: !!d.AbstractText };
+      }
+    } catch(e) { continue; }
+  }
+  return { text: '', html: '', hasResults: false };
+}
+
+function escapeHtml(t) {
+  const d = document.createElement('div');
+  d.textContent = t;
+  return d.innerHTML;
+}
+
+async function fetchAndAnalyze(url) {
+  const proxies = [
+    'https://api.allorigins.win/raw?url=',
+    'https://corsproxy.io/?url=',
+    'https://api.codetabs.com/v1/proxy?quest='
+  ];
+  for(const p of proxies) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000);
+      const response = await fetch(p + encodeURIComponent(url), {
+        signal: controller.signal,
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' }
+      });
+      clearTimeout(timeout);
+      if(response.ok) {
+        const html = await response.text();
+        return parseAndAnalyzeHTML(html, url);
+      }
+    } catch(e) { continue; }
+  }
+  return null;
+}
+
+function parseAndAnalyzeHTML(html, url) {
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    doc.querySelectorAll('script, style').forEach(el => el.remove());
+    
+    const titleEl = doc.querySelector('title');
+    const title = titleEl ? titleEl.textContent.trim() : 'Sans titre';
+    
+    let description = '';
+    for(const sel of ['meta[name="description"]', 'meta[property="og:description"]', 'meta[name="twitter:description"]']) {
+      const meta = doc.querySelector(sel);
+      if(meta && meta.content) { description = meta.content.trim(); break; }
+    }
+    
+    let imageUrl = '';
+    for(const sel of ['meta[property="og:image"]', 'meta[name="twitter:image"]', 'link[rel="image_src"]']) {
+      const el = doc.querySelector(sel);
+      if(el && (el.content || el.href)) {
+        imageUrl = el.content || el.href;
+        try {
+          const u = new URL(imageUrl, url);
+          imageUrl = u.toString();
+        } catch(e) {
+          if(imageUrl.startsWith('//')) imageUrl = 'https:' + imageUrl;
+          else if(imageUrl.startsWith('/')) {
+            const base = new URL(url);
+            imageUrl = base.origin + imageUrl;
+          }
+        }
+        break;
+      }
+    }
+    
+    const main = doc.querySelector('main, article, .content, #content, .post, .entry') || doc.body;
+    let textContent = main ? main.textContent : doc.body.textContent;
+    textContent = textContent.replace(/\s+/g, ' ').trim();
+    
+    return {
+      title, description, imageUrl, url,
+      textContent: textContent.substring(0, 1000),
+      domain: new URL(url).hostname
+    };
+  } catch(e) {
+    return { title: 'Erreur d\'analyse', description: 'Impossible d\'analyser cette page.', url };
+  }
+}
+
+function displayAnalysis(data) {
+  if(!data) return '<div style="padding:10px;color:var(--error)">❌ Impossible d\'analyser ce lien</div>';
+  let html = '<div style="padding:12px;"><div style="display:flex;align-items:flex-start;gap:12px;margin-bottom:12px;">';
+  if(data.imageUrl) {
+    html += `<img src="${data.imageUrl}" alt="${escapeHtml(data.title)}" style="width:80px;height:80px;object-fit:cover;border-radius:8px;">`;
+  } else {
+    html += '<div style="width:80px;height:80px;background:var(--card);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:14px;">📄</div>';
+  }
+  html += '<div style="flex:1;"><div style="font-weight:600;margin-bottom:4px;">' + escapeHtml(data.title) + '</div>';
+  html += '<div style="color:var(--text-muted);font-size:14px;margin-bottom:8px;">' + escapeHtml(data.description || 'Aucune description') + '</div>';
+  html += '<div style="font-size:13px;color:var(--text-muted);">Domaine: ' + escapeHtml(data.domain) + '</div></div></div>';
+  if(data.textContent && data.textContent.length > 50) {
+    html += '<div style="background:var(--card);border-radius:8px;padding:12px;margin-top:8px;border:1px solid var(--border);">';
+    html += '<div style="font-weight:600;margin-bottom:8px;">Résumé du contenu:</div>';
+    html += '<p style="color:var(--text);line-height:1.5;margin:0;">' + escapeHtml(data.textContent.substring(0, 300)) + '...</div>';
+  }
+  html += '</div>';
+  return html;
+}
+
 async function getAIResponse(msg) {
   const msgs = [{role:'system', content:getSystemPrompt()}, ...messages.map(m=>({role:m.role, content:m.content})), {role:'user', content:msg}];
   const r = await fetch(API_URL, {
@@ -208,10 +329,51 @@ async function sendMessage() {
   setLoading(true);
   showTyping();
   
-  try {
-    const response = await getAIResponse(text);
+  const urlMatch = text.match(/https?:\/\/[^\s]+/i);
+  const isUrlReq = /analyse|que.*vaut/i.test(text) && urlMatch;
+  
+  if(isUrlReq && urlMatch) {
     hideTyping();
-    addMessage(cleanResponse(response), 'assistant');
+    const c = document.getElementById('messages');
+    const m = document.createElement('div');
+    m.className = 'msg assistant';
+    m.innerHTML = '<div style="padding:10px">Analyse en cours...</div>';
+    c.appendChild(m);
+    c.scrollTop = c.scrollHeight;
+    
+    try {
+      const d = await fetchAndAnalyze(urlMatch[0]);
+      if(d) {
+        m.innerHTML = displayAnalysis(d);
+      } else {
+        m.innerHTML = '❌ Échec analyse - URL inaccessible';
+      }
+    } catch(err) {
+      m.innerHTML = '❌ Erreur: ' + err.message;
+    }
+    c.scrollTop = c.scrollHeight;
+    setLoading(false);
+    return;
+  }
+  
+  const isSearch = /recherche|cherche|trouve|search/i.test(text);
+  
+  try {
+    let response = '';
+    if(isSearch) {
+      const searchResult = await performWebSearch(text);
+      if(searchResult.hasResults) {
+        response = searchResult.text;
+        addMessage('📰 ' + response, 'assistant');
+      } else {
+        response = await getAIResponse(text);
+        addMessage(cleanResponse(response), 'assistant');
+      }
+    } else {
+      response = await getAIResponse(text);
+      addMessage(cleanResponse(response), 'assistant');
+    }
+    hideTyping();
   } catch(e) {
     hideTyping();
     addMessage('Erreur: ' + e.message, 'assistant');
