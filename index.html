@@ -59,6 +59,13 @@ header {
 .typing .dot:nth-child(2) { animation-delay: 0.2s; }
 .typing .dot:nth-child(3) { animation-delay: 0.4s; }
 @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-4px); } }
+.loader { display: flex; align-items: center; gap: 8px; padding: 12px 16px; background: var(--card); border: 1px solid var(--border); border-radius: 18px; align-self: flex-start; border-bottom-left-radius: 4px; }
+.loader .spinner { width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--primary-light); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.search-loader { display: flex; align-items: center; gap: 10px; padding: 14px 18px; background: linear-gradient(135deg, var(--card), var(--surface)); border: 1px solid var(--border); border-radius: 18px; align-self: flex-start; border-bottom-left-radius: 4px; box-shadow: 0 4px 20px rgba(124,58,237,0.2); }
+.search-loader .icon { font-size: 18px; animation: pulse 1s ease-in-out infinite; }
+.search-loader .text { font-size: 13px; color: var(--primary-light); font-weight: 500; }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } }
 .sidebar {
   position: fixed; top: 0; left: 0; bottom: 0; width: 260px; background: var(--surface);
   transform: translateX(-100%); transition: transform 0.3s ease; z-index: 100; border-right: 1px solid var(--border);
@@ -312,6 +319,21 @@ function hideTyping() {
   if(b) b.remove();
 }
 
+function showLoader(text) {
+  const c = document.getElementById('messages');
+  const b = document.createElement('div');
+  b.className = 'search-loader';
+  b.id = 'searchLoader';
+  b.innerHTML = '<span class="icon">🔍</span><span class="text">' + text + '</span>';
+  c.appendChild(b);
+  c.scrollTop = c.scrollHeight;
+}
+
+function hideLoader() {
+  const b = document.getElementById('searchLoader');
+  if(b) b.remove();
+}
+
 function setLoading(v) {
   isLoading = v;
   document.getElementById('sendBtn').disabled = v;
@@ -336,20 +358,27 @@ async function sendMessage() {
     hideTyping();
     const c = document.getElementById('messages');
     const m = document.createElement('div');
-    m.className = 'msg assistant';
-    m.innerHTML = '<div style="padding:10px">Analyse en cours...</div>';
+    m.className = 'search-loader';
+    m.id = 'searchLoader';
+    m.innerHTML = '<span class="icon">🔗</span><span class="text">Analyse du lien en cours...</span>';
     c.appendChild(m);
     c.scrollTop = c.scrollHeight;
     
     try {
       const d = await fetchAndAnalyze(urlMatch[0]);
+      hideLoader();
       if(d) {
+        m.className = 'msg assistant';
+        m.id = '';
         m.innerHTML = displayAnalysis(d);
       } else {
+        m.className = 'msg assistant';
+        m.id = '';
         m.innerHTML = '❌ Échec analyse - URL inaccessible';
       }
     } catch(err) {
-      m.innerHTML = '❌ Erreur: ' + err.message;
+      hideLoader();
+      addMessage('❌ Erreur: ' + err.message, 'assistant');
     }
     c.scrollTop = c.scrollHeight;
     setLoading(false);
@@ -361,7 +390,10 @@ async function sendMessage() {
   try {
     let response = '';
     if(isSearch) {
+      hideTyping();
+      showLoader('Recherche sur le web...');
       const searchResult = await performWebSearch(text);
+      hideLoader();
       if(searchResult.hasResults) {
         response = searchResult.text;
         addMessage('📰 ' + response, 'assistant');
@@ -376,6 +408,7 @@ async function sendMessage() {
     hideTyping();
   } catch(e) {
     hideTyping();
+    hideLoader();
     addMessage('Erreur: ' + e.message, 'assistant');
   }
   setLoading(false);
