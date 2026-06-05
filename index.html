@@ -123,7 +123,7 @@ header {
 <script>
 const API_URL='https://api.mulerouter.ai/vendors/openai/v1/chat/completions';
 const API_KEY='sk-mr-a32a7cf0ae2b1ef610f64c038429b9b6ea4a5575312c8e8899576ce39e446f1d';
-let messages=[], selectedModel='qwen3-max', isLoading=false, userName='';
+let messages=[], selectedModel='qwen3-max', isLoading=false, userName='', conversations=[];
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -263,10 +263,74 @@ function closeSettings() {
 
 function clearChat() {
   closeSidebar();
+  if(messages.length > 0) saveConversation();
   messages = [];
   document.getElementById('messages').innerHTML = '';
   document.getElementById('welcome').style.display = 'flex';
   document.getElementById('msgInput').focus();
+}
+
+function saveConversation() {
+  if(messages.length === 0) return;
+  const title = messages[0].content.substring(0, 50) || 'Discussion';
+  const conv = {
+    id: Date.now(),
+    title: title + (title.length >= 50 ? '...' : ''),
+    messages: [...messages],
+    model: selectedModel,
+    date: new Date().toLocaleString('fr-FR')
+  };
+  conversations = [conv, ...conversations.filter(c => c.id !== conv.id)].slice(0, 20);
+  localStorage.setItem('qwen_conversations', JSON.stringify(conversations));
+  localStorage.setItem('qwen_last_conv_id', conv.id.toString());
+  loadConversations();
+}
+
+function loadConversations() {
+  const list = document.getElementById('convList');
+  if(!list) return;
+  const convs = JSON.parse(localStorage.getItem('qwen_conversations') || '[]');
+  conversations = convs;
+  list.innerHTML = convs.length ? '' : '<div style="color:var(--text-muted);padding:20px;text-align:center">Aucune conversation</div>';
+  convs.forEach((c, i) => {
+    const div = document.createElement('div');
+    div.className = 'conv-item' + (i === 0 ? ' active' : '');
+    div.style.cssText = 'padding:12px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:10px;margin-bottom:4px;';
+    div.innerHTML = '<span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">💬 ' + escapeHtml(c.title) + '</span><button onclick="event.stopPropagation();deleteConversation(' + c.id + ')" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:16px">✕</button>';
+    div.onclick = () => loadConversation(c.id);
+    list.appendChild(div);
+  });
+}
+
+function loadConversation(id) {
+  closeSidebar();
+  const conv = conversations.find(c => c.id === id);
+  if(!conv) return;
+  messages = conv.messages;
+  selectedModel = conv.model || 'qwen3-max';
+  document.getElementById('modelSelect').value = selectedModel;
+  document.getElementById('welcome').style.display = 'none';
+  const c = document.getElementById('messages');
+  c.innerHTML = '';
+  messages.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'msg ' + m.role;
+    div.innerHTML = m.content.replace(/\n/g,'<br>');
+    c.appendChild(div);
+  });
+  c.scrollTop = c.scrollHeight;
+}
+
+function deleteConversation(id) {
+  conversations = conversations.filter(c => c.id !== id);
+  localStorage.setItem('qwen_conversations', JSON.stringify(conversations));
+  loadConversations();
+}
+
+function escapeHtml(t) {
+  const d = document.createElement('div');
+  d.textContent = t;
+  return d.innerHTML;
 }
 
 function askName() {
@@ -278,6 +342,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('modelSelect').value = selectedModel;
   userName = localStorage.getItem('qwen_name') || '';
   updateWelcome();
+  loadConversations();
   let vh = window.innerHeight * 0.01;
   document.documentElement.style.setProperty('--vh', `${vh}px`);
   setTimeout(askName, 500);
