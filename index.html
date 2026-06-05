@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Qwen AI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -88,7 +88,7 @@ header {
   <div class="overlay" id="overlay" onclick="closeSidebar()"></div>
   
   <div class="welcome" id="welcome">
-    <h1>Bonjour 👋</h1>
+    <h1 id="welcomeTitle">Bonjour 👋</h1>
     <p>Comment puis-je vous aider aujourd'hui ?</p>
     <div class="quick-grid" id="quickGrid">
       <button class="quick-btn" onclick="sendQuick('Code Python pour tri')">💻 Code</button>
@@ -134,18 +134,20 @@ function getGreeting() {
 }
 
 function updateWelcome() {
-  const h1 = document.querySelector('#welcome h1');
+  const h1 = document.getElementById('welcomeTitle');
   h1.textContent = userName ? `${getGreeting()} ${userName} 👋` : `${getGreeting()} 👋`;
 }
 
-function getLocalTimeInfo() {
-  const now = new Date();
-  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  return `Heure: ${now.toLocaleTimeString('fr-FR')}, Timezone: ${tz}`;
+function saveName(name) {
+  if(name && name.trim()) {
+    userName = name.trim();
+    localStorage.setItem('qwen_name', userName);
+    updateWelcome();
+  }
 }
 
 function getSystemPrompt() {
-  return `Tu es Qwen AI, un assistant IA. Réponds en français de manière naturelle. ${getLocalTimeInfo()}`;
+  return 'Tu es Qwen AI, un assistant intelligent créé par Qwen_Pro.';
 }
 
 async function getAIResponse(msg) {
@@ -249,14 +251,6 @@ function toggleSettings() {
   document.getElementById('settings').classList.toggle('open');
 }
 
-function saveName(name) {
-  if(name && name.trim()) {
-    userName = name.trim();
-    localStorage.setItem('qwen_name', userName);
-    updateWelcome();
-  }
-}
-
 function closeSettings() {
   document.getElementById('settings').classList.remove('open');
 }
@@ -269,20 +263,24 @@ function clearChat() {
   document.getElementById('msgInput').focus();
 }
 
+function askName() {
+  const name = prompt('Comment vous appelez-vous ?');
+  if(name) saveName(name);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('modelSelect').value = selectedModel;
   userName = localStorage.getItem('qwen_name') || '';
   updateWelcome();
   let vh = window.innerHeight * 0.01;
   document.documentElement.style.setProperty('--vh', `${vh}px`);
+  setTimeout(askName, 500);
 });
 
-function askName() {
-  const name = prompt('Comment vous appelez-vous ?');
-  if(name) saveName(name);
-}
-
-setTimeout(askName, 500);
+window.addEventListener('resize', () => {
+  let vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+});
 </script>
 </body>
 </html>
