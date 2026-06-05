@@ -479,24 +479,23 @@ async function sendMessage() {
     return;
   }
   
+  const isSearch = /recherche|cherche|trouve|search|actualit|météo|bourse|cours|info|news|weather|stocks/i.test(text);
+  
   try {
-    hideTyping();
-    showLoader('Recherche sur le web...');
-    const searchResult = await performWebSearch(text);
-    hideLoader();
-    
     let response = '';
+    if(isSearch) {
+      hideTyping();
+      showLoader('Recherche sur le web...');
+      const searchResult = await performWebSearch(text);
+      hideLoader();
+      
     if(searchResult.hasResults) {
-      const contextWithSearch = [...messages.map(m=>({role:m.role, content:m.content})), {role:'user', content:`Réponds à cette question en utilisant ces résultats de recherche:\n\n${searchResult.text}\n\nQuestion: ${text}`}];
-      const r = await fetch(API_URL, {
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+API_KEY},
-        body:JSON.stringify({model:selectedModel, messages:[{role:'system', content:getSystemPrompt()}, ...contextWithSearch], temperature, max_tokens:maxTokens})
-      });
-      if(!r.ok) throw new Error(r.status);
-      const d = await r.json();
-      response = d.choices[0].message.content.replace(/\*\*/g,'').replace(/\*/g,'');
+      response = searchResult.text;
+      addMessage('📰 ' + response, 'assistant');
+    } else {
+      response = await getAIResponse(text);
       addMessage(cleanResponse(response), 'assistant');
+    }
     } else {
       response = await getAIResponse(text);
       addMessage(cleanResponse(response), 'assistant');
