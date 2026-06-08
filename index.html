@@ -588,8 +588,8 @@ header::after {
     <div style="margin-bottom:16px;">
       <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px;">Modèle</label>
       <select id="modelSelect" style="width:100%;padding:10px;background:var(--card);border:1px solid var(--border);border-radius:12px;color:var(--text);">
-        <option value="qwen3-max">Qwen3 Max</option>
-        <option value="qwen3.7-max">Qwen3 7B Max</option>
+        <option value="qwen/qwen3-235b-a22b-instruct">Qwen3 235B</option>
+        <option value="qwen/qwen3-7b">Qwen3 7B</option>
       </select>
     </div>
     <button onclick="closeSettings()" style="width:100%;padding:12px;background:var(--primary);border:none;border-radius:12px;color:white;font-weight:500;cursor:pointer;margin-top:8px;">Fermer</button>
@@ -597,8 +597,8 @@ header::after {
 </div>
 
 <script>
-const API_URL='https://api.mulerouter.ai/vendors/openai/v1/chat/completions';
-const API_KEY='sk-mr-a32a7cf0ae2b1ef610f64c038429b9b6ea4a5575312c8e8899576ce39e446f1d';
+const API_URL='https://openrouter.ai/api/v1/chat/completions';
+const API_KEY='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';
 let messages=[], selectedModel='qwen3-max', isLoading=false, userName='', conversations=[];
 
 function getGreeting() {
