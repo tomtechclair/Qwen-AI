@@ -592,14 +592,18 @@ header::after {
         <option value="qwen/qwen3-7b">Qwen3 7B</option>
       </select>
     </div>
-    <button onclick="closeSettings()" style="width:100%;padding:12px;background:var(--primary);border:none;border-radius:12px;color:white;font-weight:500;cursor:pointer;margin-top:8px;">Fermer</button>
+    <div style="margin-bottom:16px;">
+      <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px;">Clé API OpenRouter</label>
+      <input type="password" id="apiKeyInput" placeholder="sk-or-v1-..." style="width:100%;padding:10px;background:var(--card);border:1px solid var(--border);border-radius:12px;color:var(--text);font-size:14px;">
+    </div>
+    <button onclick="saveSettings()" style="width:100%;padding:12px;background:var(--primary);border:none;border-radius:12px;color:white;font-weight:500;cursor:pointer;margin-top:8px;">Enregistrer</button>
   </div>
 </div>
 
 <script>
 const API_URL='https://openrouter.ai/api/v1/chat/completions';
-const API_KEY='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';
-let messages=[], selectedModel='qwen3-max', isLoading=false, userName='', conversations=[];
+let API_KEY='';
+let messages=[], selectedModel='qwen/qwen3-235b-a22b-instruct', isLoading=false, userName='', conversations=[];
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -1074,6 +1078,18 @@ function closeSidebar() {
 
 function toggleSettings() {
   document.getElementById('settings').classList.toggle('open');
+  if(document.getElementById('settings').classList.contains('open')) {
+    document.getElementById('modelSelect').value = selectedModel;
+    document.getElementById('apiKeyInput').value = API_KEY;
+  }
+}
+
+function saveSettings() {
+  selectedModel = document.getElementById('modelSelect').value;
+  API_KEY = document.getElementById('apiKeyInput').value.trim();
+  localStorage.setItem('qwen_api_key', API_KEY);
+  localStorage.setItem('qwen_model', selectedModel);
+  closeSettings();
 }
 
 function closeSettings() {
@@ -1126,7 +1142,7 @@ function loadConversation(id) {
   const conv = conversations.find(c => c.id === id);
   if(!conv) return;
   messages = conv.messages;
-  selectedModel = conv.model || 'qwen3-max';
+  selectedModel = conv.model || 'qwen/qwen3-235b-a22b-instruct';
   document.getElementById('modelSelect').value = selectedModel;
   document.getElementById('welcome').style.display = 'none';
   const c = document.getElementById('messages');
