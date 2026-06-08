@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Qwen AI</title>
+<script src="config.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -602,7 +603,7 @@ header::after {
 
 <script>
 const API_URL='https://openrouter.ai/api/v1/chat/completions';
-let API_KEY='';
+let API_KEY=window.OPENROUTER_API_KEY||'';
 let messages=[], selectedModel='qwen/qwen3-235b-a22b-instruct', isLoading=false, userName='', conversations=[];
 
 function getGreeting() {
